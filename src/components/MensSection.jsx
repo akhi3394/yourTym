@@ -39,7 +39,7 @@ const MensSection = () => {
 
             {/* Salon for Women */}
             <div className="bg-[#FFE8CF] rounded-xl p-6 shadow-sm">
-                <h2 className="text-center text-[20px] font-semibold text-[#1D1D1D] mb-4">Salon for Women</h2>
+                <h2 className="text-center text-[20px] font-semibold text-[#1D1D1D] mb-4">Salon for Mens</h2>
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4">
                     {[
                         { img: HairCut, label: 'Hair cut' },
@@ -60,7 +60,7 @@ const MensSection = () => {
             {/* Women's Product Brands */}
             <div className="bg-white rounded-xl p-6 shadow-sm">
                 <h2 className="text-center text-[16px] font-semibold text-[#1D1D1D] mb-4">
-                    Women’s Product Brands we use
+                    Men’s Product Brands we use
                 </h2>
                 <div className="overflow-hidden bg-[#F5F6FB] rounded-lg">
                     <div className="flex animate-infinite-scroll">
