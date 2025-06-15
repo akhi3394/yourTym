@@ -8,6 +8,11 @@ import WomenPopup from './WomenPopup';
 import Logo from "../../src/assets/images/yourtym_logo.png";
 import LocationIcon from '../../src/assets/svgs/locationIcon.svg';
 import SearchIcon from '../../src/assets/svgs/searchIcon.svg';
+import Wallet from '../../src/assets/svgs/wallet.svg';
+import Gift from '../../src/assets/svgs/Gift.svg';
+import Cart from '../../src/assets/svgs/Cart.svg';
+import Profile from '../../src/assets/svgs/profile.svg';
+
 
 const Navbar = ({ showTabs = false, activeTab = 'classic', onTabChange }) => {
     const { isAuthenticated } = useAppSelector((state) => state.auth);
@@ -119,23 +124,24 @@ const Navbar = ({ showTabs = false, activeTab = 'classic', onTabChange }) => {
                                     ) : (
                                         <>
                                             <button
-                                                onClick={handleWomenClick}
-                                                className="text-[#333333] text-[16px] font-medium hover:text-[#FF5534] transition-colors"
-                                            >
-                                                Women
-                                            </button>
-                                            <button
                                                 onClick={handleMenClick}
                                                 className="text-[#333333] text-[16px] font-medium hover:text-[#FF5534] transition-colors"
                                             >
                                                 Men
                                             </button>
+                                            <button
+                                                onClick={handleWomenClick}
+                                                className="text-[#333333] text-[16px] font-medium hover:text-[#FF5534] transition-colors"
+                                            >
+                                                Women
+                                            </button>
                                         </>
                                     )}
-                                    <Calendar className="w-5 h-5 text-[#666666] hover:text-[#FF5534] cursor-pointer transition-colors" />
-                                    <Bookmark className="w-5 h-5 text-[#666666] hover:text-[#FF5534] cursor-pointer transition-colors" />
-                                    <ShoppingBag className="w-5 h-5 text-[#666666] hover:text-[#FF5534] cursor-pointer transition-colors" />
-                                    <User className="w-5 h-5 text-[#666666] hover:text-[#FF5534] cursor-pointer transition-colors" />
+                                    <img src={Wallet} alt="LocationIcon" className="w-[24px] h-[24px] mr-2 flex-shrink-0" />
+                                    <img src={Gift} alt="LocationIcon" className="w-[24px] h-[24px] mr-2 flex-shrink-0" />
+                                    <img src={Cart} alt="LocationIcon" className="w-[24px] h-[24px] mr-2 flex-shrink-0" />
+                                    <img src={Profile} alt="LocationIcon" className="w-[24px] h-[24px] mr-2 flex-shrink-0" />
+
                                 </>
                             )}
                         </div>
