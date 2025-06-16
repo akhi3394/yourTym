@@ -3,6 +3,8 @@ import { X } from 'lucide-react';
 import { useAppDispatch } from '../hooks/useAppDispatch';
 import { login } from '../store/slices/authSlice';
 import OTPModal from './OTPModal';
+import Facebook from '../assets/images/popup/facebook.png'
+import Google from '../assets/images/popup/Google.png'
 
 const LoginModal = ({ isOpen, onClose, onSwitchToSignup }) => {
   const [phoneNumber, setPhoneNumber] = useState('');
@@ -32,68 +34,64 @@ const LoginModal = ({ isOpen, onClose, onSwitchToSignup }) => {
   return (
     <>
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div className="bg-white rounded-lg p-8 max-w-md w-full mx-4 relative">
+        <div className="bg-[#FFFFFF] rounded-[10px] p-8 max-w-[814px] w-full mx-4 relative">
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
+            className="absolute -top-[60px] -right-[70px] bg-white w-[69px] h-[69px] rounded-full shadow-md flex items-center justify-center hover:bg-gray-200 transition-all"
           >
-            <X className="w-5 h-5" />
+            <X className="w-6 h-6" />
           </button>
-
-          <h2 className="text-2xl font-semibold text-center mb-6">Login</h2>
+          <h2 className="text-2xl font-bold text-center mb-6">login</h2>
 
           <div className="space-y-4">
-            <div className="flex">
-              <span className="bg-gray-100 px-3 py-2 border border-r-0 border-gray-300 rounded-l-lg text-gray-600">
+            {/* ✅ FIXED: +91 merged inside input */}
+            <div className="flex max-w-[570px] mx-auto w-full h-[55px] border border-[#B4B4B4] rounded-lg overflow-hidden">
+              <div className="flex items-center px-3 border-r border-[#B4B4B4] text-[#1D1D1D] bg-transparent">
                 +91
-              </span>
+              </div>
               <input
                 type="tel"
                 placeholder="Enter Mobile Number"
                 value={phoneNumber}
                 onChange={(e) => setPhoneNumber(e.target.value)}
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-r-lg focus:outline-none focus:ring-2 focus:ring-[#FF5534] focus:border-transparent"
+                className="flex-1 px-3 py-2 focus:outline-none focus:ring-1  focus:border-transparent"
               />
             </div>
 
-            <p className="text-sm text-gray-600 text-center">
+            <p className="text-sm text-[#444444] text-center">
               You'll receive a 4-digit code to verify the number
             </p>
 
             <button
               onClick={handleGetOTP}
               disabled={!phoneNumber.trim()}
-              className={`w-full py-3 rounded-lg font-medium transition-all ${
-                phoneNumber.trim()
-                  ? 'bg-[#FF5534] text-white hover:bg-[#E54728]'
-                  : 'bg-gray-300 text-gray-500 cursor-not-allowed opacity-50'
-              }`}
+              className={`max-w-[246px] mx-auto w-full flex justify-center h-[44px] py-3 rounded-lg font-medium transition-all ${phoneNumber.trim()
+                ? 'bg-[#FF5534FA] text-white hover:bg-[#E54728]'
+                : 'bg-[#FF553459] text-[#FFFFFF] cursor-not-allowed opacity-50'
+                }`}
             >
               Get OTP
             </button>
 
+            {/* Dashed divider */}
             <div className="flex items-center space-x-4 my-6">
-              <div className="flex-1 border-t border-gray-300"></div>
+              <div className="flex-1 border-t border-dashed border-[#444444]"></div>
               <span className="text-gray-500 text-sm">Or</span>
-              <div className="flex-1 border-t border-gray-300"></div>
+              <div className="flex-1 border-t border-dashed border-[#444444]"></div>
             </div>
 
             <button
               onClick={onSwitchToSignup}
-              className="w-full text-[#FF5534] text-center py-2 hover:underline"
+              className="w-full text-[#FF5534] font-extrabold text-center py-2 hover:underline"
             >
               Create New Account?
             </button>
 
             <div className="text-center">
-              <p className="text-gray-600 text-sm mb-4">Login with Social Media</p>
+              <p className="text-[16px] text-[#444444] font-extrabold mb-4">Login with Social Media</p>
               <div className="flex justify-center space-x-4">
-                <button className="w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center hover:bg-blue-700 transition-colors">
-                  f
-                </button>
-                <button className="w-10 h-10 bg-red-600 text-white rounded-full flex items-center justify-center hover:bg-red-700 transition-colors">
-                  G
-                </button>
+                <img src={Facebook} alt="" className='w-[39px] h-[39px]' />
+                <img src={Google} alt="" className='w-[39px] h-[39px]' />
               </div>
             </div>
           </div>
