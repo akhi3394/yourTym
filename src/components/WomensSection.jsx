@@ -19,6 +19,7 @@ import Himalaya from '../assets/images/WomenBrands/Himalaya.png'
 import plom from '../assets/images/WomenBrands/Plum.png'
 import Biotique from '../assets/images/WomenBrands/Biotique.png'
 import Jovees from '../assets/images/WomenBrands/Jovees.png'
+import { Link } from 'react-router-dom'
 
 
 
@@ -46,10 +47,10 @@ const WomensSection = () => {
                         { img: Pedicure, label: 'Pedicure' },
                         { img: Manicure, label: 'Manicure' },
                     ].map(({ img, label }, index) => (
-                        <div key={index} className="bg-white rounded-xl flex flex-col items-center p-2">
+                        <Link key={index} className="bg-white rounded-xl flex flex-col items-center p-2" to="/women/products">
                             <img src={img} alt={label} className="rounded-lg w-full h-auto object-cover" />
                             <span className="mt-2 text-sm font-medium text-center text-[#1D1D1D]">{label}</span>
-                        </div>
+                        </Link>
                     ))}
                 </div>
             </div>

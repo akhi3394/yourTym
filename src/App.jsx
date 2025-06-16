@@ -1,26 +1,28 @@
-// import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+
+import Layout from "./components/Layout";
 import Index from "./pages/Index";
 import WomenPage from "./pages/WomenPage";
+import WomenProductsPage from "./pages/WomenProductsPage";
 import MenPage from "./pages/MenPage";
 import NotFound from "./pages/NotFound";
 
 const App = () => (
   <TooltipProvider>
-    {/* <Toaster /> */}
     <Sonner />
     <BrowserRouter>
-      <div className="w-full min-h-screen bg-[#F5F5F5]">
-        <Routes>
+      <Routes>
+        <Route element={<Layout />}>
           <Route path="/" element={<Index />} />
           <Route path="/women" element={<WomenPage />} />
+          <Route path="/women/products" element={<WomenProductsPage />} />
           <Route path="/men" element={<MenPage />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+          {/* Catch-all */}
           <Route path="*" element={<NotFound />} />
-        </Routes>
-      </div>
+        </Route>
+      </Routes>
     </BrowserRouter>
   </TooltipProvider>
 );

@@ -9,13 +9,15 @@ import RatingsTestimonialsFaq from '../components/RatingsTestimonialsFaq';
 const WomenPage = () => {
 
   return (
-      <><Navbar /><div className="min-h-screen bg-[#F5F5F5]">
+      <>
+      <div className="min-h-screen bg-[#F5F5F5]">
       <div className="mt-[120px] bg-[#F5F5F5]">
         <div className="mb-5"><WomensSection /></div>
         <div className="mb-5"><YTPromise /></div>
         <div className="mb-5"><RatingsTestimonialsFaq/></div>
       </div>
-    </div><Footer /></>
+    </div>
+    </>
   );
 };
 

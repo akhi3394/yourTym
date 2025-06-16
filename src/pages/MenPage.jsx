@@ -138,7 +138,6 @@ const MenPage = () => {
         </div>
       </div>
       
-      <Footer />
     </div>
   );
 };
