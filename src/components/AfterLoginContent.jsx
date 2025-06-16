@@ -4,13 +4,16 @@ import Women from '../assets/images/afterLogin/Womens.png';
 import Men from '../assets/images/afterLogin/Mens.png';
 import OfferCard from './OfferCard';
 import YTTM from '../assets/images/landingPage/YTYMSafe.png'
+import { useNavigate } from 'react-router-dom';
 
 const AfterLoginContent = () => {
   const [showMenPopup, setShowMenPopup] = useState(false);
-
+  const navigate=useNavigate()
   const handleServiceClick = (title) => {
     if (title === "Men's") {
       setShowMenPopup(true);
+    }else{
+      navigate('/women')
     }
   };
 
