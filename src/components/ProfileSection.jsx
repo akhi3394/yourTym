@@ -4,7 +4,6 @@ import { LogOut } from "lucide-react";
 const ProfileSection = () => {
   return (
     <div className="bg-white rounded-lg shadow-sm border p-6 max-w-md mx-auto">
-      {/* Yellow Header */}
       <h2 className="text-xl font-semibold mb-6 bg-yellow-400 text-black py-2 px-4 rounded-t-lg -mx-6 -mt-6">
         Profile
       </h2>
@@ -21,7 +20,6 @@ const ProfileSection = () => {
         </div>
       </div>
 
-      {/* Profile Image and Form Side by Side */}
       <div className="flex flex-col md:flex-row gap-6 mb-6">
         {/* Left Side: Profile Image */}
         <div className="flex flex-col items-center">
