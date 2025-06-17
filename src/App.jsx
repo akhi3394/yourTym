@@ -8,6 +8,7 @@ import WomenPage from "./pages/WomenPage";
 import WomenProductsPage from "./pages/WomenProductsPage";
 import MenPage from "./pages/MenPage";
 import NotFound from "./pages/NotFound";
+import Profile from "./pages/Profile";
 
 const App = () => (
   <TooltipProvider>
@@ -19,6 +20,8 @@ const App = () => (
           <Route path="/women" element={<WomenPage />} />
           <Route path="/women/products" element={<WomenProductsPage />} />
           <Route path="/men" element={<MenPage />} />
+          <Route path="/profile" element={<Profile />} />
+          
           {/* Catch-all */}
           <Route path="*" element={<NotFound />} />
         </Route>
