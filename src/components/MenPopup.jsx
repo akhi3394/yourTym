@@ -1,6 +1,8 @@
 import React from 'react';
 import { Dialog, DialogContent } from './ui/dialog';
 import { useNavigate } from 'react-router-dom';
+import classic from '../assets/images/menBanner/ClassicMen.png'
+import premium from '../assets/images/menBanner/Premium.png'
 
 const MenPopup = ({ isOpen, onClose }) => {
   const navigate = useNavigate();
@@ -23,13 +25,18 @@ const MenPopup = ({ isOpen, onClose }) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl p-6 bg-white rounded-2xl">
+      <DialogContent className="max-w-4xl  bg-white rounded-2xl">
         <div className="text-center mb-8">
-          <h2 className="text-3xl font-semibold text-gray-800">Men's Salon</h2>
+          <h2 className="text-[20px] font-semibold text-[#000000]">Men's Salon</h2>
         </div>
-        
-        <div className="grid grid-cols-2 gap-8">
-          {/* Classic Option */}
+
+        <div className="grid grid-cols-2 gap-2">
+          <img src={classic} alt="classic" onClick={() => handleOptionClick('classic')} className='cursor-pointer'
+          />
+          <img src={premium} alt="premium" onClick={() => handleOptionClick('premium')} className='cursor-pointer'
+          />
+        </div>
+        {/* <div className="grid grid-cols-2 gap-8">
           <div 
             onClick={() => handleOptionClick('classic')}
             className="bg-gray-100 rounded-2xl p-6 cursor-pointer hover:shadow-lg transition-shadow"
@@ -59,7 +66,6 @@ const MenPopup = ({ isOpen, onClose }) => {
             </div>
           </div>
 
-          {/* Premium Option */}
           <div 
             onClick={() => handleOptionClick('premium')}
             className="bg-[#FFA500] rounded-2xl p-6 cursor-pointer hover:shadow-lg transition-shadow"
@@ -88,9 +94,9 @@ const MenPopup = ({ isOpen, onClose }) => {
               <span className="text-2xl text-white">→</span>
             </div>
           </div>
-        </div>
+        </div> */}
 
-        <div className="text-center mt-8">
+        {/* <div className="text-center mt-8">
           <h3 className="text-lg font-medium text-gray-800 mb-4">Men's Product Brands we use</h3>
           <div className="flex justify-center items-center space-x-8 text-sm text-gray-600">
             <span>LOTUS</span>
@@ -103,7 +109,7 @@ const MenPopup = ({ isOpen, onClose }) => {
             <span>BIOTIQUE</span>
             <span>JOYEES</span>
           </div>
-        </div>
+        </div> */}
       </DialogContent>
     </Dialog>
   );

@@ -41,3 +41,20 @@
 .animate-infinite-scroll:hover {
     animation-play-state: paused;
 }
+
+
+/* Custom scrollbar styles */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 0px;
+  background: transparent;
+}
+
+.custom-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+/* Smooth scrolling */
+.smooth-scroll {
+  scroll-behavior: smooth;
+}

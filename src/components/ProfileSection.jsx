@@ -1,100 +1,116 @@
-import React from "react";
-import { LogOut } from "lucide-react";
+import React from 'react';
+import { LogOut, Handshake } from 'lucide-react';
 
 const ProfileSection = () => {
   return (
-    <div className="bg-white rounded-lg shadow-sm border p-6 max-w-md mx-auto">
-      <h2 className="text-xl font-semibold mb-6 bg-yellow-400 text-black py-2 px-4 rounded-t-lg -mx-6 -mt-6">
-        Profile
-      </h2>
-
-      {/* Profile Completion */}
-      <div className="mb-6">
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-sm text-gray-600">
-            <span className="text-white p-1 px-2 rounded-sm font-semibold bg-[#FF5534]">
-              56%
-            </span>{" "}
-            Completed
-          </span>
-        </div>
+    <div className="max-w-md mx-auto space-y-4">
+      {/* Profile Heading - Completely Outside */}
+      <div className=" py-3 px-4">
+        <h2 className="text-lg font-semibold text-gray-800">Profile</h2>
       </div>
 
-      <div className="flex flex-col md:flex-row gap-6 mb-6">
-        {/* Left Side: Profile Image */}
-        <div className="flex flex-col items-center">
-          <div className="relative">
-            <div className="w-16 h-16 rounded-full bg-gray-300 flex items-center justify-center overflow-hidden border-4 border-[#FF5534]">
-              <div className="w-[56px] h-[56px] rounded-full border-4 border-white">
-                <img
-                  src="/profile.svg"
-                  alt="Profile"
-                  className="w-full h-full rounded-full object-cover"
-                />
+      {/* Main Profile Card */}
+      <div className="bg-white rounded-lg shadow-sm border p-6">
+        {/* Profile Completion */}
+        <div className="mb-6">
+          <div className="flex items-center gap-2">
+            <span className="bg-[#FF5534] text-white text-sm font-semibold px-2 py-1 rounded">
+              56%
+            </span>
+            <span className="text-gray-600 text-sm">Completed</span>
+          </div>
+        </div>
+
+        {/* Profile Image and Form Container */}
+        <div className="flex flex-col md:flex-row gap-6 mb-6">
+          {/* Profile Image with Partial Orange Border */}
+          <div className="flex flex-col items-center flex-shrink-0">
+            <div className="relative mb-3">
+              {/* Partial orange border - only showing 56% */}
+              <div className="w-20 h-20 rounded-full relative">
+                {/* Gray background circle */}
+                <div className="w-full h-full rounded-full border-4 border-gray-200"></div>
+                {/* Orange partial border for 56% */}
+                <div
+                  className="absolute inset-0 w-full h-full rounded-full border-4 border-transparent"
+                  style={{
+                    borderTopColor: '#FF5534',
+                    borderRightColor: '#FF5534',
+                    borderBottomColor: 'transparent',
+                    borderLeftColor: 'transparent',
+                    transform: 'rotate(-90deg)'
+                  }}
+                ></div>
+                {/* Profile Image */}
+                <div className="absolute inset-2 rounded-full overflow-hidden">
+                  <img
+                    src="https://images.pexels.com/photos/1040880/pexels-photo-1040880.jpeg?auto=compress&cs=tinysrgb&w=200&h=200&fit=crop&crop=face"
+                    alt="Profile"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
               </div>
             </div>
+            <button className="text-[#FF5534] text-sm font-medium underline hover:no-underline transition-all">
+              Change Profile
+            </button>
           </div>
-          <button className="font-bold text-sm mt-2 text-[#FF5534] underline">
-            Change{" "}
-            <span className="text-black rounded-sm px-1  bg-yellow-400">
-              Profile
-            </span>
+
+          {/* Form Fields */}
+          <div className="flex-1 space-y-4">
+            <div>
+              <label className="block text-gray-600 text-sm mb-1">Name</label>
+              <input
+                type="text"
+                defaultValue="Sam Sunder"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF5534] focus:border-[#FF5534] text-gray-700"
+              />
+            </div>
+
+            <div>
+              <label className="block text-gray-600 text-sm mb-1">Mail</label>
+              <input
+                type="email"
+                defaultValue="emailid@gmail.com"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF5534] focus:border-[#FF5534] text-gray-700"
+              />
+            </div>
+
+            <div>
+              <label className="block text-gray-600 text-sm mb-1">Number</label>
+              <input
+                type="tel"
+                defaultValue="+91 1234567890"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF5534] focus:border-[#FF5534] text-gray-700"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Save Button */}
+        <div className="flex justify-center">
+          <button className="bg-[#FF5534] text-white py-2 px-8 rounded-lg hover:bg-[#E04A2B] transition-colors font-medium">
+            Save
           </button>
         </div>
+      </div>
 
-        {/* Right Side: Profile Form */}
-        <div className="flex-1 space-y-4">
-          <div>
-            <input
-              type="text"
-              placeholder="Name"
-              defaultValue="Sam Sunder"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 placeholder-gray-700 placeholder-opacity-50"
-            />
-          </div>
+      {/* Logout Section - Separate Card */}
+      <div className="bg-white rounded-lg shadow-sm border p-4">
+        <button className="flex items-center gap-3  w-full">
+          <img src="/Logout.svg" alt="" />
+          <span className="font-medium">Logout</span>
+        </button>
+      </div>
 
+      {/* Join as Partner Section - Separate Card */}
+      <div className="bg-white rounded-lg shadow-sm border p-4">
+        <div className="flex items-center justify-between">
           <div>
-            <input
-              type="email"
-              placeholder="Mail"
-              defaultValue="emailid@gmail.com"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 placeholder-gray-700 placeholder-opacity-50"
-            />
-          </div>
-
-          <div>
-            <input
-              type="tel"
-              placeholder="Number"
-              defaultValue="+91 1234567890"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 placeholder-gray-700 placeholder-opacity-50"
-            />
+            <h3 className="font-semibold text-gray-800 mb-1">Join as a Partner</h3>
+            <p className="text-sm text-gray-500">app.version.1.48.5</p>
           </div>
         </div>
-      </div>
-
-      {/* Save Button */}
-      <div className="flex justify-center mb-6">
-        <button className="bg-orange-500 text-white py-2 px-6 rounded-lg hover:bg-orange-600 transition-colors">
-          Save
-        </button>
-      </div>
-
-      {/* Separator for Profile Section */}
-      <div className="border-t mt-6"></div>
-
-      {/* Logout */}
-      <div className="mt-6">
-        <button className="flex items-center space-x-2 text-orange-500 hover:text-orange-600 transition-colors w-full">
-          <LogOut className="w-4 h-4 text-orange-500" />
-          <span>Logout</span>
-        </button>
-      </div>
-
-      {/* Join as Partner */}
-      <div className="mt-6 pt-6 border-t">
-        <h3 className="font-medium text-gray-800 mb-1">Join as a Partner</h3>
-        <p className="text-sm text-gray-600">app.version.1.48.5</p>
       </div>
     </div>
   );

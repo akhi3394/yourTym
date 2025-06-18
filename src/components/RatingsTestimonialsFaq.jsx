@@ -6,8 +6,8 @@ import Reply from '../assets/svgs/reply.svg'
 
 const RatingsTestimonialsFaq = () => {
     return (
-        <div className="w-full bg-[#F5F6FB] py-10 px-4 lg:px-6">
-            <div className="max-w-[1280px] mx-auto grid grid-cols-5 grid-rows-8 gap-4">
+        <div className="w-full bg-[#F5F6FB]">
+            <div className=" grid grid-cols-5 grid-rows-8 gap-4">
                 {/* Ratings & Reviews */}
                 <div className="col-span-2 row-span-8 bg-white rounded-xl flex flex-col h-auto">
                     <h3 className="text-center font-semibold text-lg text-[#333] mb-4 p-2">Ratings & Reviews</h3>

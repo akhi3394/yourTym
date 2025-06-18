@@ -1,5 +1,5 @@
 import React from 'react';
-import ServiceCard from './ServiceCard';
+import ServiceCard from './ServiceGrid';
 import OfferCard from './OfferCard';
 import SalonForWomen from '../assets/images/landingPage/SalonForWomen.png';
 import WomenSkin from '../assets/images/landingPage/WomenSkin.png';
@@ -12,8 +12,6 @@ import faceUpgrade1 from '../assets/images/offersforyou/faceUpgrade1.png';
 import offers1 from '../assets/images/offersforyou/offersForYou2.png';
 import offers2 from '../assets/images/offersforyou/offersForYou3.png';
 import faceUpgrade2 from '../assets/images/offersforyou/faceUpgrade2.png';
-import WomensSection from './WomensSection';
-import MensSection from './MensSection';
 
 
 
@@ -21,6 +19,9 @@ import satisfaction from '../assets/images/landingPage/100.png'
 import Refer from '../assets/images/refer/refer.png'
 import HairDryer from '../assets/images/refer/HairDryer.png'
 import YTTM from '../assets/images/landingPage/YTYMSafe.png'
+import ServiceGrid from './ServiceGrid';
+import WomenPageBeforeLogin from '../pages/WomenPageBeforeLogin';
+import MenPageBeforeLogin from '../pages/MenPageBeforeLogin';
 const BeforeLoginContent = () => {
   const services = [
     { image: SalonForWomen, size: 'salonWomen' },
@@ -43,20 +44,20 @@ const BeforeLoginContent = () => {
     <div className="w-full pt-[150px] pb-8">
       <div className="w-full">
         {/* Services Masonry */}
-        <ServiceCard />
+        <ServiceGrid/>
       </div>
     </div>
-    <div className="">
+    <div className="px-1">
       <OfferCard/>
     </div>
 {/* womens section */}
     <div className="">
-      <WomensSection/>
+     <WomenPageBeforeLogin/>
     </div>
 
     {/* Mens section */}
     <div className="">
-      <MensSection/>
+      <MenPageBeforeLogin/>
     </div>
 
     <div className="mb-5">
@@ -70,7 +71,7 @@ const BeforeLoginContent = () => {
 
 
     <div className="mb-5">
-      <img src={YTTM} alt="" className='max-w-[1280px] object-fill mx-auto'/>
+      <img src={YTTM} alt="" className='max-w-7xl object-fill px-4 mx-auto'/>
     </div>
 
       </div>

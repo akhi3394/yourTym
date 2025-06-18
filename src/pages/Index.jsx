@@ -9,7 +9,7 @@ const Index = () => {
   const { isAuthenticated } = useAppSelector((state) => state.auth);
 
   return (
-    <div className="p-4">
+    <div className="">
       {isAuthenticated ? <AfterLoginContent/> : <BeforeLoginContent/>}
     </div>
   );

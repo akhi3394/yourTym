@@ -1,12 +1,41 @@
 import React, { useState, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { Star, Calendar } from 'lucide-react'
+
 import Navbar from '../components/Navbar';
-import Footer from '../components/Footer';
+import Banner1 from '../assets/images/menBanner/MenBanner1.png'
+import Banner2 from '../assets/images/menBanner/MenBanner2.png'
+import Banner3 from '../assets/images/menBanner/MenBanner3.png'
+import Banner4 from '../assets/images/menBanner/MenBanner4.png'
+
+
+// salon for women
+import HairCut from '../assets/images/salonForMen/haircut.png'
+import Massage from '../assets/images/salonForWomen/massage.png'
+import HairColor from '../assets/images/salonForMen/hairColor.png'
+import Pedicure from '../assets/images/salonForMen/pedicure.png'
+import CleanUP from '../assets/images/salonForMen/cleanup.png'
+import DTan from '../assets/images/salonForMen/D-tan.png'
+
+// women's brands
+import Lotus from '../assets/images/WomenBrands/Lotus.png'
+import Herbs from '../assets/images/WomenBrands/Herbs.png'
+import kama from '../assets/images/WomenBrands/Kama.png'
+import Forest from '../assets/images/WomenBrands/Forest.png'
+import Bloom from '../assets/images/WomenBrands/Bloom.png'
+import Himalaya from '../assets/images/WomenBrands/Himalaya.png'
+import plom from '../assets/images/WomenBrands/Plum.png'    
+import Biotique from '../assets/images/WomenBrands/Biotique.png'
+import Jovees from '../assets/images/WomenBrands/Jovees.png'
+import YTPromise from '../components/ytPromise';
+import RatingsTestimonialsFaq from '../components/RatingsTestimonialsFaq';
+
+
 
 const MenPage = () => {
   const [searchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState('classic');
-
+  const navigate=useNavigate()
   useEffect(() => {
     const type = searchParams.get('type');
     if (type) {
@@ -14,23 +43,23 @@ const MenPage = () => {
     }
   }, [searchParams]);
 
-  const services = [
-    { title: 'Create a Custom Package', subtitle: 'Specifically for your needs', icon: '🎯', isCustom: true },
-    { title: 'Hair cut', image: 'https://images.unsplash.com/photo-1493256338651-d82f7acb2b38?w=200' },
-    { title: 'Massage', image: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=200' },
-    { title: 'Hair color', image: 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=200' },
-    { title: 'Pedicure', image: 'https://images.unsplash.com/photo-1522337660859-02fbefca4702?w=200' },
-    { title: 'Cleanup', image: 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=200' }
-  ];
 
-  const promiseItems = [
-    { icon: '👩‍💼', title: 'On time &', subtitle: 'Professional' },
-    { icon: '🧪', title: 'Single Kit &', subtitle: 'High Quality' },
-    { icon: '🔒', title: 'Safety Assured', subtitle: '& Sanitized' },
-    { icon: '🛡️', title: 'Hygiene & mess', subtitle: 'free service' },
-    { icon: '🔍', title: 'Transparent', subtitle: 'pricing' },
-    { icon: '📦', title: 'Package', subtitle: 'Benefits' }
-  ];
+
+     const banners = [Banner1, Banner2, Banner3, Banner4];
+          const [currentBanner, setCurrentBanner] = useState(0);
+      
+          useEffect(() => {
+              const interval = setInterval(() => {
+                  setCurrentBanner((prev) => (prev + 1) % banners.length);
+              }, 2000); // Change banner every 2 seconds
+      
+              return () => clearInterval(interval); // Cleanup on unmount
+          }, [banners.length]);
+      
+       const brands = [
+          Lotus, Herbs, kama, Forest, Bloom, Himalaya,
+          plom, Biotique, Jovees
+      ];
 
   return (
     <div className="min-h-screen bg-[#F5F5F5]">
@@ -39,105 +68,95 @@ const MenPage = () => {
         activeTab={activeTab} 
         onTabChange={setActiveTab}
       />
-      
-      <div className="pt-20 pb-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Hero Section */}
-          <div className="relative bg-gradient-to-r from-gray-700 to-black rounded-2xl overflow-hidden mb-8 h-64">
-            <div className="absolute inset-0 bg-black bg-opacity-40"></div>
-            <div className="relative z-10 flex items-center justify-center h-full">
-              <div className="text-center text-white">
-                <h1 className="text-4xl font-bold mb-2">
-                  {activeTab === 'premium' ? "Men's Premium Salon" : "Men's Classic Salon"}
-                </h1>
-                <div className="flex items-center justify-center space-x-4 text-sm">
-                  <span className="flex items-center">
-                    <span className="text-yellow-400 mr-1">★</span>
-                    4.78 (355k)
-                  </span>
-                  <span className="bg-red-500 px-2 py-1 rounded text-xs">
-                    847 bookings this year in Wagholi
-                  </span>
+             <div className="max-w-7xl mx-auto px-4 mt-[130px]">
+        <div className="bg-[#F4F4F4] w-full">
+                 {/* Banner */}
+                 <div className="bg-white rounded-xl overflow-hidden shadow-sm mb-5 relative">
+                {banners.map((banner, index) => (
+                    <img
+                        key={index}
+                        src={banner}
+                        alt={`Women's Banner ${index + 1}`}
+                        className={`w-full h-auto object-cover absolute top-0 left-0 transition-opacity duration-500 ${index === currentBanner ? 'opacity-100' : 'opacity-0'
+                            }`}
+                    />
+                ))}
+                <div className="relative w-full h-[150px] sm:h-[300px] md:h-[400px]">
+                
+                        <div className="absolute bottom-6 right-6 z-10 text-right">
+                            <h2 className="text-white text-[32px] sm:text-[48px] md:text-[96px] leading-none font-light">
+                                Men’s Classic Salon
+                            </h2>
+                            <div className="mt-3 bg-[#FF5534] rounded-full px-10 py-2 inline-flex items-center gap-10 text-white text-xs sm:text-sm md:text-base font-medium">
+                                <div className="flex items-center gap-1">
+                                    <Star className="w-4 h-4 fill-white text-white" />
+                                    4.78 <span className="text-white/80">(355k)</span>
+                                </div>
+                                <div className="flex items-center gap-1">
+                                    <Calendar className="w-4 h-4" />
+                                    847 bookings this year in Wagholi
+                                </div>
+                            </div>
+                        </div>
+
                 </div>
-              </div>
             </div>
-          </div>
-
-          {/* Services Section */}
-          <div className="mb-8">
-            <div className="bg-[#E6F3FF] rounded-2xl p-6">
-              <h2 className="text-2xl font-semibold text-gray-800 text-center mb-6">
-                {activeTab === 'premium' ? 'Premium Salon' : 'Classic salon'}
-              </h2>
-              
-              <div className="grid grid-cols-3 lg:grid-cols-6 gap-4">
-                {services.map((service, index) => (
-                  <div
-                    key={index}
-                    className={`${service.isCustom ? 'bg-[#FF5534]' : 'bg-white'} rounded-lg p-4 cursor-pointer hover:shadow-lg transition-shadow`}
-                  >
-                    {service.isCustom ? (
-                      <div className="text-center">
-                        <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center mx-auto mb-2">
-                          <span className="text-2xl">{service.icon}</span>
-                        </div>
-                        <h3 className="text-sm font-medium text-white mb-1">{service.title}</h3>
-                        <p className="text-xs text-white opacity-90">{service.subtitle}</p>
-                      </div>
-                    ) : (
-                      <>
-                        <div className="aspect-square bg-gray-200 rounded-lg mb-3 overflow-hidden">
-                          <img
-                            src={service.image}
-                            alt={service.title}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                        <h3 className="text-sm font-medium text-gray-800 text-center">{service.title}</h3>
-                      </>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Brand Section */}
-          <div className="bg-white rounded-2xl p-6 mb-8">
-            <h3 className="text-xl font-semibold text-gray-800 text-center mb-6">Women's Product Brands we use</h3>
-            <div className="flex justify-center items-center space-x-8 text-lg text-gray-600">
-              <span className="font-bold text-pink-500">LOTUS</span>
-              <span className="font-bold text-yellow-600">Joy</span>
-              <span className="font-bold text-orange-600">KAMA</span>
-              <span className="font-bold text-red-500">Lakme</span>
-              <span className="font-bold text-pink-400">Blossom</span>
-              <span className="font-bold text-green-600">Himalaya</span>
-              <span className="font-bold text-purple-500">plum</span>
-              <span className="font-bold text-green-500">BIOTIQUE</span>
-              <span className="font-bold text-blue-500">JOYEES</span>
-            </div>
-          </div>
-
-          {/* YT Promise Section - Only show for Premium */}
-          {activeTab === 'premium' && (
-            <div className="bg-white rounded-2xl p-6">
-              <h3 className="text-xl font-semibold text-gray-800 text-center mb-6">YT Promise</h3>
-              <div className="grid grid-cols-3 lg:grid-cols-6 gap-4">
-                {promiseItems.map((item, index) => (
-                  <div key={index} className="text-center">
-                    <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-2">
-                      <span className="text-2xl">{item.icon}</span>
-                    </div>
-                    <h4 className="text-sm font-medium text-gray-800">{item.title}</h4>
-                    <p className="text-xs text-gray-600">{item.subtitle}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+     
+                 {/* Salon for Women */}
+                 <div className={`  bg-[#DBE9FF] rounded-xl p-6 shadow-sm mb-5`} >
+                     <h2 className="text-center text-[20px] font-semibold text-[#1D1D1D] mb-4">{activeTab === 'premium' ? 'Premium Salon' : "Classic Salon"}</h2>
+                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4">
+                         {[
+                             { img: HairCut, label: 'Hair cut' },
+                             { img: Massage, label: 'Massage' },
+                             { img: HairColor, label: 'Hair color' },
+                             { img: Pedicure, label: 'Pedicure' },
+                             { img: CleanUP, label: 'Cleanup' },
+                             { img: DTan, label: 'D-tan' },
+                         ].map(({ img, label }, index) => (
+                             <Link key={index} className="bg-white rounded-xl flex flex-col items-center p-2"  to="/men/products">
+                                 <img src={img} alt={label} className="rounded-lg w-full h-auto object-cover" />
+                                 <span className="mt-2 text-sm font-medium text-center text-[#1D1D1D]">{label}</span>
+                             </Link>
+                         ))}
+                     </div>
+                 </div>
+     
+                 {/* Women's Product Brands */}
+                 <div className="bg-white rounded-xl p-6 shadow-sm mb-5">
+                     <h2 className="text-center text-[16px] font-semibold text-[#1D1D1D] mb-4">
+                         Men’s Product Brands we use
+                     </h2>
+                     <div className="overflow-hidden bg-[#F5F6FB] rounded-lg">
+                         <div className="flex animate-infinite-scroll">
+                             {/* Original brands */}
+                             {brands.map((brand, index) => (
+                                 <div key={`brand-${index}`} className="flex-shrink-0 p-3 flex items-center justify-center">
+                                     <img
+                                         src={brand}
+                                         alt={`brand-${index}`}
+                                         className="w-[98.6480484008789px] h-[100.45809936523438px] object-contain"
+                                     />
+                                 </div>
+                             ))}
+                             {/* Duplicated brands for seamless loop */}
+                             {brands.map((brand, index) => (
+                                 <div key={`brand-duplicate-${index}`} className="flex-shrink-0 p-3 flex items-center justify-center">
+                                     <img
+                                         src={brand}
+                                         alt={`brand-duplicate-${index}`}
+                                         className="w-[98.6480484008789px] h-[100.45809936523438px] object-contain"
+                                     />
+                                 </div>
+                             ))}
+                         </div>
+                     </div>
+                 </div>
         </div>
+        <div className="mb-5"><YTPromise /></div>
+            <div className="mb-5"><RatingsTestimonialsFaq />
+            </div>
       </div>
-      
     </div>
   );
 };

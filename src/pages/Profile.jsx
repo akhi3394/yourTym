@@ -12,7 +12,7 @@ function Profile() {
             <ProfileSection />
           </div>
           {/* Right Column - Menu */}
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-2 mt-[66px]">
             <MenuSection />
           </div>
         </div>

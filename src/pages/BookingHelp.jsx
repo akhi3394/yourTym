@@ -531,7 +531,7 @@ function BookingHelp() {
 
   return (
     <div className="bg-gray-50 pt-[100px] pb-[80px] px-4 sm:px-6 lg:px-8 min-h-screen">
-      <h1 className="text-xl font-bold text-gray-900 py-8 px-24 text-left">
+        <h1 className="text-xl font-bold text-gray-900 py-8 px-[300px]">
         Booking Help
       </h1>
       <div className="max-w-7xl flex mx-auto  gap-4">
@@ -627,6 +627,7 @@ function BookingHelp() {
 
         {/* Right Section */}
         {selectedSection ? sectionScreens[selectedSection] : <ChatScreen />}
+
       </div>
     </div>
   );

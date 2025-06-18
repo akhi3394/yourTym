@@ -1,19 +1,31 @@
 import React from 'react';
 import { Dialog, DialogContent } from './ui/dialog';
-import { useNavigate } from 'react-router-dom';
-
+import { Link, useNavigate } from 'react-router-dom';
+// salon for women
+import CleanUP from '../assets/images/salonForWomen/cleanUp.png'
+import Waxing from '../assets/images/salonForWomen/waxing.png'
+import Bleach from '../assets/images/salonForWomen/bleach.png'
+import Massage from '../assets/images/salonForWomen/massage.png'
+import Pedicure from '../assets/images/salonForWomen/pedicure.png'
+import Manicure from '../assets/images/salonForWomen/manicure.png'
+// women's brands
+import Lotus from '../assets/images/WomenBrands/Lotus.png'
+import Herbs from '../assets/images/WomenBrands/Herbs.png'
+import kama from '../assets/images/WomenBrands/Kama.png'
+import Forest from '../assets/images/WomenBrands/Forest.png'
+import Bloom from '../assets/images/WomenBrands/Bloom.png'
+import Himalaya from '../assets/images/WomenBrands/Himalaya.png'
+import plom from '../assets/images/WomenBrands/Plum.png'
+import Biotique from '../assets/images/WomenBrands/Biotique.png'
+import Jovees from '../assets/images/WomenBrands/Jovees.png'
 const WomenPopup = ({ isOpen, onClose }) => {
   const navigate = useNavigate();
 
-  const services = [
-    { title: 'Cleanup & Facials', image: 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=200' },
-    { title: 'Waxing', image: 'https://images.unsplash.com/photo-1616683693504-3ea7e9ad6fec?w=200' },
-    { title: 'Bleach & Detain', image: 'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=200' },
-    { title: 'Massage', image: 'https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=200' },
-    { title: 'Pedicure', image: 'https://images.unsplash.com/photo-1522337660859-02fbefca4702?w=200' },
-    { title: 'Manicure', image: 'https://images.unsplash.com/photo-1604654894610-df63bc536371?w=200' }
-  ];
 
+   const brands = [
+        Lotus, Herbs, kama, Forest, Bloom, Himalaya,
+        plom, Biotique, Jovees
+    ];
   const handleServiceClick = () => {
     onClose();
     navigate('/women');
@@ -23,44 +35,56 @@ const WomenPopup = ({ isOpen, onClose }) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl p-6 bg-[#F5E6D3] rounded-2xl">
-        <div className="text-center mb-6">
-          <h2 className="text-2xl font-semibold text-gray-800">Salon for Women</h2>
-        </div>
-        
-        <div className="grid grid-cols-3 gap-6 mb-8">
-          {services.map((service, index) => (
-            <div
-              key={index}
-              onClick={handleServiceClick}
-              className="bg-white rounded-lg p-4 cursor-pointer hover:shadow-lg transition-shadow"
-            >
-              <div className="aspect-square bg-gray-200 rounded-lg mb-3 overflow-hidden">
-                <img
-                  src={service.image}
-                  alt={service.title}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <h3 className="text-sm font-medium text-gray-800 text-center">{service.title}</h3>
+      <DialogContent className="max-w-4xl p-6 rounded-2xl">
+             {/* Salon for Women */}
+            <div className="bg-[#FFE8CF] rounded-xl p-6 shadow-sm mb-5">
+                <h2 className="text-center text-[20px] font-semibold text-[#1D1D1D] mb-4">Salon for Women</h2>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4">
+                    {[
+                        { img: CleanUP, label: 'Cleanup & Facials' },
+                        { img: Waxing, label: 'Waxing' },
+                        { img: Bleach, label: 'Bleach & Detain' },
+                        { img: Massage, label: 'Massage' },
+                        { img: Pedicure, label: 'Pedicure' },
+                        { img: Manicure, label: 'Manicure' },
+                    ].map(({ img, label }, index) => (
+                        <div key={index} className="bg-white rounded-xl flex flex-col items-center p-2"  onClick={handleServiceClick}>
+                            <img src={img} alt={label} className="rounded-lg w-full h-auto object-cover" />
+                            <span className="mt-2 text-sm font-medium text-center text-[#1D1D1D]">{label}</span>
+                        </div>
+                    ))}
+                </div>
             </div>
-          ))}
-        </div>
-
-        <div className="text-center mb-4">
-          <h3 className="text-lg font-medium text-gray-800 mb-4">Women's Product Brands we use</h3>
-          <div className="flex justify-center items-center space-x-8 text-sm text-gray-600">
-            <span>LOTUS</span>
-            <span>Joy</span>
-            <span>KAMA</span>
-            <span>Lakme</span>
-            <span>Blossom</span>
-            <span>Himalaya</span>
-            <span>plum</span>
-            <span>BIOTIQUE</span>
-            <span>JOYEES</span>
-          </div>
-        </div>
+             {/* Women's Product Brands */}
+            <div className="bg-white rounded-xl p-6 shadow-sm">
+                <h2 className="text-center text-[16px] font-semibold text-[#1D1D1D] mb-4">
+                    Women’s Product Brands we use
+                </h2>
+                <div className="overflow-hidden bg-[#F5F6FB] rounded-lg">
+                    <div className="flex animate-infinite-scroll">
+                        {/* Original brands */}
+                        {brands.map((brand, index) => (
+                            <div key={`brand-${index}`} className="flex-shrink-0 p-3 flex items-center justify-center">
+                                <img
+                                    src={brand}
+                                    alt={`brand-${index}`}
+                                    className="w-[98.6480484008789px] h-[100.45809936523438px] object-contain"
+                                />
+                            </div>
+                        ))}
+                        {/* Duplicated brands for seamless loop */}
+                        {brands.map((brand, index) => (
+                            <div key={`brand-duplicate-${index}`} className="flex-shrink-0 p-3 flex items-center justify-center">
+                                <img
+                                    src={brand}
+                                    alt={`brand-duplicate-${index}`}
+                                    className="w-[98.6480484008789px] h-[100.45809936523438px] object-contain"
+                                />
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </div>
       </DialogContent>
     </Dialog>
   );

@@ -1,8 +1,8 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import Banner1 from '../assets/images/menBanner/MenBanner1.png'
-// import Banner2 from '../assets/images/womenBanner/MenBanner2.png'
-// import Banner3 from '../assets/images/womenBanner/MenBanner3.png'
-// import Banner4 from '../assets/images/womenBanner/MenBanner4.png'
+import Banner2 from '../assets/images/menBanner/MenBanner2.png'
+import Banner3 from '../assets/images/menBanner/MenBanner3.png'
+import Banner4 from '../assets/images/menBanner/MenBanner4.png'
 
 // salon for women
 import HairCut from '../assets/images/salonForMen/haircut.png'
@@ -26,15 +26,35 @@ import Jovees from '../assets/images/WomenBrands/Jovees.png'
 
 
 const MensSection = () => {
+     const banners = [Banner1, Banner2, Banner3, Banner4];
+        const [currentBanner, setCurrentBanner] = useState(0);
+    
+        useEffect(() => {
+            const interval = setInterval(() => {
+                setCurrentBanner((prev) => (prev + 1) % banners.length);
+            }, 2000); // Change banner every 2 seconds
+    
+            return () => clearInterval(interval); // Cleanup on unmount
+        }, [banners.length]);
+    
      const brands = [
         Lotus, Herbs, kama, Forest, Bloom, Himalaya,
         plom, Biotique, Jovees
     ];
     return (
-        <div className="bg-[#F4F4F4] py-6 px-4 md:px-10 lg:px-20 space-y-6 w-full max-w-[1280px] mx-auto">
+        <div className="bg-[#F4F4F4] w-full">
             {/* Banner */}
-            <div className="bg-white rounded-xl overflow-hidden shadow-sm">
-                <img src={Banner1} alt="Women's Banner" className="w-full h-auto object-cover" />
+           <div className="bg-white rounded-xl overflow-hidden shadow-sm mb-5 relative">
+                {banners.map((banner, index) => (
+                    <img
+                        key={index}
+                        src={banner}
+                        alt={`Women's Banner ${index + 1}`}
+                        className={`w-full h-auto object-cover absolute top-0 left-0 transition-opacity duration-500 ${index === currentBanner ? 'opacity-100' : 'opacity-0'
+                            }`}
+                    />
+                ))}
+                <div className="relative w-full h-[200px] sm:h-[300px] md:h-[400px]"></div> {/* Placeholder for consistent height */}
             </div>
 
             {/* Salon for Women */}
