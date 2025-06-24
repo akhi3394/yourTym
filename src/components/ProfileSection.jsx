@@ -1,7 +1,24 @@
 import React from 'react';
 import { LogOut, Handshake } from 'lucide-react';
+import { useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import { logout } from '../store/slices/authSlice';
+import { persistor } from '../store/store';
 
 const ProfileSection = () => {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+   const handleLogout = async () => {
+    try {
+      console.log('Initiating logout');
+      dispatch(logout());
+      await persistor.purge(); // Clear persisted state
+      console.log('Persisted state cleared');
+      navigate('/');
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
+  };
   return (
     <div className="max-w-md mx-auto space-y-4">
       {/* Profile Heading - Completely Outside */}
@@ -97,7 +114,7 @@ const ProfileSection = () => {
 
       {/* Logout Section - Separate Card */}
       <div className="bg-white rounded-lg shadow-sm border p-4">
-        <button className="flex items-center gap-3  w-full">
+        <button className="flex items-center gap-3  w-full"   onClick={handleLogout}>
           <img src="/Logout.svg" alt="" />
           <span className="font-medium">Logout</span>
         </button>

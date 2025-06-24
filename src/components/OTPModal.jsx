@@ -1,8 +1,21 @@
 import React, { useState } from 'react';
 import { X } from 'lucide-react';
+import { useVerifyOtpMutation, useResendOtpMutation } from "../store/api/authApi";
+import { useDispatch } from 'react-redux';
+import { login, setToken } from '../store/slices/authSlice';
+import { useNavigate } from 'react-router-dom';
+import { useAppSelector } from '../hooks/useAppSelector';
 
-const OTPModal = ({ isOpen, onClose, phoneNumber, onVerified }) => {
+const OTPModal = ({ isOpen, onClose, phoneNumber,onLoginClose }) => {
   const [otp, setOtp] = useState(['', '', '', '']);
+  const [error, setError] = useState(null);
+  const { userId, token } = useAppSelector((state) => state.auth);
+
+  console.log(userId, "userid")
+  const [verifyOtp, { isLoading: isVerifying }] = useVerifyOtpMutation();
+  const [resendOtp, { isLoading: isResending }] = useResendOtpMutation();
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const handleOTPChange = (index, value) => {
     if (value.length <= 1) {
@@ -17,9 +30,68 @@ const OTPModal = ({ isOpen, onClose, phoneNumber, onVerified }) => {
     }
   };
 
-  const handleLogin = () => {
-    if (otp.every((digit) => digit !== '')) {
-      onVerified();
+  const handleLogin = async () => {
+    const otpValue = otp.join('');
+    console.log("Verifying OTP with userId:", userId, "OTP:", otpValue, "DeviceToken: web");
+    if (!otpValue || otpValue.length !== 4) {
+      setError("Please enter a valid 4-digit OTP");
+      return;
+    }
+    if (!userId) {
+      setError("User ID is missing. Please try again.");
+      console.error("No userId provided to OTPModal");
+      return;
+    }
+
+    try {
+      setError(null);
+      // Try OTP as string first
+     const response = await verifyOtp({
+        body: {
+          otp: otpValue,
+          deviceToken: "gjg",
+        },
+        userId,
+      }).unwrap();
+
+      console.log("Verify OTP response (string):", response);
+
+
+        dispatch(setToken(response.data.token));
+
+      dispatch(login({
+        userId: response.data._id,
+        phone: response.data.phone,
+        token: response.data.token,
+        completeProfile: response.data.completeProfile,
+      }));
+      navigate('/profile'); // Redirect to profile after successful login
+    } catch (error) {
+      console.error("OTP verification failed:", error);
+      setError(error?.data?.message || "Failed to verify OTP. Please try again.");
+    } finally {
+      setError(null)
+      onClose()
+      onLoginClose()
+    }
+  };
+
+  console.log(token, "token is setted or not")
+
+  const handleResendOTP = async () => {
+    if (!userId) {
+      setError("User ID is missing. Please try again.");
+      console.error("No userId provided for resend OTP");
+      return;
+    }
+
+    try {
+      setError(null);
+      await resendOtp(userId).unwrap();
+      setError("OTP resent successfully");
+    } catch (error) {
+      console.error("Failed to resend OTP:", error);
+      setError(error?.data?.message || "Failed to resend OTP. Please try again.");
     }
   };
 
@@ -53,22 +125,27 @@ const OTPModal = ({ isOpen, onClose, phoneNumber, onVerified }) => {
           ))}
         </div>
 
+        {error && (
+          <p className={`text-sm text-center mb-6 ${error.includes('successfully') ? 'text-green-500' : 'text-red-500'}`}>
+            {error}
+          </p>
+        )}
+
         <p className="text-[16px] text-[#444444] text-center mb-6">
           Enter 4-digit verification code sent to your number
         </p>
 
         <button
           onClick={handleLogin}
-          disabled={!isOTPComplete}
-          className={`max-w-[246px] mx-auto w-full flex justify-center h-[44px] py-3 rounded-lg font-medium transition-all ${isOTPComplete
+          disabled={!isOTPComplete || isVerifying}
+          className={`max-w-[246px] mx-auto w-full flex justify-center h-[44px] py-3 rounded-lg font-medium transition-all ${isOTPComplete && !isVerifying
             ? 'bg-[#FF5534FA] text-white hover:bg-[#E54728]'
             : 'bg-[#FF553459] text-[#FFFFFF] cursor-not-allowed opacity-50'
             }`}
         >
-          Login
+          {isVerifying ? "Verifying..." : "Login"}
         </button>
 
-        {/* Dashed divider */}
         <div className="flex items-center space-x-4 my-6">
           <div className="flex-1 border-t border-dashed border-[#444444]"></div>
           <span className="text-gray-500 text-sm">Or</span>
@@ -76,7 +153,13 @@ const OTPModal = ({ isOpen, onClose, phoneNumber, onVerified }) => {
         </div>
 
         <div className="text-center space-y-2">
-          <button className="text-[#FF5534] font-extrabold hover:underline">Resend OTP</button>
+          <button
+            onClick={handleResendOTP}
+            disabled={isResending}
+            className={`text-[#FF5534] font-extrabold hover:underline ${isResending ? 'opacity-50 cursor-not-allowed' : ''}`}
+          >
+            {isResending ? "Resending..." : "Resend OTP"}
+          </button>
           <br />
           <button
             className="text-[#444444] font-medium hover:underline"

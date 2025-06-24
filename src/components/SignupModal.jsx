@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { X } from 'lucide-react';
+import { useRegisterMutation, useSocialLoginMutation } from "../store/api/authApi";
 import { useDispatch } from 'react-redux';
 import { login } from '../store/slices/authSlice';
 import Facebook from '../assets/images/popup/facebook.png';
@@ -10,29 +11,75 @@ const SignupModal = ({ isOpen, onClose, onSwitchToLogin }) => {
     firstName: '',
     lastName: '',
     gender: '',
-    phoneNumber: ''
+    phoneNumber: '',
+    email: ''
   });
+  const [error, setError] = useState(null);
 
+  const [register, { isLoading }] = useRegisterMutation();
+  const [socialLogin] = useSocialLoginMutation();
   const dispatch = useDispatch();
 
   const handleInputChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+    setError(null); // Clear error on input change
   };
 
-  const handleCreateAccount = () => {
-    if (formData.firstName && formData.lastName && formData.gender && formData.phoneNumber) {
-      dispatch(
-        login({
-          name: `${formData.firstName} ${formData.lastName}`,
-          phone: formData.phoneNumber,
-          gender: formData.gender
-        })
-      );
+  const handleCreateAccount = async () => {
+    if (!formData.firstName || !formData.lastName || !formData.gender || !formData.phoneNumber || !formData.email) {
+      setError("Please fill in all required fields");
+      return;
+    }
+    const cleanPhoneNumber = formData.phoneNumber.replace(/\D/g, '');
+    if (cleanPhoneNumber.length !== 10) {
+      setError("Please enter a valid 10-digit phone number");
+      return;
+    }
+
+    try {
+      setError(null);
+      const response = await register({
+        fullName: `${formData.firstName} ${formData.lastName}`,
+        email: formData.email,
+        gender: formData.gender,
+        phone: cleanPhoneNumber,
+      }).unwrap();
+      dispatch(login({
+        userId: response.data._id,
+        phone: response.data.phone,
+        token: response.data.token,
+        completeProfile: response.data.completeProfile,
+      }));
       onClose();
+    } catch (error) {
+      console.error("Registration error:", error);
+      setError(error?.data?.message || "Failed to create account. Please try again.");
     }
   };
 
-  const isFormValid = formData.firstName && formData.lastName && formData.gender && formData.phoneNumber;
+  const handleSocialLogin = async (provider) => {
+    try {
+      const socialData = {
+        firstName: formData.firstName || "User",
+        lastName: formData.lastName,
+        phone: formData.phoneNumber.replace(/\D/g, ''),
+        email: formData.email,
+      };
+      const response = await socialLogin(socialData).unwrap();
+      dispatch(login({
+        userId: response.data._id,
+        phone: response.data.phone,
+        token: response.data.token,
+        completeProfile: response.data.completeProfile,
+      }));
+      onClose();
+    } catch (error) {
+      console.error("Social login error:", error);
+      setError(error?.data?.message || "Social login failed. Please try again.");
+    }
+  };
+
+  const isFormValid = formData.firstName && formData.lastName && formData.gender && formData.phoneNumber && formData.email;
 
   if (!isOpen) return null;
 
@@ -64,6 +111,17 @@ const SignupModal = ({ isOpen, onClose, onSwitchToLogin }) => {
                 placeholder="Last Name"
                 value={formData.lastName}
                 onChange={(e) => handleInputChange('lastName', e.target.value)}
+                className="w-full h-[55px] px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF5534] focus:border-transparent"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+              <input
+                type="email"
+                placeholder="Email"
+                value={formData.email}
+                onChange={(e) => handleInputChange('email', e.target.value)}
                 className="w-full h-[55px] px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF5534] focus:border-transparent"
               />
             </div>
@@ -105,7 +163,7 @@ const SignupModal = ({ isOpen, onClose, onSwitchToLogin }) => {
                   placeholder="Enter Mobile Number"
                   value={formData.phoneNumber}
                   onChange={(e) => handleInputChange('phoneNumber', e.target.value)}
-                className="flex-1 px-3 py-2 focus:outline-none focus:ring-1  focus:border-transparent"
+                  className="flex-1 px-3 py-2 focus:outline-none focus:ring-1  focus:border-transparent"
                 />
               </div>
               <p className="text-sm text-gray-600 mt-1 text-center">
@@ -113,17 +171,21 @@ const SignupModal = ({ isOpen, onClose, onSwitchToLogin }) => {
               </p>
             </div>
 
+            {error && (
+              <p className="text-sm text-red-500 text-center">{error}</p>
+            )}
+
             <div className="flex justify-center">
               <button
                 onClick={handleCreateAccount}
-                disabled={!isFormValid}
+                disabled={!isFormValid || isLoading}
                 className={`w-[308px] h-[44px] py-3 rounded-lg font-medium transition-all ${
-                  isFormValid
+                  isFormValid && !isLoading
                     ? 'bg-[#FF553459] text-white hover:bg-[#E54728]'
                     : 'bg-gray-300 text-gray-500 cursor-not-allowed opacity-50'
                 }`}
               >
-                Create Account
+                {isLoading ? "Creating..." : "Create Account"}
               </button>
             </div>
 
@@ -145,8 +207,18 @@ const SignupModal = ({ isOpen, onClose, onSwitchToLogin }) => {
             <div className="text-center">
               <p className="text-[16px] text-[#444444] font-extrabold mb-4">Login with Social Media</p>
               <div className="flex justify-center space-x-4">
-                <img src={Facebook} alt="Facebook" className="w-[39px] h-[39px]" />
-                <img src={Google} alt="Google" className="w-[39px] h-[39px]" />
+                <img
+                  src={Facebook}
+                  alt="Facebook"
+                  className="w-[39px] h-[39px] cursor-pointer"
+                  onClick={() => handleSocialLogin('facebook')}
+                />
+                <img
+                  src={Google}
+                  alt="Google"
+                  className="w-[39px] h-[39px] cursor-pointer"
+                  onClick={() => handleSocialLogin('google')}
+                />
               </div>
             </div>
           </div>

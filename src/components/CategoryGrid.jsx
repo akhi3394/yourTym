@@ -1,23 +1,47 @@
 import React from 'react';
 
-const CategoryGrid = ({ categories, onCategoryClick }) => {
+const CategoryGrid = ({ subCategories, onSubCategoryClick, isLoading, error }) => {
+  if (isLoading) {
+    return (
+      <div className="text-center py-6 text-gray-600">
+        Loading categories...
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-6 text-red-500">
+        Error: {error}
+      </div>
+    );
+  }
+
+  if (!subCategories || subCategories.length === 0) {
+    return (
+      <div className="text-center py-6 text-gray-600">
+        No categories available.
+      </div>
+    );
+  }
+
   return (
     <div className="grid grid-cols-3 gap-3 p-6">
-      {categories.map((category, index) => (
+      {subCategories?.map((subCategory) => (
         <div
-          key={category.id}
-          onClick={() => onCategoryClick(category)}
+          key={subCategory?._id}
+          onClick={() => onSubCategoryClick(subCategory)}
           className="bg-accent border border-[#B4B4B4] rounded-lg h-[120px] flex flex-col items-center justify-center p-3 cursor-pointer hover:bg-orange-200 transition-colors"
         >
           <div className="w-[81px] h-[81px] rounded-[10px] mb-2 flex items-center justify-center">
             <img 
-              src={category.image} 
-              alt={category.title} 
+              src={subCategory?.image} 
+              alt={subCategory?.name} 
               className="w-[81px] h-[81px] object-fill rounded-[10px]"
             />
           </div>
           <p className="text-xs text-center font-medium text-gray-800 leading-tight">
-            {category.title}
+            {subCategory?.name}
           </p>
         </div>
       ))}

@@ -1,6 +1,8 @@
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { useAppSelector } from "./hooks/useAppSelector";
+import { Navigate } from "react-router-dom";
 
 import Layout from "./components/Layout";
 import Index from "./pages/Index";
@@ -21,6 +23,11 @@ import AboutUs from "./pages/AboutUs";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsandConditions from "./pages/TermsandCondition";
 
+const ProtectedRoute = ({ children }) => {
+  const { isAuthenticated } = useAppSelector((state) => state.auth);
+  return isAuthenticated ? children : <Navigate to="/" />;
+};
+
 const App = () => (
   <TooltipProvider>
     <Sonner />
@@ -28,29 +35,24 @@ const App = () => (
       <Routes>
         <Route element={<Layout />}>
           <Route path="/" element={<Index />} />
-          <Route path="/women" element={<WomenPage />} />
-          <Route path="/women/products" element={<WomenProductsPage />} />
-          <Route path="/men" element={<MenPage />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/checkout" element={<CheckOutPage/>} />
-          <Route path="/wallet" element={<Wallet/>} />
-          <Route path="/benifits" element={<Benifits/>} />
-          <Route path="/booking-help" element={<BookingHelp/>} />
-          <Route path="/my-booking" element={<MyBookings />} />
-          <Route path="/my-address" element={<MyAddress />} />
-          <Route path="/favourite-booking" element={<FavoriteBooking />} />
-          <Route path="/men/products" element={<MenProductPage />} />
-
-          <Route path="/about-us" element={<AboutUs />} />
-          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-          <Route path="/terms-and-conditions" element={<TermsandConditions />} />
-          
-          <Route path="/support" element={<MenProductPage />} />
-          <Route path="/feedback" element={<MenProductPage />} />
-          <Route path="/my-rating" element={<MenProductPage />} />
-          
-
-          {/* Catch-all */}
+          <Route path="/women" element={<ProtectedRoute><WomenPage /></ProtectedRoute>} />
+          <Route path="/women/products" element={<ProtectedRoute><WomenProductsPage /></ProtectedRoute>} />
+          <Route path="/men" element={<ProtectedRoute><MenPage /></ProtectedRoute>} />
+          <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+          <Route path="/checkout" element={<ProtectedRoute><CheckOutPage /></ProtectedRoute>} />
+          <Route path="/wallet" element={<ProtectedRoute><Wallet /></ProtectedRoute>} />
+          <Route path="/benifits" element={<ProtectedRoute><Benifits /></ProtectedRoute>} />
+          <Route path="/booking-help" element={<ProtectedRoute><BookingHelp /></ProtectedRoute>} />
+          <Route path="/my-booking" element={<ProtectedRoute><MyBookings /></ProtectedRoute>} />
+          <Route path="/my-address" element={<ProtectedRoute><MyAddress /></ProtectedRoute>} />
+          <Route path="/favourite-booking" element={<ProtectedRoute><FavoriteBooking /></ProtectedRoute>} />
+          <Route path="/men/products" element={<ProtectedRoute><MenProductPage /></ProtectedRoute>} />
+          <Route path="/about-us" element={<ProtectedRoute><AboutUs /></ProtectedRoute>} />
+          <Route path="/privacy-policy" element={<ProtectedRoute><PrivacyPolicy /></ProtectedRoute>} />
+          <Route path="/terms-and-conditions" element={<ProtectedRoute><TermsandConditions /></ProtectedRoute>} />
+          <Route path="/support" element={<ProtectedRoute><MenProductPage /></ProtectedRoute>} />
+          <Route path="/feedback" element={<ProtectedRoute><MenProductPage /></ProtectedRoute>} />
+          <Route path="/my-rating" element={<ProtectedRoute><MenProductPage /></ProtectedRoute>} />
           <Route path="*" element={<NotFound />} />
         </Route>
       </Routes>

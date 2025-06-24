@@ -47,7 +47,7 @@ const AfterLoginContent = () => {
       </div>
 
       <div className="mb-5">
-        <img src={YTTM} alt="" className='max-w-[1280px] object-fill mx-auto' />
+        <img src={YTTM} alt="" className='max-w-7xl object-fill px-4 mx-auto'/>
       </div>
 
       <MenPopup

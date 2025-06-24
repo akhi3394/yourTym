@@ -12,23 +12,30 @@ import Wallet from '../../src/assets/svgs/wallet.svg';
 import Gift from '../../src/assets/svgs/Gift.svg';
 import Cart from '../../src/assets/svgs/Cart.svg';
 import Profile from '../../src/assets/svgs/profile.svg';
-
+import LocationAccessModal from './LocationAccessModal';
 
 const Navbar = ({ showTabs = false, activeTab = 'classic', onTabChange }) => {
     const { isAuthenticated } = useAppSelector((state) => state.auth);
     const [showLoginModal, setShowLoginModal] = useState(false);
     const [showSignupModal, setShowSignupModal] = useState(false);
     const [showWomenPopup, setShowWomenPopup] = useState(false);
+    const [showLocationModal, setShowLocationModal] = useState(false);
+    const [locationText, setLocationText] = useState("Select Location");
+
     const navigate = useNavigate();
 
     const handleWomenClick = () => {
-        if (isAuthenticated) {
+        if (!isAuthenticated) {
+            setShowLoginModal(true);
+        } else {
             setShowWomenPopup(true);
         }
     };
 
     const handleMenClick = () => {
-        if (isAuthenticated) {
+        if (!isAuthenticated) {
+            setShowLoginModal(true);
+        } else {
             navigate('/men');
         }
     };
@@ -37,29 +44,79 @@ const Navbar = ({ showTabs = false, activeTab = 'classic', onTabChange }) => {
         navigate('/');
     };
 
-      const handleProfileClick = () => {
-    if (isAuthenticated) {
-      navigate("/profile");
-    }
-  };
+    const handleProfileClick = () => {
+        if (!isAuthenticated) {
+            setShowLoginModal(true);
+        } else {
+            navigate("/profile");
+        }
+    };
 
     const handleCheckoutClick = () => {
-    if (isAuthenticated) {
-      navigate("/checkout");
-    }
-  };
+        if (!isAuthenticated) {
+            setShowLoginModal(true);
+        } else {
+            navigate("/checkout");
+        }
+    };
+
     const handleWalletClick = () => {
-    if (isAuthenticated) {
-      navigate("/wallet");
-    }
-  };
+        if (!isAuthenticated) {
+            setShowLoginModal(true);
+        } else {
+            navigate("/wallet");
+        }
+    };
 
+    const handleBenifitsClick = () => {
+        if (!isAuthenticated) {
+            setShowLoginModal(true);
+        } else {
+            navigate("/benifits");
+        }
+    };
 
-   const handleBenifitsClick = () => {
-    if (isAuthenticated) {
-      navigate("/benifits");
-    }
-  };
+    const handleLocationClick = () => {
+        setShowLocationModal(true);
+    };
+
+    const getLocation = () => {
+        navigator.geolocation.getCurrentPosition(
+            async (position) => {
+                const { latitude, longitude } = position.coords;
+
+                try {
+                    const response = await fetch(
+                        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
+                    );
+                    const data = await response.json();
+                    const address = data?.display_name || 'Location not found';
+                    setLocationText(address);
+                } catch (error) {
+                    console.error("Geocoding error:", error);
+                    setLocationText("Unable to fetch location");
+                }
+            },
+            (error) => {
+                console.error("Location Error:", error);
+                setLocationText("Location access denied");
+            },
+            {
+                enableHighAccuracy: true,
+                timeout: 10000,
+            }
+        );
+    };
+
+    const handleAllow = () => {
+        setShowLocationModal(false);
+        getLocation();
+    };
+
+    const handleDeny = () => {
+        setShowLocationModal(false);
+        setLocationText("Location access denied");
+    };
 
     return (
         <>
@@ -78,13 +135,21 @@ const Navbar = ({ showTabs = false, activeTab = 'classic', onTabChange }) => {
                         </div>
 
                         {/* Location and Search */}
-                        <div className="flex items-center gap-4 flex-1 max-w-[600px] mx-8">
+                        <div className="flex items-center gap-4 flex-1 max-w-[600px]">
                             {/* Location Dropdown */}
-                            <div className="flex items-center min-w-[180px] h-[40px] border border-[#E5E5E5] rounded-[8px] px-3 bg-white">
-                                <img src={LocationIcon} alt="LocationIcon" className="w-[16px] h-[16px] mr-2 flex-shrink-0" />
-                                <select className="bg-transparent border-none outline-none text-[#333333] text-[14px] font-normal flex-1 cursor-pointer">
-                                    <option>Noida, Sector 145</option>
-                                </select>
+                            <div className="relative inline-block">
+                                <div
+                                    className="flex items-center min-w-[296px] h-[40px] border border-[#E5E5E5] rounded-[8px] px-3 bg-white cursor-pointer"
+                                    onClick={handleLocationClick}
+                                >
+                                    <img src={LocationIcon} alt="LocationIcon" className="w-[16px] h-[16px] mr-2 flex-shrink-0" />
+                                    <p
+                                        className="text-[#333333] text-[14px] font-normal truncate max-w-[200px]"
+                                        title={locationText}
+                                    >
+                                        {locationText}
+                                    </p>
+                                </div>
                             </div>
 
                             {/* Search Bar */}
@@ -161,12 +226,10 @@ const Navbar = ({ showTabs = false, activeTab = 'classic', onTabChange }) => {
                                             </button>
                                         </>
                                     )}
-                                    <img src={Wallet} alt="LocationIcon" className="w-[24px] h-[24px] mr-2 flex-shrink-0 cursor-pointer" onClick={handleWalletClick}/>
-                                    <img src={Gift} alt="LocationIcon" className="w-[24px] h-[24px] mr-2 flex-shrink-0 cursor-pointer" onClick={handleBenifitsClick} />
-                                    <img src={Cart} alt="LocationIcon" className="w-[24px] h-[24px] mr-2 flex-shrink-0 cursor-pointer" onClick={handleCheckoutClick}/>
-                                    <img src={Profile} alt="LocationIcon" className="w-[24px] h-[24px] mr-2 flex-shrink-0 cursor-pointer"  onClick={handleProfileClick}
-/>
-
+                                    <img src={Wallet} alt="Wallet" className="w-[24px] h-[24px] mr-2 flex-shrink-0 cursor-pointer" onClick={handleWalletClick} />
+                                    <img src={Gift} alt="Benefits" className="w-[24px] h-[24px] mr-2 flex-shrink-0 cursor-pointer" onClick={handleBenifitsClick} />
+                                    <img src={Cart} alt="Cart" className="w-[24px] h-[24px] mr-2 flex-shrink-0 cursor-pointer" onClick={handleCheckoutClick} />
+                                    <img src={Profile} alt="Profile" className="w-[24px] h-[24px] mr-2 flex-shrink-0 cursor-pointer" onClick={handleProfileClick} />
                                 </>
                             )}
                         </div>
@@ -195,6 +258,12 @@ const Navbar = ({ showTabs = false, activeTab = 'classic', onTabChange }) => {
             <WomenPopup
                 isOpen={showWomenPopup}
                 onClose={() => setShowWomenPopup(false)}
+            />
+
+            <LocationAccessModal
+                isOpen={showLocationModal}
+                onAllow={handleAllow}
+                onDeny={handleDeny}
             />
         </>
     );
