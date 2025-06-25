@@ -1,25 +1,262 @@
-import React, { useState } from 'react';
-
-import { categories, packages, cleanupServices, facialServices } from '../data/womenSalonData';
-import CategoryGrid from '../components/CategoryGrid';
-import ProductsYTPromise from '../components/ProductsYTPromise';
-import PackageCard from '../components/PackageCard';
-import ServiceCard from '../components/ServiceCard';
-import CartSidebar from '../components/CartSidebar';
-import EditPackageModal from '../components/EditPackageModal';
+import React, { useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
+import CategoryGrid from "../components/CategoryGrid";
+import ProductsYTPromise from "../components/ProductsYTPromise";
+import PackageCard from "../components/PackageCard";
+import ServiceCard from "../components/ServiceCard";
+import CartSidebar from "../components/CartSidebar";
+import EditPackageModal from "../components/EditPackageModal";
+import packageImage from "../assets/images/package.png";
+import {
+  useGetAllCategoriesQuery,
+  useGetAllServicesQuery,
+  useGetPackagesByMainCategoryQuery,
+} from "../store/api/productsApi";
 
 const MenProductPage = () => {
   const [cartItems, setCartItems] = useState([]);
   const [editingPackage, setEditingPackage] = useState(null);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState("packages");
+  const { isAuthenticated, token } = useSelector((state) => state.auth);
+  const navigate = useNavigate();
 
-  const handleCategoryClick = (category) => {
-    // Scroll to the respective section
-    const sectionId = category.title.toLowerCase().replace(/\s+/g, '-').replace('&', '');
-    const element = document.getElementById(sectionId);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
+  // Fetch queries
+  const {
+    data: categoriesData,
+    isLoading: categoriesLoading,
+    error: categoriesError,
+  } = useGetAllCategoriesQuery(undefined, { skip: !isAuthenticated });
+  const {
+    data: servicesData,
+    isLoading: servicesLoading,
+    error: servicesError,
+  } = useGetAllServicesQuery(undefined, { skip: !isAuthenticated });
+
+  // Dynamically find "Salon for Men" category
+  const menCategory = useMemo(() => {
+    if (categoriesError) {
+      console.error("Categories fetch error:", categoriesError);
     }
+    return (
+      categoriesData?.data?.find(
+        (item) => item.category?.name?.toLowerCase() === "salon for men"
+      ) || null
+    );
+  }, [categoriesData, categoriesError]);
+
+  const mainCategoryId = menCategory?.category?._id;
+
+  const {
+    data: packagesData,
+    isLoading: packagesLoading,
+    error: packagesError,
+  } = useGetPackagesByMainCategoryQuery(mainCategoryId, {
+    skip: !isAuthenticated || !mainCategoryId,
+  });
+
+  if (!isAuthenticated) {
+    navigate("/login");
+    return null;
+  }
+
+  if (categoriesError || servicesError || packagesError) {
+    console.error("API Errors:", {
+      categoriesError,
+      servicesError,
+      packagesError,
+    });
+  }
+
+  // Prepare subcategories for CategoryGrid and comma-separated display
+  const subCategories = useMemo(() => {
+    const apiSubCategories =
+      menCategory?.subCategories?.map((subCategory) => ({
+        _id: subCategory._id,
+        name: subCategory.name,
+        image: subCategory.image || "https://via.placeholder.com/150",
+        sectionId: subCategory.name
+          .toLowerCase()
+          .replace(/\s+/g, "-")
+          .replace(/[^a-z0-9-]/g, ""),
+      })) || [];
+    return [
+      {
+        _id: "package-static",
+        name: "Package",
+        image: packageImage,
+        sectionId: "packages",
+      },
+      ...apiSubCategories,
+    ];
+  }, [menCategory]);
+
+  // Generate comma-separated subcategories string
+  const subCategoriesString = useMemo(() => {
+    return subCategories.map((subCategory) => subCategory.name).join(", ");
+  }, [subCategories]);
+
+  // Helper function to extract prices from nested services
+  const getServicePrice = (service) => {
+    if (service.location?.length > 0) {
+      const location = service.location[0];
+      return {
+        discountPrice: location.discountActive
+          ? location.discountPrice
+          : location.originalPrice || 0,
+        originalPrice: location.originalPrice || 0,
+        discountActive: location.discountActive || false,
+      };
+    }
+    console.warn(
+      `No location data for service: ${service.title || service._id}`
+    );
+    return { discountPrice: 0, originalPrice: 0, discountActive: false };
+  };
+
+  // Group services by category
+  const categoryServices = useMemo(() => {
+    if (!servicesData?.data) return {};
+
+    const result = servicesData.data.reduce((acc, { category, services }) => {
+      if (
+        category?.mainCategoryId?._id !== mainCategoryId ||
+        !category?.categoryId?._id
+      )
+        return acc;
+
+      const sectionId = category.categoryId.name
+        .toLowerCase()
+        .replace(/\s+/g, "-")
+        .replace(/[^a-z0-9-]/g, "");
+      acc[sectionId] = acc[sectionId] || [];
+
+      acc[sectionId].push(
+        ...services.map((service) => {
+          const { discountPrice, originalPrice, discountActive } =
+            getServicePrice(service);
+          return {
+            _id: service._id,
+            title:
+              service.subCategoryId?.name?.trim() ||
+              service.title ||
+              "Unnamed Service",
+            discountPrice,
+            originalPrice,
+            discountActive,
+            image:
+              service.images?.[0]?.img || "https://via.placeholder.com/150",
+            rating: service.rating || 0,
+            reviews: service.reviews || 0,
+            totalTime: service.totalTime || "N/A",
+            category: {
+              _id: category.categoryId._id,
+              name: category.categoryId.name,
+            },
+          };
+        })
+      );
+      return acc;
+    }, {});
+
+    // Ensure all subcategories have a section, even if empty
+    subCategories.forEach((subCategory) => {
+      if (
+        subCategory.sectionId !== "packages" &&
+        !result[subCategory.sectionId]
+      ) {
+        result[subCategory.sectionId] = [];
+      }
+    });
+
+    return result;
+  }, [servicesData, mainCategoryId, subCategories]);
+
+  // Prepare packages data
+  const packages = useMemo(() => {
+    if (!packagesData?.data) return [];
+
+    return packagesData.data.map((pkg) => {
+      const priceInfo = pkg.services?.reduce(
+        (acc, service) => {
+          if (service.category?.subCategory?.length > 0) {
+            service.category.subCategory.forEach((subCat) => {
+              subCat.services?.forEach((nestedService) => {
+                const { discountPrice, originalPrice, discountActive } =
+                  getServicePrice(nestedService);
+                acc.discountPrice += discountPrice;
+                acc.originalPrice += originalPrice;
+                acc.discountActive = acc.discountActive || discountActive;
+              });
+            });
+          }
+          return acc;
+        },
+        { discountPrice: 0, originalPrice: 0, discountActive: false }
+      ) || { discountPrice: 0, originalPrice: 0, discountActive: false };
+
+      const filteredServices =
+        pkg.services
+          ?.flatMap(
+            (s) =>
+              s.category?.subCategory?.flatMap((subCat) =>
+                subCat.services?.map((nestedService) => ({
+                  _id: nestedService._id,
+                  title:
+                    nestedService.subCategoryId?.name?.trim() ||
+                    nestedService.title ||
+                    "Unnamed Service",
+                  category: {
+                    categoryId: {
+                      _id: s.category?.categoryId?._id || "unknown",
+                      name: s.category?.categoryId?.name || "Unknown Category",
+                    },
+                  },
+                }))
+              ) || []
+          )
+          .filter((s) => s.title !== "Unnamed Service") || [];
+
+      return {
+        _id: pkg._id,
+        title: pkg.title || "Untitled Package",
+        discountPrice: priceInfo.discountPrice,
+        originalPrice: priceInfo.originalPrice,
+        discountActive: priceInfo.discountActive,
+        image: pkg.images?.[0]?.img || "https://via.placeholder.com/150",
+        duration: pkg.totalTime || "N/A",
+        rating: pkg.rating || 0,
+        reviews: pkg.reviews || 0,
+        services: filteredServices,
+        type: pkg.type || "Package",
+        categories: filteredServices.map((s) =>
+          s.category.categoryId.name
+            .toLowerCase()
+            .replace(/\s+/g, "-")
+            .replace(/[^a-z0-9-]/g, "")
+        ),
+      };
+    });
+  }, [packagesData]);
+
+  // Filter packages based on selected category
+  const filteredPackages = useMemo(() => {
+    return selectedCategory === "packages"
+      ? packages
+      : packages.filter((pkg) => pkg.categories?.includes(selectedCategory));
+  }, [packages, selectedCategory]);
+
+  const handleSubCategoryClick = (subCategory) => {
+    const sectionId =
+      subCategory.sectionId ||
+      subCategory.name
+        .toLowerCase()
+        .replace(/\s+/g, "-")
+        .replace(/[^a-z0-9-]/g, "");
+    setSelectedCategory(sectionId);
+    const element = document.getElementById(sectionId);
+    if (element) element.scrollIntoView({ behavior: "smooth" });
   };
 
   const handleEditPackage = (pkg) => {
@@ -28,28 +265,35 @@ const MenProductPage = () => {
   };
 
   const handleSavePackage = (updatedPackage) => {
-    console.log('Updated package:', updatedPackage);
+    setShowEditModal(false);
   };
 
   const handleAddToCart = (item) => {
-    const existingItem = cartItems.find(cartItem => cartItem.id === item.id);
-    
+    console.log("Adding to cart:", item);
+    const existingItem = cartItems.find(
+      (cartItem) => cartItem._id === item._id
+    );
     if (existingItem) {
-      setCartItems(prev =>
-        prev.map(cartItem =>
-          cartItem.id === item.id
+      setCartItems((prev) =>
+        prev.map((cartItem) =>
+          cartItem._id === item._id
             ? { ...cartItem, quantity: cartItem.quantity + 1 }
             : cartItem
         )
       );
     } else {
-      setCartItems(prev => [
+      setCartItems((prev) => [
         ...prev,
         {
-          ...item,
+          _id: item._id,
+          title: item.title,
+          discountPrice: item.discountPrice || 0,
+          originalPrice: item.originalPrice || 0,
+          discountActive: item.discountActive || false,
           quantity: 1,
-          type: item.services ? 'package' : 'service'
-        }
+          type: item.services ? "package" : "service",
+          services: item.services || [],
+        },
       ]);
     }
   };
@@ -59,146 +303,157 @@ const MenProductPage = () => {
       handleRemoveItem(itemId);
       return;
     }
-    
-    setCartItems(prev =>
-      prev.map(item =>
-        item.id === itemId
-          ? { ...item, quantity: newQuantity }
-          : item
+    setCartItems((prev) =>
+      prev.map((item) =>
+        item._id === itemId ? { ...item, quantity: newQuantity } : item
       )
     );
   };
 
   const handleRemoveItem = (itemId) => {
-    setCartItems(prev => prev.filter(item => item.id !== itemId));
+    setCartItems((prev) => prev.filter((item) => item._id !== itemId));
   };
 
   const handleAddOption = (service) => {
-    console.log('Add option for:', service);
+    console.log("Add option for:", service);
   };
 
-  const cartTotal = cartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
+  const cartTotal = cartItems.reduce(
+    (total, item) => total + item.discountPrice * item.quantity,
+    0
+  );
 
   return (
     <div className="min-h-screen mx-10">
       <div className="max-w-[1280px] mx-auto flex h-screen mt-[150px] gap-3">
-        {/* Left Sidebar */}
-        <div className="w-[450px] h-[500px] bg-[#DBE9FF] rounded-[10px] ">
+        <div className="w-[450px] h-[500px] bg-[#DBE9FF] rounded-[10px]">
           <div className="rounded-lg">
-            <h2 className="text-xl font-semibold text-gray-900 mx-6 my-4">Men's classic salon</h2>
-            <p className="text-sm text-gray-600 ml-6">Select a service</p>
-            
-            <CategoryGrid
-              categories={categories}
-              onCategoryClick={handleCategoryClick}
-            />
+            <h2 className="text-xl font-semibold text-gray-900 mx-6 my-4">
+              Salon for Men
+            </h2>
+            <p className="text-sm text-gray-600 ml-6">
+              Subcategories: {subCategoriesString || "Loading..."}
+            </p>
+            {categoriesLoading ? (
+              <p className="text-center py-4">Loading categories...</p>
+            ) : (
+              <CategoryGrid
+                subCategories={subCategories}
+                onSubCategoryClick={handleSubCategoryClick}
+                selectedCategory={selectedCategory}
+                isLoading={categoriesLoading}
+              />
+            )}
           </div>
-          
-          <ProductsYTPromise/>
+          <ProductsYTPromise />
         </div>
 
-        {/* Center Content */}
         <div className="flex-1 bg-white overflow-y-auto custom-scrollbar p-6 rounded-[10px]">
-          {/* Packages Section */}
           <div id="packages" className="mb-8">
-            <div className="flex items-center gap-3 mb-6">
-              <h2 className="text-xl font-semibold text-gray-900">Create a custom packages</h2>
-            </div>
-            
+            <h2 className="text-xl font-semibold text-gray-900 mb-6">
+              {selectedCategory === "packages"
+                ? "Create a custom package"
+                : `Packages for ${selectedCategory
+                    .replace(/-/g, " ")
+                    .replace(/\b\w/g, (l) => l.toUpperCase())}`}
+            </h2>
             <div className="space-y-4">
-              {packages.map(pkg => (
-                <PackageCard
-                  key={pkg.id}
-                  package={pkg}
-                  onEditPackage={handleEditPackage}
-                  onAddToCart={handleAddToCart}
-                />
-              ))}
+              {packagesLoading ? (
+                <PackageCard isLoading={true} />
+              ) : filteredPackages.length > 0 ? (
+                filteredPackages.map((pkg) => (
+                  <PackageCard
+                    key={pkg._id}
+                    package={pkg}
+                    onEditPackage={handleEditPackage}
+                    onAddToCart={handleAddToCart}
+                    isLoading={false}
+                  />
+                ))
+              ) : (
+                <div className="text-center py-8 text-gray-500">
+                  <p>
+                    No packages available for{" "}
+                    {selectedCategory.replace(/-/g, " ")}.
+                  </p>
+                </div>
+              )}
             </div>
           </div>
 
-          {/* Cleanup Section */}
-          <div id="cleanup-facials" className="mb-8">
-            <h3 className="text-lg font-semibold mb-4">Cleanup</h3>
-            <div className="space-y-4">
-              {cleanupServices.map(service => (
-                <ServiceCard
-                  key={service.id}
-                  service={service}
-                  onAddOption={handleAddOption}
-                  onAddToCart={handleAddToCart}
-                />
-              ))}
-            </div>
-          </div>
+          {selectedCategory !== "packages" &&
+            categoryServices[selectedCategory] && (
+              <div id={selectedCategory} className="mb-8">
+                <h3 className="text-lg font-semibold mb-4">
+                  {categoryServices[selectedCategory][0]?.category?.name ||
+                    selectedCategory
+                      .replace(/-/g, " ")
+                      .replace(/\b\w/g, (l) => l.toUpperCase())}
+                </h3>
+                <div className="space-y-4">
+                  {servicesLoading ? (
+                    <ServiceCard isLoading={true} />
+                  ) : categoryServices[selectedCategory].length > 0 ? (
+                    categoryServices[selectedCategory].map((service) => (
+                      <ServiceCard
+                        key={service._id}
+                        service={service}
+                        onAddOption={handleAddOption}
+                        onAddToCart={handleAddToCart}
+                        isLoading={false}
+                      />
+                    ))
+                  ) : (
+                    <div className="text-center py-8 text-gray-500">
+                      <p>
+                        {selectedCategory
+                          .replace(/-/g, " ")
+                          .replace(/\b\w/g, (l) => l.toUpperCase())}{" "}
+                        services coming soon!
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
 
-          {/* Facial Section */}
-          <div id="facial" className="mb-8">
-            <h3 className="text-lg font-semibold mb-4">Facial</h3>
-            <div className="space-y-4">
-              {facialServices.map(service => (
-                <ServiceCard
-                  key={service.id}
-                  service={service}
-                  onAddOption={handleAddOption}
-                  onAddToCart={handleAddToCart}
-                />
-              ))}
-            </div>
-          </div>
-
-          {/* Placeholder sections for other categories */}
-          <div id="waxing" className="mb-8">
-            <h3 className="text-lg font-semibold mb-4">Waxing</h3>
-            <div className="text-center py-8 text-gray-500">
-              <p>Waxing services coming soon!</p>
-            </div>
-          </div>
-
-          <div id="bleach-detain" className="mb-8">
-            <h3 className="text-lg font-semibold mb-4">Bleach & Detain</h3>
-            <div className="text-center py-8 text-gray-500">
-              <p>Bleach & Detain services coming soon!</p>
-            </div>
-          </div>
-
-          <div id="massage" className="mb-8">
-            <h3 className="text-lg font-semibold mb-4">Massage</h3>
-            <div className="text-center py-8 text-gray-500">
-              <p>Massage services coming soon!</p>
-            </div>
-          </div>
-
-          <div id="hair-care" className="mb-8">
-            <h3 className="text-lg font-semibold mb-4">Hair Care</h3>
-            <div className="text-center py-8 text-gray-500">
-              <p>Hair Care services coming soon!</p>
-            </div>
-          </div>
-
-          <div id="threading-face-waxing" className="mb-8">
-            <h3 className="text-lg font-semibold mb-4">Threading & Face Waxing</h3>
-            <div className="text-center py-8 text-gray-500">
-              <p>Threading & Face Waxing services coming soon!</p>
-            </div>
-          </div>
-
-          <div id="pedicure" className="mb-8">
-            <h3 className="text-lg font-semibold mb-4">Pedicure</h3>
-            <div className="text-center py-8 text-gray-500">
-              <p>Pedicure services coming soon!</p>
-            </div>
-          </div>
-
-          <div id="manicure" className="mb-8">
-            <h3 className="text-lg font-semibold mb-4">Manicure</h3>
-            <div className="text-center py-8 text-gray-500">
-              <p>Manicure services coming soon!</p>
-            </div>
-          </div>
+          {selectedCategory === "packages" &&
+            Object.entries(categoryServices).map(([sectionId, services]) => (
+              <div key={sectionId} id={sectionId} className="mb-8">
+                <h3 className="text-lg font-semibold mb-4">
+                  {services[0]?.category?.name ||
+                    sectionId
+                      .replace(/-/g, " ")
+                      .replace(/\b\w/g, (l) => l.toUpperCase())}
+                </h3>
+                <div className="space-y-4">
+                  {servicesLoading ? (
+                    <ServiceCard isLoading={true} />
+                  ) : services.length > 0 ? (
+                    services.map((service) => (
+                      <ServiceCard
+                        key={service._id}
+                        service={service}
+                        onAddOption={handleAddOption}
+                        onAddToCart={handleAddToCart}
+                        isLoading={false}
+                      />
+                    ))
+                  ) : (
+                    <div className="text-center py-8 text-gray-500">
+                      <p>
+                        {sectionId
+                          .replace(/-/g, " ")
+                          .replace(/\b\w/g, (l) => l.toUpperCase())}{" "}
+                        services coming soon!
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
         </div>
 
-        {/* Right Cart Sidebar */}
         <CartSidebar
           cartItems={cartItems}
           onUpdateQuantity={handleUpdateQuantity}
@@ -207,7 +462,6 @@ const MenProductPage = () => {
         />
       </div>
 
-      {/* Edit Package Modal */}
       <EditPackageModal
         isOpen={showEditModal}
         onClose={() => setShowEditModal(false)}

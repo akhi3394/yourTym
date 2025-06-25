@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { X, MapPin } from "lucide-react";
-import { useAddNewAddressMutation } from "../services/productsApi"; // Adjust the path to your productsApi file
-imp
-
+import { useAddNewAddressMutation } from "../store/api/productsApi";
 const AddressModal = ({ isOpen, onClose, onSave, selectedAddress }) => {
   const [formData, setFormData] = useState({
     area: "Sector 9",

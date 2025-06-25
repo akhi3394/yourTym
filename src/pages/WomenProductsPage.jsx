@@ -21,7 +21,7 @@ const WomenProductsPage = () => {
   const [selectedCategory, setSelectedCategory] = useState("packages");
   const { isAuthenticated, token } = useSelector((state) => state.auth);
   const navigate = useNavigate();
-  const MAIN_CATEGORY_ID = "670f5fb4199de0d397f32f45"; // Salon for Women
+  const MAIN_CATEGORY_ID = "670f5fb4199de0d397f32f45"; 
 
   // Fetch queries
   const { data: categoriesData, isLoading: categoriesLoading } =
