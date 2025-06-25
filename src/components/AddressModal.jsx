@@ -1,23 +1,23 @@
 import React, { useState, useEffect } from "react";
 import { X, MapPin } from "lucide-react";
-import { useAddNewAddressMutation } from "../store/api/productsApi";
+import { useAddNewAddressMutation } from "../services/productsApi"; // Adjust the path to your productsApi file
+imp
 
 const AddressModal = ({ isOpen, onClose, onSave, selectedAddress }) => {
   const [formData, setFormData] = useState({
-    area: "",
-    details: "",
+    area: "Sector 9",
+    details: "Sector 9, Vidy Nagar, Ghaziabad, Uttar Pradesh",
     houseNumber: "",
     apartment: "",
     landmark: "",
     type: "Home",
   });
-  const [isLocationEditable, setIsLocationEditable] = useState(true); // Controls whether area/details are editable
-  const [addNewAddress, { isLoading, error }] = useAddNewAddressMutation();
+
+  const [addNewAddress, { isLoading, error }] = useAddNewAddressMutation(); // Use the mutation hook
 
   useEffect(() => {
     if (selectedAddress) {
       setFormData(selectedAddress);
-      setIsLocationEditable(false); // If an address is pre-selected, make location non-editable initially
     }
   }, [selectedAddress]);
 
@@ -29,22 +29,24 @@ const AddressModal = ({ isOpen, onClose, onSave, selectedAddress }) => {
       houseFlat: formData.houseNumber,
       appartment: formData.apartment,
       landMark: formData.landmark,
-      houseType: formData.type.toLowerCase(),
+      houseType: formData.type.toLowerCase(), // Ensure houseType is lowercase to match API expectation
     };
 
     try {
+      // Call the API to save the address
       const response = await addNewAddress(addressPayload).unwrap();
       console.log("Address saved successfully:", response);
-      onSave(formData); // Pass form data to parent
-      onClose(); // Close modal
+
+      // Call the onSave callback to pass the form data to the parent component
+      onSave(formData);
+
+      // Close the modal
+      onClose();
     } catch (err) {
       console.error("Failed to save address:", err);
-      alert(error?.data?.message || "Failed to save address");
+      // Optionally, handle the error (e.g., show a toast notification)
+      alert(error?.message || "Failed to save address");
     }
-  };
-
-  const handleChangeLocation = () => {
-    setIsLocationEditable(true); // Enable editing of area and details
   };
 
   if (!isOpen) return null;
@@ -78,49 +80,15 @@ const AddressModal = ({ isOpen, onClose, onSave, selectedAddress }) => {
             </div>
           </div>
 
-          {/* Location Inputs or Display */}
-          <div className="bg-gray-50 rounded-lg p-4 mb-4">
-            {isLocationEditable ? (
-              <div className="space-y-4">
-                <input
-                  type="text"
-                  placeholder="Area*"
-                  value={formData.area}
-                  onChange={(e) =>
-                    setFormData({ ...formData, area: e.target.value })
-                  }
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FF5534] focus:border-[#FF5534] outline-none"
-                  required
-                />
-                <input
-                  type="text"
-                  placeholder="Full Address*"
-                  value={formData.details}
-                  onChange={(e) =>
-                    setFormData({ ...formData, details: e.target.value })
-                  }
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FF5534] focus:border-[#FF5534] outline-none"
-                  required
-                />
-              </div>
-            ) : (
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="font-medium text-gray-900">
-                    {formData.area || "No area provided"}
-                  </h3>
-                  <p className="text-sm text-gray-600">
-                    {formData.details || "No address details provided"}
-                  </p>
-                </div>
-                <button
-                  onClick={handleChangeLocation}
-                  className="text-[#FF5734] font-medium text-sm hover:text-red-600"
-                >
-                  Change
-                </button>
-              </div>
-            )}
+          {/* Selected Location */}
+          <div className="flex items-center justify-between bg-gray-50 rounded-lg p-4 mb-4">
+            <div>
+              <h3 className="font-medium text-gray-900">{formData.area}</h3>
+              <p className="text-sm text-gray-600">{formData.details}</p>
+            </div>
+            <button className="text-[#FF5534] font-medium text-sm hover:text-red-600">
+              Change
+            </button>
           </div>
         </div>
 
@@ -134,7 +102,7 @@ const AddressModal = ({ isOpen, onClose, onSave, selectedAddress }) => {
               onChange={(e) =>
                 setFormData({ ...formData, houseNumber: e.target.value })
               }
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FF5733] focus:border-[#FF5733] outline-none"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FF5534] focus:border-[#FF5534] outline-none"
               required
             />
             <input
@@ -144,7 +112,7 @@ const AddressModal = ({ isOpen, onClose, onSave, selectedAddress }) => {
               onChange={(e) =>
                 setFormData({ ...formData, apartment: e.target.value })
               }
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FF5733] focus:border-[#FF5733] outline-none"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FF5534] focus:border-[#FF5534] outline-none"
             />
             <input
               type="text"
@@ -153,7 +121,7 @@ const AddressModal = ({ isOpen, onClose, onSave, selectedAddress }) => {
               onChange={(e) =>
                 setFormData({ ...formData, landmark: e.target.value })
               }
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FF5733] focus:border-[#FF5733] outline-none"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FF5534] focus:border-[#FF5534] outline-none"
             />
           </div>
 
@@ -166,8 +134,8 @@ const AddressModal = ({ isOpen, onClose, onSave, selectedAddress }) => {
                 onClick={() => setFormData({ ...formData, type: "Home" })}
                 className={`px-4 py-2 rounded-lg border font-medium text-sm ${
                   formData.type === "Home"
-                    ? "bg-[#FF5733] text-white border-[#FF5733]"
-                    : "bg-white text-gray-700 border-gray-300 hover:border-[#FF5733]"
+                    ? "bg-[#FF5534] text-white border-[#FF5534]"
+                    : "bg-white text-gray-700 border-gray-300 hover:border-[#FF5534]"
                 }`}
               >
                 Home
@@ -177,8 +145,8 @@ const AddressModal = ({ isOpen, onClose, onSave, selectedAddress }) => {
                 onClick={() => setFormData({ ...formData, type: "Other" })}
                 className={`px-4 py-2 rounded-lg border font-medium text-sm ${
                   formData.type === "Other"
-                    ? "bg-[#FF5733] text-white border-[#FF5733]"
-                    : "bg-white text-gray-700 border-gray-300 hover:border-[#FF5733]"
+                    ? "bg-[#FF5534] text-white border-[#FF5534]"
+                    : "bg-white text-gray-700 border-gray-300 hover:border-[#FF5534]"
                 }`}
               >
                 Other
@@ -190,7 +158,7 @@ const AddressModal = ({ isOpen, onClose, onSave, selectedAddress }) => {
           <button
             type="submit"
             disabled={isLoading}
-            className={`w-full mt-6 bg-[#FF5733] text-white py-3 rounded-lg font-medium hover:bg-red-600 transition-colors ${
+            className={`w-full mt-6 bg-[#FF5534] text-white py-3 rounded-lg font-medium hover:bg-red-600 transition-colors ${
               isLoading ? "opacity-50 cursor-not-allowed" : ""
             }`}
           >
@@ -200,7 +168,7 @@ const AddressModal = ({ isOpen, onClose, onSave, selectedAddress }) => {
           {/* Error Message */}
           {error && (
             <p className="mt-2 text-sm text-red-600">
-              {error?.data?.message || "Failed to save address"}
+              {error.message || "Failed to save address"}
             </p>
           )}
         </form>
