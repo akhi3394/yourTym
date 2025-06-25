@@ -1,6 +1,12 @@
-import React from 'react';
+import React from "react";
 
-const CategoryGrid = ({ subCategories, onSubCategoryClick, isLoading, error }) => {
+const CategoryGrid = ({
+  subCategories,
+  onSubCategoryClick,
+  selectedCategory = "packages",
+  isLoading,
+  error,
+}) => {
   if (isLoading) {
     return (
       <div className="text-center py-6 text-gray-600">
@@ -10,11 +16,7 @@ const CategoryGrid = ({ subCategories, onSubCategoryClick, isLoading, error }) =
   }
 
   if (error) {
-    return (
-      <div className="text-center py-6 text-red-500">
-        Error: {error}
-      </div>
-    );
+    return <div className="text-center py-6 text-red-500">Error: {error}</div>;
   }
 
   if (!subCategories || subCategories.length === 0) {
@@ -27,24 +29,43 @@ const CategoryGrid = ({ subCategories, onSubCategoryClick, isLoading, error }) =
 
   return (
     <div className="grid grid-cols-3 gap-3 p-6">
-      {subCategories?.map((subCategory) => (
-        <div
-          key={subCategory?._id}
-          onClick={() => onSubCategoryClick(subCategory)}
-          className="bg-accent border border-[#B4B4B4] rounded-lg h-[120px] flex flex-col items-center justify-center p-3 cursor-pointer hover:bg-orange-200 transition-colors"
-        >
-          <div className="w-[81px] h-[81px] rounded-[10px] mb-2 flex items-center justify-center">
-            <img 
-              src={subCategory?.image} 
-              alt={subCategory?.name} 
-              className="w-[81px] h-[81px] object-fill rounded-[10px]"
-            />
+      {subCategories?.map((subCategory) => {
+        const isSelected = selectedCategory === subCategory.sectionId;
+
+        return (
+          <div
+            key={subCategory?._id}
+            onClick={() => onSubCategoryClick(subCategory)}
+            className={`
+              border rounded-lg h-[120px] flex flex-col items-center justify-center p-3 cursor-pointer transition-all duration-200
+              ${
+                isSelected
+                  ? "bg-[#FF6B35] border-[#FF6B35] text-white shadow-lg transform scale-105"
+                  : "bg-accent border-[#B4B4B4] hover:bg-orange-200 hover:border-orange-300"
+              }
+            `}
+          >
+            <div className="w-[81px] h-[81px] rounded-[10px] mb-2 flex items-center justify-center">
+              <img
+                src={subCategory?.image}
+                alt={subCategory?.name}
+                className={`
+                  w-[81px] h-[81px] object-fill rounded-[10px] transition-all duration-200
+                  ${isSelected ? "brightness-110" : ""}
+                `}
+              />
+            </div>
+            <p
+              className={`
+              text-xs text-center font-medium leading-tight transition-colors duration-200
+              ${isSelected ? "text-white font-semibold" : "text-gray-800"}
+            `}
+            >
+              {subCategory?.name}
+            </p>
           </div>
-          <p className="text-xs text-center font-medium text-gray-800 leading-tight">
-            {subCategory?.name}
-          </p>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 };

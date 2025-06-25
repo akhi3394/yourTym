@@ -2,17 +2,19 @@ import { configureStore, combineReducers } from '@reduxjs/toolkit';
 import { persistStore, persistReducer } from 'redux-persist';
 import storage from 'redux-persist/lib/storage';
 import authReducer from './slices/authSlice';
+import cartReducer from './slices/cartSlice';
 import { authApi } from './api/authApi';
 import { productsApi } from './api/productsApi';
 
 const persistConfig = {
   key: 'root',
   storage,
-  whitelist: ['auth'], // Persist only the auth slice
+  whitelist: ['auth', 'cart'], // Persist auth and cart slices
 };
 
 const rootReducer = combineReducers({
   auth: authReducer,
+  cart: cartReducer,
   [authApi.reducerPath]: authApi.reducer,
   [productsApi.reducerPath]: productsApi.reducer,
 });
@@ -26,7 +28,7 @@ export const store = configureStore({
       serializableCheck: {
         ignoredActions: ['persist/PERSIST', 'persist/REHYDRATE', 'persist/REGISTER'],
       },
-    }).concat(authApi.middleware,productsApi.middleware),
+    }).concat(authApi.middleware, productsApi.middleware),
 });
 
 // Debug persistence
