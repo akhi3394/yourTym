@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
-import { useRegisterMutation, useSocialLoginMutation } from "../store/api/authApi";
+import { useRegisterMutation, useSocialLoginMutation, useLoginWithPhoneMutation, useVerifyOtpMutation } from "../store/api/authApi";
 import { useDispatch } from 'react-redux';
-import { login } from '../store/slices/authSlice';
+import { login, setUserId, setMobile, setToken } from '../store/slices/authSlice';
+import { toast } from 'sonner';
 import Facebook from '../assets/images/popup/facebook.png';
 import Google from '../assets/images/popup/Google.png';
 
@@ -14,46 +15,121 @@ const SignupModal = ({ isOpen, onClose, onSwitchToLogin }) => {
     phoneNumber: '',
     email: ''
   });
+  const [otp, setOtp] = useState(['', '', '', '']);
   const [error, setError] = useState(null);
+  const [showOTPInput, setShowOTPInput] = useState(false);
+  const [userId, setLocalUserId] = useState(null);
 
-  const [register, { isLoading }] = useRegisterMutation();
+  const [register, { isLoading: isRegistering }] = useRegisterMutation();
+  const [loginWithPhone, { isLoading: isSendingOTP }] = useLoginWithPhoneMutation();
+  const [verifyOtp, { isLoading: isVerifying }] = useVerifyOtpMutation();
   const [socialLogin] = useSocialLoginMutation();
   const dispatch = useDispatch();
 
   const handleInputChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
-    setError(null); // Clear error on input change
+    setError(null);
   };
 
-  const handleCreateAccount = async () => {
-    if (!formData.firstName || !formData.lastName || !formData.gender || !formData.phoneNumber || !formData.email) {
-      setError("Please fill in all required fields");
-      return;
+  const handleOTPChange = (index, value) => {
+    if (value.length <= 1) {
+      const newOtp = [...otp];
+      newOtp[index] = value;
+      setOtp(newOtp);
+      setError(null);
+
+      if (value && index < 3) {
+        const nextInput = document.getElementById(`otp-${index + 1}`);
+        nextInput?.focus();
+      }
     }
+  };
+
+  const handleGetOTP = async () => {
     const cleanPhoneNumber = formData.phoneNumber.replace(/\D/g, '');
     if (cleanPhoneNumber.length !== 10) {
       setError("Please enter a valid 10-digit phone number");
+      toast.error("Please enter a valid 10-digit phone number");
       return;
     }
 
     try {
       setError(null);
+      const response = await loginWithPhone({ phone: cleanPhoneNumber }).unwrap();
+      setLocalUserId(response?.data?.id);
+      dispatch(setUserId(response?.data?.id));
+      setShowOTPInput(true);
+      toast.success("OTP sent to your phone number");
+    } catch (error) {
+      console.error("Failed to send OTP:", error);
+      setError(error?.data?.message || "Failed to send OTP. Please try again.");
+      toast.error(error?.data?.message || "Failed to send OTP. Please try again.");
+    }
+  };
+
+  const handleVerifyOTP = async () => {
+    const otpValue = otp.join('');
+    if (!otpValue || otpValue.length !== 4) {
+      setError("Please enter a valid 4-digit OTP");
+      toast.error("Please enter a valid 4-digit OTP");
+      return;
+    }
+    if (!userId) {
+      setError("User ID is missing. Please try again.");
+      toast.error("User ID is missing. Please try again.");
+      return;
+    }
+
+    try {
+      setError(null);
+      const response = await verifyOtp({
+        body: {
+          otp: otpValue,
+          deviceToken: "web",
+        },
+        userId,
+      }).unwrap();
+
+      dispatch(setToken(response.data.token));
+      dispatch(setMobile(response.data.phone));
+      toast.success("Phone number verified successfully");
+
+      // Proceed with registration if all fields are filled
+      if (formData.firstName && formData.lastName && formData.gender && formData.email) {
+        await handleCreateAccount(response.data.token);
+      } else {
+        setError("Please fill in all required fields to complete registration");
+        toast.error("Please fill in all required fields to complete registration");
+      }
+    } catch (error) {
+      console.error("OTP verification failed:", error);
+      setError(error?.data?.message || "Failed to verify OTP. Please try again.");
+      toast.error(error?.data?.message || "Failed to verify OTP. Please try again.");
+    }
+  };
+
+  const handleCreateAccount = async (verifiedToken) => {
+    try {
       const response = await register({
         fullName: `${formData.firstName} ${formData.lastName}`,
         email: formData.email,
         gender: formData.gender,
-        phone: cleanPhoneNumber,
+        phone: formData.phoneNumber.replace(/\D/g, ''),
+        token: verifiedToken, // Pass the verified token if needed by API
       }).unwrap();
+
       dispatch(login({
         userId: response.data._id,
         phone: response.data.phone,
         token: response.data.token,
         completeProfile: response.data.completeProfile,
       }));
+      toast.success("Account created successfully");
       onClose();
     } catch (error) {
       console.error("Registration error:", error);
       setError(error?.data?.message || "Failed to create account. Please try again.");
+      toast.error(error?.data?.message || "Failed to create account. Please try again.");
     }
   };
 
@@ -72,31 +148,50 @@ const SignupModal = ({ isOpen, onClose, onSwitchToLogin }) => {
         token: response.data.token,
         completeProfile: response.data.completeProfile,
       }));
+      toast.success("Social login successful");
       onClose();
     } catch (error) {
       console.error("Social login error:", error);
       setError(error?.data?.message || "Social login failed. Please try again.");
+      toast.error(error?.data?.message || "Social login failed. Please try again.");
     }
   };
 
-  const isFormValid = formData.firstName && formData.lastName && formData.gender && formData.phoneNumber && formData.email;
+  const isFormValid = formData.firstName && formData.lastName && formData.gender && formData.email;
+  const isOTPComplete = otp.every((digit) => digit !== '');
+
+  useEffect(() => {
+    if (!isOpen) {
+      setFormData({
+        firstName: '',
+        lastName: '',
+        gender: '',
+        phoneNumber: '',
+        email: ''
+      });
+      setOtp(['', '', '', '']);
+      setError(null);
+      setShowOTPInput(false);
+      setLocalUserId(null);
+    }
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-8 relative w-full max-w-[1024px]  mx-4 flex justify-center">
+      <div className="bg-white rounded-lg p-8 relative w-full max-w-[1024px] max-h-[600px] mx-4 flex justify-center">
         <button
           onClick={onClose}
-          className="absolute top-[-60px] right-[-60px] bg-white w-[69px] h-[69px]  rounded-full shadow-md flex items-center justify-center hover:bg-gray-200 transition-all"
+          className="absolute top-[-60px] right-[-60px] bg-white w-[69px] h-[69px] rounded-full shadow-md flex items-center justify-center hover:bg-gray-200 transition-all"
         >
           <X className="w-6 h-6" />
         </button>
 
-        <div className="w-[570px]">
+        <div className="w-[600px] overflow-y-auto custom-scrollbar">
           <h2 className="text-2xl font-bold text-center text-[#000000] mb-6">Let's Create Your Profile</h2>
 
-          <div className="space-y-4">
+          <div className="space-y-4 p-2">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
               <input
@@ -154,39 +249,71 @@ const SignupModal = ({ isOpen, onClose, onSwitchToLogin }) => {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Number</label>
-              <div className="flex max-w-[570px] mx-auto w-full h-[55px] border border-[#B4B4B4] rounded-lg overflow-hidden">
-                <span className="flex items-center px-3 border-r border-[#B4B4B4] text-[#1D1D1D] bg-transparent">
-                  +91
-                </span>
-                <input
-                  type="tel"
-                  placeholder="Enter Mobile Number"
-                  value={formData.phoneNumber}
-                  onChange={(e) => handleInputChange('phoneNumber', e.target.value)}
-                  className="flex-1 px-3 py-2 focus:outline-none focus:ring-1  focus:border-transparent"
-                />
-              </div>
+              {!showOTPInput ? (
+                <div className="flex max-w-[570px] mx-auto w-full h-[55px] border border-[#B4B4B4] rounded-lg overflow-hidden">
+                  <span className="flex items-center px-3 border-r border-[#B4B4B4] text-[#1D1D1D] bg-transparent">
+                    +91
+                  </span>
+                  <input
+                    type="tel"
+                    placeholder="Enter Mobile Number"
+                    value={formData.phoneNumber}
+                    onChange={(e) => handleInputChange('phoneNumber', e.target.value)}
+                    className="flex-1 px-3 py-2 focus:outline-none focus:ring-1 focus:border-transparent"
+                  />
+                </div>
+              ) : (
+                <div className="flex justify-center space-x-4 mb-6">
+                  {otp.map((digit, index) => (
+                    <input
+                      key={index}
+                      id={`otp-${index}`}
+                      type="text"
+                      maxLength={1}
+                      value={digit}
+                      onChange={(e) => handleOTPChange(index, e.target.value)}
+                      className="w-[55px] h-[55px] border border-[#B4B4B4] rounded-lg text-center text-lg font-semibold focus:outline-none focus:ring-1 focus:ring-[#FF5534] focus:border-transparent"
+                    />
+                  ))}
+                </div>
+              )}
               <p className="text-sm text-gray-600 mt-1 text-center">
-                You'll receive 4-digit code to verify the number
+                You'll receive a 4-digit code to verify the number
               </p>
             </div>
 
             {error && (
-              <p className="text-sm text-red-500 text-center">{error}</p>
+              <p className={`text-sm text-center ${error.includes('successfully') ? 'text-green-500' : 'text-red-500'}`}>
+                {error}
+              </p>
             )}
 
             <div className="flex justify-center">
-              <button
-                onClick={handleCreateAccount}
-                disabled={!isFormValid || isLoading}
-                className={`w-[308px] h-[44px] py-3 rounded-lg font-medium transition-all ${
-                  isFormValid && !isLoading
-                    ? 'bg-[#FF553459] text-white hover:bg-[#E54728]'
-                    : 'bg-gray-300 text-gray-500 cursor-not-allowed opacity-50'
-                }`}
-              >
-                {isLoading ? "Creating..." : "Create Account"}
-              </button>
+              {!showOTPInput ? (
+                <button
+                  onClick={handleGetOTP}
+                  disabled={!formData.phoneNumber.trim() || isSendingOTP}
+                  className={`w-[308px] h-[44px] py-3 rounded-lg font-medium transition-all ${
+                    formData.phoneNumber.trim() && !showOTPInput && !isSendingOTP
+                      ? 'bg-[#FF553459] text-white hover:bg-[#E54728]'
+                      : 'bg-gray-300 text-gray-500 cursor-not-allowed opacity-50'
+                  }`}
+                >
+                  {isSendingOTP ? "Sending OTP..." : "Get OTP"}
+                </button>
+              ) : (
+                <button
+                  onClick={handleVerifyOTP}
+                  disabled={!isOTPComplete || isVerifying || isRegistering}
+                  className={`w-[308px] h-[44px] py-3 rounded-lg font-medium transition-all ${
+                    isOTPComplete && isFormValid && !isVerifying && !isRegistering
+                      ? 'bg-[#FF553459] text-white hover:bg-[#E54728]'
+                      : 'bg-gray-300 text-gray-500 cursor-not-allowed opacity-50'
+                  }`}
+                >
+                  {isVerifying || isRegistering ? "Processing..." : "Verify OTP & Register"}
+                </button>
+              )}
             </div>
 
             <div className="flex items-center space-x-4 my-6">

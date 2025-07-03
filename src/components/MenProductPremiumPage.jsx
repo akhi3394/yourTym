@@ -15,13 +15,13 @@ import {
 } from "../store/api/productsApi";
 import useCart from "../hooks/useCart";
 
-const MenProductsPage = () => {
+const MenProductPremiumPage = () => {
   const [editingPackage, setEditingPackage] = useState(null);
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState("packages");
   const { isAuthenticated, token } = useSelector((state) => state.auth);
   const navigate = useNavigate();
-  const MAIN_CATEGORY_ID = "670f5fb4199de0d397f32f46"; // Default to Classic for backward compatibility
+  const MAIN_CATEGORY_ID = "680f7ee387a593819687d9fd"; // Men's Premium ID
 
   const {
     cartItems,
@@ -49,7 +49,7 @@ const MenProductsPage = () => {
     return null;
   }
 
-  const menCategory = useMemo(() => {
+  const mensCategory = useMemo(() => {
     return (
       categoriesData?.data?.find(
         (item) => item.category?._id === MAIN_CATEGORY_ID
@@ -59,7 +59,7 @@ const MenProductsPage = () => {
 
   const subCategories = useMemo(() => {
     const apiSubCategories =
-      menCategory?.subCategories?.map((subCategory) => ({
+      mensCategory?.subCategories?.map((subCategory) => ({
         _id: subCategory._id,
         name: subCategory.name,
         image: subCategory.image || "https://via.placeholder.com/150",
@@ -77,7 +77,7 @@ const MenProductsPage = () => {
       },
       ...apiSubCategories,
     ];
-  }, [menCategory]);
+  }, [mensCategory]);
 
   const subCategoriesString = useMemo(() => {
     return subCategories.map((subCategory) => subCategory.name).join(", ");
@@ -204,13 +204,21 @@ const MenProductsPage = () => {
     updateQuantity(itemId, newQuantity);
   };
 
-  const handleRemoveItem = (itemId) => {
-    if (cartItems.find((item) => item._id === itemId)?.isPackageService) {
-      removeCartPackage(itemId);
+   const handleRemoveItem = (itemId) => {
+  console.log(itemId ,"removecart")
+    const item = cartItems?.find((item) => (item.serviceId || item.packageId) === itemId);
+    if (item) {
+      if (item.isPackageService) {
+        removeCartPackage(itemId);
+      } else {
+        removeSingleService(itemId);
+      }
     } else {
-      removeSingleService(itemId);
+      console.warn(`Item with ID ${itemId} not found in cart`);
     }
   };
+
+
 
   const handleAddOption = (service) => {
     console.log("Add option for:", service);
@@ -229,7 +237,7 @@ const MenProductsPage = () => {
         <div className="w-[450px] h-[500px] bg-[#DBE9FF] rounded-[10px]">
           <div className="rounded-lg mb-6">
             <h2 className="text-xl font-semibold text-gray-900 mx-6 my-4">
-              Men's Classic Salon
+              Men's Premium Salon
             </h2>
             <CategoryGrid
               subCategories={subCategories}
@@ -260,7 +268,7 @@ const MenProductsPage = () => {
                     package={pkg}
                     onEditPackage={handleEditPackage}
                     onAddToCart={handleAddToCart}
-                    onRemoveFromCart={handleRemovePackage}
+                    onRemoveFromCart={handleRemoveItem}
                     isInCart={isInCartPackage(pkg._id)}
                   />
                 ))
@@ -322,7 +330,7 @@ const MenProductsPage = () => {
       <EditPackageModal
         isOpen={showEditModal}
         onClose={() => setShowEditModal(false)}
-        package={editingPackage}
+        packages={editingPackage}
         onSave={handleSavePackage}
         services={mensServices.map((service) => ({
           _id: service._id,
@@ -335,4 +343,4 @@ const MenProductsPage = () => {
   );
 };
 
-export default MenProductsPage;
+export default MenProductPremiumPage;

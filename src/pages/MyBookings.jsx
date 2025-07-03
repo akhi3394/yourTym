@@ -1,27 +1,13 @@
 import React from "react";
 import { Search, Calendar, Globe, ShoppingCart, User } from "lucide-react";
+import { useGetOngoingOrdersQuery } from "../store/api/profileApi";
+import { format } from 'date-fns';
+import { useNavigate } from "react-router-dom";
+import CircularLoader from "../components/CircularLoader";
 
 const MyBookings = () => {
-  const ongoingBookings = [
-    {
-      orderId: "1659297452",
-      service: "Salon at Home",
-      date: "08-May, 2023 Mon,",
-      time: "16:30-17:00",
-      status: "Progress",
-      spAssigned: true,
-      location: "Track Partner location",
-    },
-    {
-      orderId: "1659297452",
-      service: "Salon at Home",
-      date: "08-May, 2023 Mon,",
-      time: "16:30-17:00",
-      status: "Progress",
-      spAssigned: true,
-      location: "Track Partner location",
-    },
-  ];
+  const { data: onGoingOrders, isLoading: ongoingLoading } = useGetOngoingOrdersQuery()
+  const navigate=useNavigate()
 
   const historyBookings = [
     {
@@ -54,6 +40,12 @@ const MyBookings = () => {
     },
   ];
 
+
+
+  const handleViewDetails = (orderId) => {
+    console.log(orderId, "_udd")
+    navigate(`/my-booking/${orderId}`);
+  };
   return (
     <div className="bg-gray-50 pt-[100px] pb-[80px] px-4 sm:px-6 lg:px-8 min-h-screen">
       {/* Main Content */}
@@ -72,7 +64,7 @@ const MyBookings = () => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {ongoingBookings.map((booking, index) => (
+              {onGoingOrders?.data?.map((booking, index) => (
                 <div
                   key={index}
                   className="bg-white rounded-lg border border-[#B4B4B4] p-6"
@@ -88,12 +80,15 @@ const MyBookings = () => {
                   {/* Service/Date/Time left, Status right */}
                   <div className="flex justify-between mb-4">
                     <div className="text-md  text-[#444444] space-y-1">
-                      <div>{booking.service}</div>
-                      <div>{booking.date}</div>
-                      <div>{booking.time}</div>
+                      <div>Salon at Home</div>
+
+                      <div>
+                        {format(new Date(booking.Date), 'dd-MMM, yyyy EEE,')}
+                      </div>
+                      <div>{booking.startTime} - {booking.endTime}</div>
                     </div>
                     <span className="px-3 py-1 text-[#FF5534] text-sm font-medium rounded self-start">
-                      {booking.status}
+                      {booking.orderStatus}
                     </span>
                   </div>
 
@@ -103,7 +98,7 @@ const MyBookings = () => {
                       <img src="/mapicon.svg" alt="Dot" className="w-3 h-3" />
 
                       <span className="text-[#444444] underline">
-                        {booking.location}
+                        Track Partner location
                       </span>
                     </div>
                     {booking.spAssigned && (
@@ -117,15 +112,18 @@ const MyBookings = () => {
                   <div className="border-t border-dotted border-black mb-4"></div>
 
                   {/* View Details button centered, bold, black */}
-                  <div className="text-center">
-                    <button className="text-sm font-bold text-[#444444] hover:underline">
+                  <div className="text-center" >
+                    <button className="text-sm font-bold text-[#444444] hover:underline"
+                      onClick={() => handleViewDetails(booking._id)}>
                       View details
                     </button>
                   </div>
                 </div>
               ))}
             </div>
-
+            {ongoingLoading && <div className="flex justify-center items-center">
+              <CircularLoader size={30}/>
+              </div>}
             <div className="text-center mt-6">
               <span className="text-sm text-gray-500">No more Orders</span>
             </div>

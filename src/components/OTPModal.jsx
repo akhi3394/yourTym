@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { X } from 'lucide-react';
 import { useVerifyOtpMutation, useResendOtpMutation } from "../store/api/authApi";
 import { useDispatch } from 'react-redux';
-import { login, setToken } from '../store/slices/authSlice';
+import { login, setMobile, setToken } from '../store/slices/authSlice';
 import { useNavigate } from 'react-router-dom';
 import { useAppSelector } from '../hooks/useAppSelector';
 
@@ -58,6 +58,7 @@ const OTPModal = ({ isOpen, onClose, phoneNumber,onLoginClose }) => {
 
 
         dispatch(setToken(response.data.token));
+        dispatch(setMobile(response.data.phone));
 
       dispatch(login({
         userId: response.data._id,

@@ -19,7 +19,7 @@ function Wallet() {
         </div>
       </div>
     </div>
-  );
+  );  
 }
 
 export default Wallet;

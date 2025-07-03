@@ -1,10 +1,11 @@
 import React from 'react';
+import CircularLoader from './CircularLoader';
 
 const CategoryGrid = ({ subCategories, onSubCategoryClick, isLoading, error }) => {
   if (isLoading) {
     return (
-      <div className="text-center py-6 text-gray-600">
-        Loading categories...
+      <div className="text-center py-6 text-gray-600 h-[400px] flex justify-center items-center">
+         <CircularLoader size={60} />
       </div>
     );
   }

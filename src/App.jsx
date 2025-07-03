@@ -18,10 +18,13 @@ import BookingHelp from "./pages/BookingHelp";
 import MyBookings from "./pages/MyBookings";
 import MyAddress from "./pages/MyAddress";
 import FavoriteBooking from "./pages/FavoriteBooking";
-import MenProductPage from "./pages/MenProductsPage";
+
 import AboutUs from "./pages/AboutUs";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsandConditions from "./pages/TermsandCondition";
+import MenProductPremiumPage from "./components/MenProductPremiumPage";
+import MenProductClassicPage from "./components/MenProductClassicPage";
+import BookingDetail from "./pages/BookingDetail";
 
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated } = useAppSelector((state) => state.auth);
@@ -37,22 +40,21 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/women" element={<ProtectedRoute><WomenPage /></ProtectedRoute>} />
           <Route path="/women/products" element={<ProtectedRoute><WomenProductsPage /></ProtectedRoute>} />
-          <Route path="/men" element={<ProtectedRoute><MenPage /></ProtectedRoute>} />
+          <Route path="/men" element={<MenPage />} />
+          <Route path="/men/classic" element={<ProtectedRoute><MenProductClassicPage /></ProtectedRoute>} />
+          <Route path="/men/premium" element={<ProtectedRoute><MenProductPremiumPage /></ProtectedRoute>} />
           <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
           <Route path="/checkout" element={<ProtectedRoute><CheckOutPage /></ProtectedRoute>} />
           <Route path="/wallet" element={<ProtectedRoute><Wallet /></ProtectedRoute>} />
           <Route path="/benifits" element={<ProtectedRoute><Benifits /></ProtectedRoute>} />
           <Route path="/booking-help" element={<ProtectedRoute><BookingHelp /></ProtectedRoute>} />
           <Route path="/my-booking" element={<ProtectedRoute><MyBookings /></ProtectedRoute>} />
+          <Route path="/my-booking/:orderId" element={<ProtectedRoute><BookingDetail/></ProtectedRoute>} />
           <Route path="/my-address" element={<ProtectedRoute><MyAddress /></ProtectedRoute>} />
           <Route path="/favourite-booking" element={<ProtectedRoute><FavoriteBooking /></ProtectedRoute>} />
-          <Route path="/men/products" element={<ProtectedRoute><MenProductPage /></ProtectedRoute>} />
           <Route path="/about-us" element={<ProtectedRoute><AboutUs /></ProtectedRoute>} />
           <Route path="/privacy-policy" element={<ProtectedRoute><PrivacyPolicy /></ProtectedRoute>} />
           <Route path="/terms-and-conditions" element={<ProtectedRoute><TermsandConditions /></ProtectedRoute>} />
-          <Route path="/support" element={<ProtectedRoute><MenProductPage /></ProtectedRoute>} />
-          <Route path="/feedback" element={<ProtectedRoute><MenProductPage /></ProtectedRoute>} />
-          <Route path="/my-rating" element={<ProtectedRoute><MenProductPage /></ProtectedRoute>} />
           <Route path="*" element={<NotFound />} />
         </Route>
       </Routes>

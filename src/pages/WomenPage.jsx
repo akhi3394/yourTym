@@ -13,7 +13,7 @@ const WomenPage = () => {
       <div className="min-h-screen bg-[#F5F5F5]">
         <div className="max-w-7xl mx-auto px-4">
           <div className="mt-[130px] bg-[#F5F5F5]">
-            <div className="mb-5"><WomensSection showBannerText={true} /> // Show banner heading
+            <div className="mb-5"><WomensSection showBannerText={true} />
             </div>
             <div className="mb-5"><YTPromise /></div>
             <div className="mb-5"><RatingsTestimonialsFaq /></div>

@@ -15,13 +15,13 @@ import {
 } from "../store/api/productsApi";
 import useCart from "../hooks/useCart";
 
-const MenProductsPage = () => {
+const MenProductClassicPage = () => {
   const [editingPackage, setEditingPackage] = useState(null);
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState("packages");
   const { isAuthenticated, token } = useSelector((state) => state.auth);
   const navigate = useNavigate();
-  const MAIN_CATEGORY_ID = "670f5fb4199de0d397f32f46"; // Default to Classic for backward compatibility
+  const MAIN_CATEGORY_ID = "670f5fd1199de0d397f32f4a"; // Men's Classic ID
 
   const {
     cartItems,
@@ -49,7 +49,7 @@ const MenProductsPage = () => {
     return null;
   }
 
-  const menCategory = useMemo(() => {
+  const mensCategory = useMemo(() => {
     return (
       categoriesData?.data?.find(
         (item) => item.category?._id === MAIN_CATEGORY_ID
@@ -59,7 +59,7 @@ const MenProductsPage = () => {
 
   const subCategories = useMemo(() => {
     const apiSubCategories =
-      menCategory?.subCategories?.map((subCategory) => ({
+      mensCategory?.subCategories?.map((subCategory) => ({
         _id: subCategory._id,
         name: subCategory.name,
         image: subCategory.image || "https://via.placeholder.com/150",
@@ -77,7 +77,7 @@ const MenProductsPage = () => {
       },
       ...apiSubCategories,
     ];
-  }, [menCategory]);
+  }, [mensCategory]);
 
   const subCategoriesString = useMemo(() => {
     return subCategories.map((subCategory) => subCategory.name).join(", ");
@@ -145,12 +145,12 @@ const MenProductsPage = () => {
     return selectedCategory === "packages"
       ? packages
       : packages.filter((pkg) =>
-          pkg.services.some((s) =>
-            s.category.categoryId.name
-              .toLowerCase()
-              .replace(/\s+/g, "-")
-              .replace(/[^a-z0-9-]/g, "") === selectedCategory
-          )
+        pkg.services.some((s) =>
+          s.category.categoryId.name
+            .toLowerCase()
+            .replace(/\s+/g, "-")
+            .replace(/[^a-z0-9-]/g, "") === selectedCategory
+        )
       );
   }, [packages, selectedCategory]);
 
@@ -184,6 +184,7 @@ const MenProductsPage = () => {
   };
 
   const handleAddToCart = (item) => {
+    console.log(item,"addtocart")
     const isCustomized = item.packageType === "Customize";
     if (item.hasOwnProperty("services")) {
       addToCartPackage(item._id, 1, isCustomized, item.selectedServices);
@@ -204,20 +205,32 @@ const MenProductsPage = () => {
     updateQuantity(itemId, newQuantity);
   };
 
-  const handleRemoveItem = (itemId) => {
-    if (cartItems.find((item) => item._id === itemId)?.isPackageService) {
-      removeCartPackage(itemId);
+
+
+console.log(cartItems,"carttimens")
+ const handleRemoveItem = (itemId) => {
+  console.log(itemId ,"removecart")
+    const item = cartItems?.find((item) => (item.serviceId || item.packageId) === itemId);
+    if (item) {
+      if (item.isPackageService) {
+        removeCartPackage(itemId);
+      } else {
+        removeSingleService(itemId);
+      }
     } else {
-      removeSingleService(itemId);
+      console.warn(`Item with ID ${itemId} not found in cart`);
     }
   };
+
+
 
   const handleAddOption = (service) => {
     console.log("Add option for:", service);
   };
 
   const handleRemovePackage = (itemId) => {
-    removeCartPackage(itemId?._id);
+    console.log(itemId, "itemIdfrommens")
+    removeCartPackage(itemId);
   };
 
   const isInCart = (serviceId) => cartItems.some((item) => item.serviceId === serviceId);
@@ -247,8 +260,8 @@ const MenProductsPage = () => {
               {selectedCategory === "packages"
                 ? "Create a custom package"
                 : `Packages for ${selectedCategory
-                    .replace(/-/g, " ")
-                    .replace(/\b\w/g, (l) => l.toUpperCase())}`}
+                  .replace(/-/g, " ")
+                  .replace(/\b\w/g, (l) => l.toUpperCase())}`}
             </h2>
             <div className="space-y-4">
               {packagesLoading ? (
@@ -260,7 +273,7 @@ const MenProductsPage = () => {
                     package={pkg}
                     onEditPackage={handleEditPackage}
                     onAddToCart={handleAddToCart}
-                    onRemoveFromCart={handleRemovePackage}
+                    onRemoveFromCart={handleRemoveItem}
                     isInCart={isInCartPackage(pkg._id)}
                   />
                 ))
@@ -322,7 +335,7 @@ const MenProductsPage = () => {
       <EditPackageModal
         isOpen={showEditModal}
         onClose={() => setShowEditModal(false)}
-        package={editingPackage}
+        packages={editingPackage}
         onSave={handleSavePackage}
         services={mensServices.map((service) => ({
           _id: service._id,
@@ -335,4 +348,4 @@ const MenProductsPage = () => {
   );
 };
 
-export default MenProductsPage;
+export default MenProductClassicPage;

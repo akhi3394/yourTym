@@ -1,166 +1,169 @@
-import React, { useState, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useSelector } from 'react-redux';
-import CategoryGrid from '../components/CategoryGrid';
-import ProductsYTPromise from '../components/ProductsYTPromise';
-import PackageCard from '../components/PackageCard';
-import ServiceCard from '../components/ServiceCard';
-import CartSidebar from '../components/CartSidebar';
-import EditPackageModal from '../components/EditPackageModal';
-import packageImage from '../assets/images/package.png';
+import React, { useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
+import CategoryGrid from "../components/CategoryGrid";
+import ProductsYTPromise from "../components/ProductsYTPromise";
+import PackageCard from "../components/PackageCard";
+import ServiceCard from "../components/ServiceCard";
+import CartSidebar from "../components/CartSidebar";
+import EditPackageModal from "../components/EditPackageModal";
+import packageImage from "../assets/images/package.png";
 import {
   useGetAllCategoriesQuery,
-  useGetAllPackagesQuery,
   useGetAllServicesQuery,
-} from '../store/api/productsApi';
+  useGetPackagesByMainCategoryQuery,
+} from "../store/api/productsApi";
+import useCart from "../hooks/useCart";
 
 const WomenProductsPage = () => {
-  const [cartItems, setCartItems] = useState([]);
   const [editingPackage, setEditingPackage] = useState(null);
   const [showEditModal, setShowEditModal] = useState(false);
-  const { isAuthenticated } = useSelector((state) => state.auth);
+  const [selectedCategory, setSelectedCategory] = useState("packages");
+  const { isAuthenticated, token } = useSelector((state) => state.auth);
   const navigate = useNavigate();
+  const MAIN_CATEGORY_ID = "670f5fb4199de0d397f32f45";
+console.log(editingPackage,"fromwomens")
+  const {
+    cartItems,
+    loading,
+    error,
+    addToCartPackage,
+    removeCartPackage,
+    updateCartPackage,
+    updateQuantity,
+    addToCartSingleServices,
+    removeSingleService,
+  } = useCart();
 
-  // Fetch categories for CategoryGrid
-  const { data: categoriesData, isLoading: categoriesLoading, error: categoriesError } = useGetAllCategoriesQuery(undefined, {
-    skip: !isAuthenticated,
-  });
-
-  // Fetch packages
-  const { data: packagesData, isLoading: packagesLoading, error: packagesError } = useGetAllPackagesQuery(undefined, {
-    skip: !isAuthenticated,
-  });
-
-  // Fetch services
-  const { data: servicesData, isLoading: servicesLoading, error: servicesError } = useGetAllServicesQuery(undefined, {
-    skip: !isAuthenticated,
-  });
-
-  // Debug logs
-  console.log('Categories Data:', categoriesData?.data);
-  console.log('Services Data:', servicesData);
-  console.log('Packages Data:', packagesData);
+  const { data: categoriesData, isLoading: categoriesLoading } =
+    useGetAllCategoriesQuery(undefined, { skip: !isAuthenticated });
+  const { data: packagesData, isLoading: packagesLoading } =
+    useGetPackagesByMainCategoryQuery(MAIN_CATEGORY_ID, {
+      skip: !isAuthenticated,
+    });
+  const { data: servicesData, isLoading: servicesLoading, error: servicesError } =
+    useGetAllServicesQuery(undefined, { skip: !isAuthenticated });
 
   if (!isAuthenticated) {
-    navigate('/login');
+    navigate("/login");
     return null;
   }
 
-  // Find "Salon for Women" category
   const womenCategory = useMemo(() => {
-    if (!Array.isArray(categoriesData?.data)) {
-      console.log('Categories data is not an array:', categoriesData?.data);
-      return null;
-    }
-    return categoriesData.data.find((item) => item.category?.name?.toLowerCase() === 'salon for women');
+    return (
+      categoriesData?.data?.find(
+        (item) => item.category?._id === MAIN_CATEGORY_ID
+      ) || null
+    );
   }, [categoriesData]);
 
-  // Prepare subcategories for CategoryGrid
   const subCategories = useMemo(() => {
-    if (!Array.isArray(categoriesData?.data)) {
-      console.log('Categories data is not an array:', categoriesData?.data);
-      return [];
-    }
-    const womenCategoryItem = categoriesData.data.find((item) => item.category?.name?.toLowerCase() === 'salon for women');
-    const apiSubCategories = Array.isArray(womenCategoryItem?.subCategories)
-      ? womenCategoryItem.subCategories.map((subCategory) => ({
-          _id: subCategory._id,
-          name: subCategory.name,
-          image: subCategory.image || 'https://via.placeholder.com/150',
-        }))
-      : [];
+    const apiSubCategories =
+      womenCategory?.subCategories?.map((subCategory) => ({
+        _id: subCategory._id,
+        name: subCategory.name,
+        image: subCategory.image || "https://via.placeholder.com/150",
+        sectionId: subCategory.name
+          .toLowerCase()
+          .replace(/\s+/g, "-")
+          .replace(/[^a-z0-9-]/g, ""),
+      })) || [];
+    return [
+      {
+        _id: "package-static",
+        name: "Package",
+        image: packageImage,
+        sectionId: "packages",
+      },
+      ...apiSubCategories,
+    ];
+  }, [womenCategory]);
 
-    console.log('API SubCategories:', apiSubCategories);
-    const packageSubCategory = {
-      _id: 'package-static',
-      name: 'Package',
-      image: packageImage,
-    };
+  const subCategoriesString = useMemo(() => {
+    return subCategories.map((subCategory) => subCategory.name).join(", ");
+  }, [subCategories]);
 
-    return [packageSubCategory, ...apiSubCategories];
-  }, [categoriesData]);
+  const womensServices = useMemo(() => {
+    if (!servicesData?.data) return [];
+    return servicesData.data.flatMap((item) =>
+      item.services.filter((service) => service.mainCategoryId === MAIN_CATEGORY_ID)
+    );
+  }, [servicesData, MAIN_CATEGORY_ID]);
 
-  // Group services by category
-  const categoryServices = useMemo(() => {
-    if (!servicesData?.data) {
-      console.log('No services data available');
-      return {};
-    }
-    return servicesData.data.reduce((acc, { category, services }) => {
-      if (!category?.categoryId?._id || !category?.categoryId?.name) {
-        console.log('Invalid category:', category);
-        return acc;
-      }
-      // Filter for "Salon for Women" services
-      if (category.mainCategoryId?.name?.toLowerCase() !== 'salon for women') {
-        return acc;
-      }
-      const sectionId = category.categoryId.name.toLowerCase().replace(/\s+/g, '-').replace(/[/&]/g, '');
-      acc[sectionId] = services.map((service) => ({
-        _id: service._id,
-        title: service.title,
-        price: service.location[0]?.discountPrice || 0,
-        originalPrice: service.location[0]?.originalPrice || 0,
-        image: service.images[0]?.img || 'https://via.placeholder.com/150',
-        rating: service.rating || 0,
-        reviews: service.reviews || 0,
-        totalTime: service.totalTime,
-        category: { _id: category.categoryId._id, name: category.categoryId.name },
-      }));
-      return acc;
-    }, {});
-  }, [servicesData]);
-
-  // Prepare packages data for "Salon for Women"
   const packages = useMemo(() => {
-    if (!packagesData?.data) {
-      console.log('No packages data available');
-      return [];
-    }
-    return packagesData.data
-      .filter((pkg) => pkg.mainCategoryId?.name?.toLowerCase() === 'salon for women')
-      .map((pkg) => {
-        const price = pkg.services.reduce((total, pkgService) => {
-          const serviceData = pkgService.category?.subCategory
-            ?.flatMap((sub) => sub.services)
-            ?.find((s) => s._id === pkgService._id);
-          return total + (serviceData?.location[0]?.discountPrice || 0);
-        }, 0);
-        return {
-          _id: pkg._id,
-          title: pkg.title,
-          price,
-          image: pkg.images[0]?.img || 'https://via.placeholder.com/150',
-          duration: pkg.totalTime,
-          rating: pkg.rating || 0,
-          reviews: pkg.reviews || 0,
-          services: pkg.services.map((s) => ({
-            _id: s._id,
-            title: s.title,
-            category: {
-              categoryId: {
-                _id: s.category?.categoryId?._id,
-                name: s.category?.categoryId?.name,
-              },
-            },
-          })),
-        };
-      });
-  }, [packagesData]);
+    if (!packagesData?.data) return [];
+    return packagesData.data.map((pkg) => {
+      const priceInfo = pkg.services?.reduce(
+        (acc, service) => {
+          service.category.subCategory.forEach((subCat) => {
+            subCat.services?.forEach((nestedService) => {
+              const { discountPrice, originalPrice, discountActive } =
+                nestedService.location?.[0] || {};
+              acc.discountPrice += discountPrice || originalPrice || 0;
+              acc.originalPrice += originalPrice || 0;
+              acc.discountActive = acc.discountActive || discountActive || false;
+            });
+          });
+          return acc;
+        },
+        { discountPrice: 0, originalPrice: 0, discountActive: false }
+      );
 
-  // Debug categoryServices and packages
-  console.log('SubCategories:', subCategories);
-  console.log('Category Services:', categoryServices);
-  console.log('Packages:', packages);
+      return {
+        _id: pkg._id,
+        title: pkg.title || "Untitled Package",
+        description: pkg.description || "<p>No description available</p>",
+        timeInMin: pkg.timeInMin || 0,
+        image: pkg.images?.[0]?.img || "https://via.placeholder.com/150",
+        rating: pkg.rating || 0,
+        reviews: pkg.reviews || 0,
+        services: pkg.services?.flatMap((s) =>
+          s.category?.subCategory?.flatMap((subCat) =>
+            subCat.services?.map((nestedService) => ({
+              _id: nestedService._id,
+              title:
+                nestedService.subCategoryId?.name?.trim() ||
+                nestedService.title ||
+                "Unnamed Service",
+              category: {
+                categoryId: {
+                  _id: s.category?.categoryId?._id || "unknown",
+                  name: s.category?.categoryId?.name || "Unknown Category",
+                },
+              },
+            }))
+          ) || []
+        ) || [],
+        discountPrice: priceInfo.discountPrice,
+        originalPrice: priceInfo.originalPrice,
+        discountActive: priceInfo.discountActive,
+      };
+    });
+  }, [packagesData]);
+  console.log(packages[0]?._id,"allpackages")
+  const filteredPackages = useMemo(() => {
+    return selectedCategory === "packages"
+      ? packages
+      : packages.filter((pkg) =>
+        pkg.services.some((s) =>
+          s.category.categoryId.name
+            .toLowerCase()
+            .replace(/\s+/g, "-")
+            .replace(/[^a-z0-9-]/g, "") === selectedCategory
+        )
+      );
+  }, [packages, selectedCategory]);
 
   const handleSubCategoryClick = (subCategory) => {
-    const sectionId = subCategory.name.toLowerCase().replace(/\s+/g, '-').replace(/[/&]/g, '');
+    const sectionId =
+      subCategory.sectionId ||
+      subCategory.name
+        .toLowerCase()
+        .replace(/\s+/g, "-")
+        .replace(/[^a-z0-9-]/g, "");
+    setSelectedCategory(sectionId);
     const element = document.getElementById(sectionId);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
-    } else {
-      console.log('Section not found:', sectionId);
-    }
+    if (element) element.scrollIntoView({ behavior: "smooth" });
   };
 
   const handleEditPackage = (pkg) => {
@@ -169,150 +172,174 @@ const WomenProductsPage = () => {
   };
 
   const handleSavePackage = (updatedPackage) => {
-    console.log('Updated package:', updatedPackage);
+    if (updatedPackage.selectedServices) {
+      updateCartPackage(
+        updatedPackage._id,
+        updatedPackage.selectedServices,
+        [],
+        updatedPackage.quantity || 1
+      );
+    }
     setShowEditModal(false);
   };
 
   const handleAddToCart = (item) => {
-    const existingItem = cartItems.find((cartItem) => cartItem._id === item._id);
-    if (existingItem) {
-      setCartItems((prev) =>
-        prev.map((cartItem) =>
-          cartItem._id === item._id
-            ? { ...cartItem, quantity: cartItem.quantity + 1 }
-            : cartItem
-        )
-      );
+    // const mainCategoryId = item.mainCategoryId || MAIN_CATEGORY_ID;
+    const isCustomized = item.packageType === "Customize";
+    if (item.hasOwnProperty("services")) {
+      addToCartPackage(item._id, 1, isCustomized, item.selectedServices);
     } else {
-      setCartItems((prev) => [
-        ...prev,
-        {
-          ...item,
-          quantity: 1,
-          type: item.services ? 'package' : 'service',
-        },
-      ]);
+      addToCartSingleServices(item._id, 1, item.location?.[0]?.sector || "67beed95c3e00990a579d596");
     }
   };
 
   const handleUpdateQuantity = (itemId, newQuantity) => {
     if (newQuantity <= 0) {
-      handleRemoveItem(itemId);
+      if (cartItems.find((item) => item._id === itemId)?.isPackageService) {
+        removeCartPackage(itemId);
+      } else {
+        removeSingleService(itemId); // Use itemId as serviceId
+      }
       return;
     }
-    setCartItems((prev) =>
-      prev.map((item) =>
-        item._id === itemId ? { ...item, quantity: newQuantity } : item
-      )
-    );
+    updateQuantity(itemId, newQuantity);
   };
 
-  const handleRemoveItem = (itemId) => {
-    setCartItems((prev) => prev.filter((item) => item._id !== itemId));
+ const handleRemoveItem = (itemId) => {
+  console.log(itemId ,"removecart")
+    const item = cartItems?.find((item) => (item.serviceId || item.packageId) === itemId);
+    if (item) {
+      if (item.isPackageService) {
+        removeCartPackage(itemId);
+      } else {
+        removeSingleService(itemId);
+      }
+    } else {
+      console.warn(`Item with ID ${itemId} not found in cart`);
+    }
   };
+
+
 
   const handleAddOption = (service) => {
-    console.log('Add option for:', service);
+    console.log("Add option for:", service);
   };
 
-  const cartTotal = cartItems.reduce(
-    (total, item) => total + item.price * item.quantity,
-    0
-  );
+  const handleRemovePackage=(itemId)=>{
+    console.log(itemId,"fromnew")
+      removeCartPackage(itemId?._id);
 
-  const renderSection = (sectionId, title) => (
-    <div key={sectionId} id={sectionId} className="mb-8">
-      <h3 className="text-lg font-semibold mb-4">{title}</h3>
-      <div className="space-y-4">
-        {servicesLoading ? (
-          <ServiceCard isLoading={true} />
-        ) : servicesError ? (
-          <ServiceCard error={servicesError.message || 'Failed to load services'} />
-        ) : categoryServices[sectionId]?.length > 0 ? (
-          categoryServices[sectionId].map((service) => (
-            <ServiceCard
-              key={service._id}
-              service={service}
-              onAddOption={handleAddOption}
-              onAddToCart={handleAddToCart}
-            />
-          ))
-        ) : (
-          <div className="text-center py-8 text-gray-500">
-            <p>Services coming soon!</p>
-          </div>
-        )}
-      </div>
-    </div>
-  );
+  }
+  const isInCart = (serviceId) => cartItems.some((item) => item.serviceId === serviceId);
+  const isInCartPackage = (packageId) => cartItems.some((item) => item.packageId === packageId);
 
   return (
     <div className="min-h-screen mx-10">
       <div className="max-w-[1280px] mx-auto flex h-screen mt-[150px] gap-3">
-        {/* Left Sidebar */}
         <div className="w-[450px] h-[500px] bg-[#FFE8CF] rounded-[10px]">
-          <div className="rounded-lg">
-            <h2 className="text-xl font-semibold text-gray-900 mx-6 my-4">Salon for Women</h2>
-            <p className="text-sm text-gray-600 ml-6">Select a service</p>
+          <div className="rounded-lg mb-6">
+            <h2 className="text-xl font-semibold text-gray-900 mx-6 my-4">
+              Salon for Women
+            </h2>
             <CategoryGrid
               subCategories={subCategories}
               onSubCategoryClick={handleSubCategoryClick}
+              selectedCategory={selectedCategory}
               isLoading={categoriesLoading}
-              error={categoriesError?.message}
             />
           </div>
           <ProductsYTPromise />
         </div>
 
-        {/* Center Content */}
         <div className="flex-1 bg-white overflow-y-auto custom-scrollbar p-6 rounded-[10px]">
           <div id="packages" className="mb-8">
-            <div className="flex items-center gap-3 mb-6">
-              <h2 className="text-xl font-semibold text-gray-900">Create a custom package</h2>
-            </div>
+            <h2 className="text-xl font-semibold text-gray-900 mb-6">
+              {selectedCategory === "packages"
+                ? "Create a custom package"
+                : `Packages for ${selectedCategory
+                  .replace(/-/g, " ")
+                  .replace(/\b\w/g, (l) => l.toUpperCase())}`}
+            </h2>
             <div className="space-y-4">
               {packagesLoading ? (
                 <PackageCard isLoading={true} />
-              ) : packagesError ? (
-                <PackageCard error={packagesError.message || 'Failed to load packages'} />
-              ) : packages.length > 0 ? (
-                packages.map((pkg) => (
+              ) : filteredPackages.length > 0 ? (
+                filteredPackages.map((pkg) => (
                   <PackageCard
                     key={pkg._id}
                     package={pkg}
                     onEditPackage={handleEditPackage}
                     onAddToCart={handleAddToCart}
+                    onRemoveFromCart={handleRemoveItem}
+                    isInCart={isInCartPackage(pkg._id)}
                   />
                 ))
               ) : (
                 <div className="text-center py-8 text-gray-500">
-                  <p>No packages available</p>
+                  <p>
+                    No packages available for {selectedCategory.replace(/-/g, " ")}.
+                  </p>
                 </div>
               )}
             </div>
           </div>
 
-          {/* Dynamically render service sections */}
-          {Object.entries(categoryServices).map(([sectionId, services]) =>
-            renderSection(sectionId, services[0]?.category?.name || sectionId.replace(/-/g, ' ').toUpperCase())
-          )}
+          <div id={selectedCategory} className="mb-8">
+            <div className="space-y-4">
+              {servicesLoading ? (
+                <ServiceCard isLoading={true} />
+              ) : servicesError ? (
+                <div className="text-center py-8 text-red-500">
+                  Error loading services: {servicesError.message}
+                </div>
+              ) : womensServices.length > 0 ? (
+                womensServices
+                  .filter((service) => {
+                    const sectionId = service.categoryId?.name
+                      ?.toLowerCase()
+                      ?.replace(/\s+/g, "-")
+                      ?.replace(/[^a-z0-9-]/g, "");
+                    return sectionId === selectedCategory || selectedCategory === "packages";
+                  })
+                  .map((service) => (
+                    <ServiceCard
+                      key={service._id}
+                      service={service}
+                      onAddOption={handleAddOption}
+                      onAddToCart={handleAddToCart}
+                      onRemoveFromCart={handleRemoveItem}
+                      isInCart={isInCart(service._id)}
+                    />
+                  ))
+              ) : (
+                <div className="text-center py-8 text-gray-500">
+                  No services available for {selectedCategory.replace(/-/g, " ")}.
+                </div>
+              )}
+            </div>
+          </div>
         </div>
 
-        {/* Right Cart Sidebar */}
         <CartSidebar
           cartItems={cartItems}
           onUpdateQuantity={handleUpdateQuantity}
           onRemoveItem={handleRemoveItem}
-          total={cartTotal}
+          loading={loading}
+          error={error}
         />
       </div>
 
-      {/* Edit Package Modal */}
       <EditPackageModal
         isOpen={showEditModal}
         onClose={() => setShowEditModal(false)}
-        package={editingPackage}
+        packages={editingPackage}
         onSave={handleSavePackage}
+        services={womensServices.map((service) => ({
+          _id: service._id,
+          title: service.title,
+          image: service.images?.[0]?.img || "https://via.placeholder.com/150",
+          price: service.location?.[0]?.discountPrice || service.location?.[0]?.originalPrice,
+        }))}
       />
     </div>
   );
