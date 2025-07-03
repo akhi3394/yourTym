@@ -50,6 +50,25 @@ export const authApi = createApi({
                 body: userData,
             }),
         }),
+        getAllCities: builder.query({
+            query: () => ({
+                url: '/api/v1/user/city/cities',
+                method: 'GET',
+            }),
+        }),
+        updateLocation: builder.mutation({
+            query: (locationData) => ({
+                url: '/api/v1/user/updateLocation',
+                method: 'PUT',
+                body: locationData,
+            }),
+        }),
+        getCityById: builder.query({
+            query: (cityId) => ({
+                url: `/api/v1/user/city/cities/${cityId}`,
+                method: 'GET',
+            }),
+        }),
     }),
 });
 
@@ -59,4 +78,7 @@ export const {
     useRegisterMutation,
     useResendOtpMutation,
     useSocialLoginMutation,
+    useGetAllCitiesQuery,
+    useUpdateLocationMutation,
+    useGetCityByIdQuery,
 } = authApi;

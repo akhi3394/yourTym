@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { MapPin, Search, Calendar, Bookmark, ShoppingBag, User } from 'lucide-react';
 import { useAppSelector } from '../hooks/useAppSelector';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -15,17 +15,25 @@ import Profile from '../../src/assets/svgs/profile.svg';
 import LocationAccessModal from './LocationAccessModal';
 
 const Navbar = () => {
-    const { isAuthenticated } = useAppSelector((state) => state.auth);
+    const { isAuthenticated, cityName } = useAppSelector((state) => state.auth);
     const [showLoginModal, setShowLoginModal] = useState(false);
     const [showSignupModal, setShowSignupModal] = useState(false);
     const [showWomenPopup, setShowWomenPopup] = useState(false);
     const [showLocationModal, setShowLocationModal] = useState(false);
-    const [locationText, setLocationText] = useState("Select Location");
+    const [locationText, setLocationText] = useState(cityName || "Select Location");
 
     const navigate = useNavigate();
     const location = useLocation();
     const isMenRoute = location.pathname.startsWith('/men');
     const activeTab = location.pathname.includes('premium') ? 'premium' : 'classic';
+
+    useEffect(() => {
+        if (cityName) {
+            setLocationText(cityName);
+        } else {
+            setLocationText("Select Location");
+        }
+    }, [cityName]);
 
     const handleWomenClick = () => {
         if (!isAuthenticated) {
@@ -85,7 +93,11 @@ const Navbar = () => {
     };
 
     const handleLocationClick = () => {
-        setShowLocationModal(true);
+        if (isAuthenticated) {
+            setShowLocationModal(true);
+        } else {
+            setShowLoginModal(true);
+        }
     };
 
     const handleTabChange = (tab) => {
@@ -126,7 +138,6 @@ const Navbar = () => {
 
     const handleDeny = () => {
         setShowLocationModal(false);
-        setLocationText("Location access denied");
     };
 
     return (
@@ -261,6 +272,7 @@ const Navbar = () => {
                 isOpen={showLocationModal}
                 onAllow={handleAllow}
                 onDeny={handleDeny}
+                setLocationText={setLocationText}
             />
         </>
     );

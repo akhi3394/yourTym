@@ -6,8 +6,10 @@ const initialState = {
   token: null,
   userId: null,
   completeProfile: false,
-  mobile:null,
+  mobile: null,
   selectedAddress: null, // New state for selected address
+  cityName: null,
+
 };
 
 const authSlice = createSlice({
@@ -40,8 +42,11 @@ const authSlice = createSlice({
     setSelectedAddress: (state, action) => { // New reducer to set selected address
       state.selectedAddress = action.payload;
     },
+    setCityName: (state, action) => {
+      state.cityName = action.payload;
+    },
   },
 });
 
-export const { login, logout, setUserId, setToken ,setMobile,setSelectedAddress} = authSlice.actions;
+export const { login, logout, setUserId, setToken, setMobile, setSelectedAddress ,setCityName} = authSlice.actions;
 export default authSlice.reducer;
