@@ -180,7 +180,7 @@ const SignupModal = ({ isOpen, onClose, onSwitchToLogin }) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-8 relative w-full max-w-[1024px] max-h-[600px] mx-4 flex justify-center">
+      <div className="bg-white rounded-lg p-8 relative w-full max-w-[1024px] max-h-[600px] mx-4 flex justify-center ">
         <button
           onClick={onClose}
           className="absolute top-[-60px] right-[-60px] bg-white w-[69px] h-[69px] rounded-full shadow-md flex items-center justify-center hover:bg-gray-200 transition-all"
@@ -188,7 +188,7 @@ const SignupModal = ({ isOpen, onClose, onSwitchToLogin }) => {
           <X className="w-6 h-6" />
         </button>
 
-        <div className="w-[600px] overflow-y-auto custom-scrollbar">
+        <div className="w-[600px] overflow-x-hidden overflow-y-auto smooth-scroll">
           <h2 className="text-2xl font-bold text-center text-[#000000] mb-6">Let's Create Your Profile</h2>
 
           <div className="space-y-4 p-2">

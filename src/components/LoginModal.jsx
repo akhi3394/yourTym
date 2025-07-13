@@ -17,35 +17,44 @@ const LoginModal = ({ isOpen, onClose, onSwitchToSignup }) => {
   const [socialLogin] = useSocialLoginMutation();
   const dispatch = useDispatch();
 
+  // Handle phone number input: allow only digits and limit to 10
+  const handlePhoneNumberChange = (e) => {
+    const value = e.target.value.replace(/\D/g, ""); // Remove non-digits
+    if (value.length <= 10) {
+      setPhoneNumber(value);
+      setError(null); // Clear error on valid input change
+    }
+  };
+
   const handleGetOTP = async () => {
     console.log("Attempting to get OTP for phone:", phoneNumber);
-    if (!phoneNumber.trim()) {
-      setError("Please enter a valid phone number");
+    if (!phoneNumber) {
+      setError("Please enter a phone number");
       return;
     }
-    const cleanPhoneNumber = phoneNumber.replace(/\D/g, '');
-    if (cleanPhoneNumber.length !== 10) {
+    if (phoneNumber.length !== 10) {
       setError("Please enter a valid 10-digit phone number");
       return;
     }
     try {
       setError(null);
-      const response = await loginWithPhone({ phone: cleanPhoneNumber }).unwrap();
+      const response = await loginWithPhone({ phone: phoneNumber }).unwrap();
       console.log("Login API response:", response?.data?.id);
       setLocalUserId(response?.data?.id);
       dispatch(setUserId(response?.data?.id));
       setPhoneNumber(""); // Clear phone number
-      setShowOTPModal(true); // Open OTPModal immediately
+      setShowOTPModal(true); // Open OTPModal
     } catch (error) {
       console.error("Failed to get OTP:", error);
       setError(error?.data?.message || "Failed to send OTP. Please try again.");
     }
   };
 
-  // Ensure OTPModal opens only after LoginModal is closed
+  // Clear error when modal closes
   useEffect(() => {
     if (!isOpen) {
-      setError(null); // Clear error when modal closes
+      setError(null);
+      setPhoneNumber("");
     }
   }, [isOpen]);
 
@@ -58,12 +67,14 @@ const LoginModal = ({ isOpen, onClose, onSwitchToSignup }) => {
         email: "",
       };
       const response = await socialLogin(socialData).unwrap();
-      dispatch(login({
-        userId: response.data._id,
-        phone: response.data.phone,
-        token: response.data.token,
-        completeProfile: response.data.completeProfile,
-      }));
+      dispatch(
+        login({
+          userId: response.data._id,
+          phone: response.data.phone,
+          token: response.data.token,
+          completeProfile: response.data.completeProfile,
+        })
+      );
       setPhoneNumber("");
       onClose();
     } catch (error) {
@@ -73,6 +84,9 @@ const LoginModal = ({ isOpen, onClose, onSwitchToSignup }) => {
   };
 
   if (!isOpen) return null;
+
+  // Check if phone number is exactly 10 digits to enable button
+  const isButtonEnabled = phoneNumber.length === 10 && !isLoading;
 
   return (
     <>
@@ -96,10 +110,8 @@ const LoginModal = ({ isOpen, onClose, onSwitchToSignup }) => {
                   type="tel"
                   placeholder="Enter Mobile Number"
                   value={phoneNumber}
-                  onChange={(e) => {
-                    setPhoneNumber(e.target.value);
-                    setError(null); // Clear error on input change
-                  }}
+                  onChange={handlePhoneNumberChange}
+                  maxLength={10} // Restrict input to 10 characters
                   className="flex-1 px-3 py-2 focus:outline-none focus:ring-1 focus:border-transparent"
                 />
               </div>
@@ -114,9 +126,9 @@ const LoginModal = ({ isOpen, onClose, onSwitchToSignup }) => {
 
               <button
                 onClick={handleGetOTP}
-                disabled={!phoneNumber.trim() || isLoading}
+                disabled={!isButtonEnabled}
                 className={`max-w-[246px] mx-auto w-full flex justify-center h-[44px] py-3 rounded-lg font-medium transition-all ${
-                  phoneNumber.trim() && !isLoading
+                  isButtonEnabled
                     ? "bg-[#FF5534FA] text-white hover:bg-[#E54728]"
                     : "bg-[#FF553459] text-[#FFFFFF] cursor-not-allowed opacity-50"
                 }`}

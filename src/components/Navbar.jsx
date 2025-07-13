@@ -13,9 +13,13 @@ import Gift from '../../src/assets/svgs/Gift.svg';
 import Cart from '../../src/assets/svgs/Cart.svg';
 import Profile from '../../src/assets/svgs/profile.svg';
 import LocationAccessModal from './LocationAccessModal';
+import { useGetStaticBannersQuery } from '../store/api/profileApi';
 
 const Navbar = () => {
     const { isAuthenticated, cityName } = useAppSelector((state) => state.auth);
+
+    const {data:BannersData}=useGetStaticBannersQuery()
+
     const [showLoginModal, setShowLoginModal] = useState(false);
     const [showSignupModal, setShowSignupModal] = useState(false);
     const [showWomenPopup, setShowWomenPopup] = useState(false);
@@ -148,7 +152,7 @@ const Navbar = () => {
                         {/* Logo */}
                         <div className="flex items-center flex-shrink-0">
                             <div className="cursor-pointer" onClick={handleLogoClick}>
-                                <img src={Logo} alt="logo" className="h-[53px] w-[152px]" />
+                                <img src={BannersData?.data[0]?.image ?? ""} alt="logo" className="h-[80px] w-[152px] bg-cover" />
                             </div>
                         </div>
 

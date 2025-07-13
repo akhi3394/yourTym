@@ -87,6 +87,9 @@ export const profileApi = createApi({
         method: 'POST',
       }),
     }),
+    getStaticBanners: builder.query({
+      query: () => '/api/v1/admin/Banner/all/staticBanner',
+    }),
   }),
 });
 
@@ -105,5 +108,6 @@ export const {
   useLazyGetAllSlotsQuery,
   useGetOngoingOrdersQuery,
   useGetOrderByIdQuery,
-  useAddFavouriteBookingMutation
+  useAddFavouriteBookingMutation,
+  useGetStaticBannersQuery
 } = profileApi;
