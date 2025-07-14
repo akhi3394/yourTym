@@ -23,12 +23,12 @@ import MyPaymentMethodsModal from "./MyPaymentMethods.jsx";
 import SupportFaqModal from "./SupportFaqModal.jsx";
 import FeedbackModal from "./FeedbackModal.jsx";
 import MyRatingModal from "./MyRatingModal.jsx";
+import { useGetProfileQuery } from "../store/api/profileApi.js";
 
 
 
 // Reusable Menu Item
 const MenuItem = ({ icon, title, path, onClick }) => {
-  const navigate = useNavigate();
 
   return (
     <button
@@ -53,7 +53,10 @@ const MenuSection = () => {
   const [isSupportModalOpen, setIsSupportModalOpen] = useState(false);
   const [isFeedbackOpen, setIsFeedbackOpen] = useState(false); // ✅ State
   const [isRatingOpen, setIsRatingOpen] = useState(false);
-
+  const { data: profileData, isLoading, error } = useGetProfileQuery();
+  console.log(profileData?.data?.refferalCode, "fromfreffrominnerer")
+  const navigate = useNavigate();
+  const referralcode = profileData?.data?.refferalCode
 
   return (
     <>
@@ -122,7 +125,7 @@ const MenuSection = () => {
       </div>
 
       {/* Modals */}
-      <ReferAndEarnModal isOpen={isReferModalOpen} onClose={() => setIsReferModalOpen(false)} />
+      <ReferAndEarnModal isOpen={isReferModalOpen} onClose={() => setIsReferModalOpen(false)} referralcode={referralcode} />
       <MyPaymentMethodsModal isOpen={isPaymentModalOpen} onClose={() => setIsPaymentModalOpen(false)} />
       <SupportFaqModal isOpen={isSupportModalOpen} onClose={() => setIsSupportModalOpen(false)} />
       <FeedbackModal isOpen={isFeedbackOpen} onClose={() => setIsFeedbackOpen(false)} />

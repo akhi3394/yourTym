@@ -1,12 +1,18 @@
+import { useState } from 'react';
 import ReferBanner from '../assets/images/refer/referfriendbanner.png'
 import Recieve from '../assets/svgs/receive.svg'
 import SendTo from '../assets/svgs/sendto.svg'
-import { useGetWalletQuery } from '../store/api/profileApi';
+import { useGetProfileQuery, useGetWalletQuery } from '../store/api/profileApi';
+import ReferAndEarnModal from './ReferAndEarnModal';
 
 export default function WalletSection() {
 
+    const [isReferModalOpen, setIsReferModalOpen] = useState(false);
     // ✅ Fetch wallet balance from API
     const { data: walletData, isLoading, isError } = useGetWalletQuery();
+    const { data: profileData, error } = useGetProfileQuery();
+
+    const referralcode = profileData?.data?.refferalCode
 
     const walletBalance = walletData?.data || 0;
 
@@ -46,7 +52,7 @@ export default function WalletSection() {
     ];
 
     return (
-        <div className="space-y-6">
+        <><div className="space-y-6">
             {/* Wallet Header */}
             <h1 className="text-xl font-semibold text-gray-900">Wallet</h1>
             <div className="bg-white rounded-lg shadow-sm p-6">
@@ -72,7 +78,7 @@ export default function WalletSection() {
                 <div className="flex items-center justify-end space-x-2 rounded-[10px] ">
                     <select className="text-sm border border-gray-300 rounded px-3 py-1 bg-white h-[39px]">
                         <option>Month</option>
-                    </select> 
+                    </select>
                     <select className="text-sm border border-gray-300 rounded px-3 py-1 bg-white h-[39px]">
                         <option>Filters</option>
                     </select>
@@ -106,8 +112,11 @@ export default function WalletSection() {
 
             {/* Referral Banner */}
             <div className="">
-                <img src={ReferBanner} alt="refer" />
+                <img src={ReferBanner} alt="refer" onClick={() => setIsReferModalOpen(true)}
+                />
             </div>
         </div>
+            <ReferAndEarnModal isOpen={isReferModalOpen} onClose={() => setIsReferModalOpen(false)} referralcode={referralcode} /></>
+
     );
 }

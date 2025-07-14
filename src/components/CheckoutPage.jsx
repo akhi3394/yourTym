@@ -442,24 +442,7 @@ const CheckoutPage = () => {
             </div>
 
             <div className="space-y-2 text-sm mb-4">
-              <div className="flex justify-between items-center">
-                <div className="flex items-center space-x-2">
-                  <span className="">
-                    <img src={free} alt="free" />
-                  </span>
-                  <span className="text-gray-600">Free Service</span>
-                </div>
-                <span className="text-gray-900">₹{cartData?.data?.freeServiceCount > 0 ? 0 : ''}</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <div className="flex items-center space-x-2">
-                  <span className="">
-                    <img src={Tip} alt="tip" />
-                  </span>
-                  <span className="text-gray-600">Tip For Service Provider</span>
-                </div>
-                <span className="text-gray-900">₹{tipAmount}</span>
-              </div>
+            
               <div className="flex justify-between items-center">
                 <div className="flex items-center space-x-2">
                   <span className="">
@@ -469,15 +452,10 @@ const CheckoutPage = () => {
                 </div>
                 <span className="text-green-600">₹{couponDiscount}</span>
               </div>
-              <div className="flex justify-between items-center">
-                <div className="flex items-center space-x-2">
-                  <span className="">
-                    <img src={Wallet} alt="wallet" />
-                  </span>
-                  <span className="text-gray-600">Wallet Used</span>
-                </div>
-                <span className="text-red-600">₹{walletUsed}</span>
-              </div>
+
+
+
+              {/* //platform fee */}
               <div className="flex justify-between items-center">
                 <div className="flex items-center space-x-2">
                   <span className="">
@@ -487,15 +465,9 @@ const CheckoutPage = () => {
                 </div>
                 <span className="text-gray-900">₹{platformFee}</span>
               </div>
-              <div className="flex justify-between items-center">
-                <div className="flex items-center space-x-2">
-                  <span className="">
-                    <img src={Cancelation} alt="" />
-                  </span>
-                  <span className="text-gray-600">Cancellation Charges</span>
-                </div>
-                <span className="text-gray-500">₹0</span>
-              </div>
+   
+
+             {/* tax */}
               <div className="flex justify-between items-center">
                 <div className="flex items-center space-x-2">
                   <span className="">
@@ -505,15 +477,8 @@ const CheckoutPage = () => {
                 </div>
                 <span className="text-gray-900">₹{taxAmount}</span>
               </div>
-              <div className="flex justify-between items-center">
-                <div className="flex items-center space-x-2">
-                  <span className="">
-                    <img src={Safety} alt="safety" />
-                  </span>
-                  <span className="text-gray-600">Additional Fee</span>
-                </div>
-                <span className="text-gray-900">₹{additionalFee}</span>
-              </div>
+
+
             </div>
 
             <div className="border-t border-gray-100 pt-4">

@@ -1,9 +1,30 @@
-import React from "react";
+import React, { useState } from "react";
 import { X, Copy } from "lucide-react";
-import refer from '../assets/images/refer/referProfile.png'
+import refer from '../assets/images/refer/referProfile.png';
+import { useGetProfileQuery } from "../store/api/profileApi";
 
-const ReferAndEarnModal = ({ isOpen, onClose }) => {
+const ReferAndEarnModal = ({ isOpen, onClose, referralcode }) => {
+  const [copySuccess, setCopySuccess] = useState(false);
+
   if (!isOpen) return null;
+
+  // Function to copy referral code to clipboard
+  const handleCopyCode = async () => {
+    try {
+      await navigator.clipboard.writeText(referralcode);
+      setCopySuccess(true);
+      setTimeout(() => setCopySuccess(false), 2000); // Reset notification after 2 seconds
+    } catch (err) {
+      console.error("Failed to copy: ", err);
+    }
+  };
+
+  // Function to handle WhatsApp sharing
+  const handleReferNow = () => {
+    const message = `Join YourTym and use my referral code ${referralcode} to earn ₹100 on registration!`;
+    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
+  };
 
   return (
     <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center">
@@ -33,12 +54,24 @@ const ReferAndEarnModal = ({ isOpen, onClose }) => {
           <div className="flex items-center justify-between w-full border rounded-lg px-3 py-2 bg-white text-sm">
             <span className="text-gray-800 font-semibold">Your referral code</span>
             <div className="flex items-center gap-2">
-              <span className="font-bold text-black">zz08y3</span>
-              <Copy className="w-4 h-4 text-gray-500 cursor-pointer" />
+              <span className="font-bold text-black">{referralcode}</span>
+              <button onClick={handleCopyCode}>
+                <Copy className="w-4 h-4 text-gray-500 hover:text-[#ff4d30] cursor-pointer" />
+              </button>
             </div>
           </div>
 
-          <button className="mt-4 bg-[#ff4d30] text-white px-6 py-2 rounded-lg font-medium">
+          {/* Copy Success Notification */}
+          {copySuccess && (
+            <div className="mt-2 text-sm text-green-600">
+              Referral code copied to clipboard!
+            </div>
+          )}
+
+          <button
+            onClick={handleReferNow}
+            className="mt-4 bg-[#ff4d30] text-white px-6 py-2 rounded-lg font-medium hover:bg-[#e54728] transition-colors"
+          >
             Refer Now
           </button>
         </div>
