@@ -14,11 +14,12 @@ import Cart from '../../src/assets/svgs/Cart.svg';
 import Profile from '../../src/assets/svgs/profile.svg';
 import LocationAccessModal from './LocationAccessModal';
 import { useGetStaticBannersQuery } from '../store/api/profileApi';
+import CircularLoader from './CircularLoader';
 
 const Navbar = () => {
     const { isAuthenticated, cityName } = useAppSelector((state) => state.auth);
 
-    const {data:BannersData}=useGetStaticBannersQuery()
+    const {data:BannersData,isLoading:bannerLoading}=useGetStaticBannersQuery()
 
     const [showLoginModal, setShowLoginModal] = useState(false);
     const [showSignupModal, setShowSignupModal] = useState(false);
@@ -152,7 +153,10 @@ const Navbar = () => {
                         {/* Logo */}
                         <div className="flex items-center flex-shrink-0">
                             <div className="cursor-pointer" onClick={handleLogoClick}>
+                                {
+                                    bannerLoading ? <CircularLoader size={20} /> : 
                                 <img src={BannersData?.data[0]?.image ?? ""} alt="logo" className="h-[80px] w-[152px] bg-cover" />
+                                }
                             </div>
                         </div>
 
