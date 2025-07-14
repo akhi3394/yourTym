@@ -1,15 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { Phone, MapPin, Clock, CreditCard, Tag, Minus, Plus } from 'lucide-react';
+import { Phone, MapPin, Clock, CreditCard, Tag, Minus, Plus, X } from 'lucide-react';
 import AddressModal from './AddressModal';
 import SlotModal from './SlotModal';
 import PaymentModal from './PaymentModal';
 import SuccessModal from './SuccessModal';
+import CouponsModal from './CouponsModal';
 import { useDispatch, useSelector } from 'react-redux';
 import { setSelectedAddress } from '../store/slices/authSlice';
 import { toast } from 'sonner';
 import { useCheckoutMutation } from '../store/api/productsApi';
 import CircularLoader from './CircularLoader';
-
 import Support from '../assets/svgs/support.svg';
 import LocationPin from '../assets/svgs/LocationPin.svg';
 import free from '../assets/svgs/serviceTotal/FreeService.svg';
@@ -24,11 +24,11 @@ import time from '../assets/svgs/time.svg';
 import { useGetCartQuery, useGetFrequentlyAddedServicesQuery, useLazyCartQuery } from '../store/api/productsApi';
 import useCart from '../hooks/useCart';
 import Tick from '../assets/images/cartCheckMark.png';
+import { useGetCouponsQuery } from '../store/api/profileApi';
 
 const CheckoutPage = () => {
   const { token, isAuthenticated, mobile, user } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
-  console.log(mobile, "mobile");
   const [triggerGetCart, { data: cartData, isLoading, isError }] = useLazyCartQuery();
   const { data: frequentlyAddedServices = [], isLoading: isFrequentlyLoading } = useGetFrequentlyAddedServicesQuery(undefined, {
     skip: !isAuthenticated,
@@ -37,9 +37,14 @@ const CheckoutPage = () => {
     skip: !isAuthenticated,
   });
   const [payableAmount, setPayableAmount] = useState(0);
+  const [selectedCoupon, setSelectedCoupon] = useState(null);
   const [checkout, { data: checkoutData, isLoading: isCheckoutLoading, error: checkoutError }] = useCheckoutMutation();
+  const { data: couponsData, isLoading:couponLoading, error:couponError } = useGetCouponsQuery(undefined, {
+    skip: !isAuthenticated,
+  });
   const [orderId, setOrderId] = useState(null);
   const [isPaymentLoading, setIsPaymentLoading] = useState(false);
+  const [showCouponsModal, setShowCouponsModal] = useState(false);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -49,9 +54,13 @@ const CheckoutPage = () => {
 
   useEffect(() => {
     if (cartData?.data) {
-      setPayableAmount(cartData.data.paidAmount || 0);
+      let total = cartData.data.paidAmount || 0;
+      if (selectedCoupon) {
+        total = Math.max(0, total - selectedCoupon.discount);
+      }
+      setPayableAmount(total);
     }
-  }, [cartData]);
+  }, [cartData, selectedCoupon]);
 
   const {
     cartItems,
@@ -75,7 +84,7 @@ const CheckoutPage = () => {
 
   const serviceTotal = cartData?.data?.services?.reduce((sum, service) => sum + (service.total || 0), 0) || 0;
   const tipAmount = cartData?.data?.tipProvided || 0;
-  const couponDiscount = cartData?.data?.coupan || 0;
+  const couponDiscount = selectedCoupon ? selectedCoupon.discount : (cartData?.data?.coupan || 0);
   const walletUsed = cartData?.data?.wallet || 0;
   const platformFee = cartData?.data?.platformFee || 0;
   const taxAmount = cartData?.data?.taxAmount || 0;
@@ -92,6 +101,17 @@ const CheckoutPage = () => {
     setShowSlotModal(false);
   };
 
+  const handleCouponSelect = (coupon) => {
+    setSelectedCoupon(coupon);
+    setShowCouponsModal(false);
+    toast.success(`Coupon "${coupon.couponCode}" applied!`);
+  };
+
+  const handleRemoveCoupon = () => {
+    setSelectedCoupon(null);
+    toast.success('Coupon removed');
+  };
+
   const handlePayment = async () => {
     if (!selectedAddress && !cartData?.data?.appartment) {
       toast.error('Please select an address first');
@@ -103,7 +123,9 @@ const CheckoutPage = () => {
     }
     setIsPaymentLoading(true);
     try {
-      const response = await checkout().unwrap();
+      const response = await checkout({
+        couponCode: selectedCoupon?.couponCode,
+      }).unwrap();
       setOrderId(response.data.orderId);
       setShowPaymentModal(true);
     } catch (error) {
@@ -132,6 +154,7 @@ const CheckoutPage = () => {
       } else {
         removeSingleService(itemId);
       }
+      triggerGetCart();
       return;
     }
     updateQuantity(itemId, newQuantity);
@@ -139,7 +162,6 @@ const CheckoutPage = () => {
   };
 
   const handleRemoveItem = (itemId) => {
-    console.log(itemId, "removecart");
     const item = cartItems?.find((item) => (item.serviceId || item.packageId) === itemId);
     if (item) {
       if (item.isPackageService) {
@@ -391,7 +413,6 @@ const CheckoutPage = () => {
                   <p className="text-base font-semibold text-black mb-6">Payment Method</p>
                 </div>
               </div>
-
               <button
                 onClick={handlePayment}
                 className="w-full bg-[#FF5534] text-white text-sm font-semibold rounded-lg py-2 hover:bg-[#e64a2e] transition flex items-center justify-center"
@@ -403,15 +424,20 @@ const CheckoutPage = () => {
           </div>
 
           {/* Coupons */}
-          <div className="bg-white rounded-lg p-6 shadow-sm border">
+          <div className="bg-white rounded-lg p-6 shadow-sm border cursor-pointer" onClick={() => setShowCouponsModal(true)}>
             <div className="flex items-center justify-between">
               <div className="flex items-center">
                 <Tag size={20} className="text-[#FF5534] mr-3" />
                 <div>
                   <p className="font-medium text-gray-900">Coupons & Offers</p>
+                  {selectedCoupon ? (
+                    <p className="text-sm text-green-600">Coupon "{selectedCoupon.couponCode}" applied</p>
+                  ) : (
+                    <p className="text-sm text-gray-600">Select a coupon to apply</p>
+                  )}
                 </div>
               </div>
-              <p className="text-[#FF5534] font-medium">5 offers →</p>
+              <p className="text-[#FF5534] font-medium">{couponsData?.service?.length || 0} offers →</p>
             </div>
           </div>
 
@@ -442,7 +468,6 @@ const CheckoutPage = () => {
             </div>
 
             <div className="space-y-2 text-sm mb-4">
-            
               <div className="flex justify-between items-center">
                 <div className="flex items-center space-x-2">
                   <span className="">
@@ -450,12 +475,19 @@ const CheckoutPage = () => {
                   </span>
                   <span className="text-gray-600">Coupon Discount</span>
                 </div>
-                <span className="text-green-600">₹{couponDiscount}</span>
+                <div className="flex items-center space-x-2">
+                  <span className="text-green-600">₹{couponDiscount}</span>
+                  {selectedCoupon && (
+                    <button
+                      onClick={handleRemoveCoupon}
+                      className="text-red-500 hover:text-red-700"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
               </div>
 
-
-
-              {/* //platform fee */}
               <div className="flex justify-between items-center">
                 <div className="flex items-center space-x-2">
                   <span className="">
@@ -465,9 +497,7 @@ const CheckoutPage = () => {
                 </div>
                 <span className="text-gray-900">₹{platformFee}</span>
               </div>
-   
 
-             {/* tax */}
               <div className="flex justify-between items-center">
                 <div className="flex items-center space-x-2">
                   <span className="">
@@ -477,8 +507,6 @@ const CheckoutPage = () => {
                 </div>
                 <span className="text-gray-900">₹{taxAmount}</span>
               </div>
-
-
             </div>
 
             <div className="border-t border-gray-100 pt-4">
@@ -521,6 +549,12 @@ const CheckoutPage = () => {
       <SuccessModal
         isOpen={showSuccessModal}
         onClose={() => setShowSuccessModal(false)}
+      />
+
+      <CouponsModal
+        isOpen={showCouponsModal}
+        onClose={() => setShowCouponsModal(false)}
+        onSelectCoupon={handleCouponSelect}
       />
     </div>
   );

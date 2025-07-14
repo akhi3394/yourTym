@@ -93,6 +93,10 @@ export const profileApi = createApi({
     searchCategories: builder.query({
       query: (searchTerm) => `/api/v1/user/Category/search?search=${encodeURIComponent(searchTerm)}`,
     }),
+    getCoupons: builder.query({
+      query: () => '/api/v1/admin/Coupan/listCoupan',
+      providesTags: ['Coupons'],
+    }),
   }),
 });
 
@@ -113,5 +117,6 @@ export const {
   useGetOrderByIdQuery,
   useAddFavouriteBookingMutation,
   useGetStaticBannersQuery,
-  useSearchCategoriesQuery
+  useSearchCategoriesQuery,
+  useGetCouponsQuery
 } = profileApi;
