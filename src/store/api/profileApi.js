@@ -75,10 +75,10 @@ export const profileApi = createApi({
     getAllSlots: builder.query({
       query: () => '/api/v1/user/slot',
     }),
-     getOngoingOrders: builder.query({
+    getOngoingOrders: builder.query({
       query: () => '/api/v1/user/getOngoingOrders',
     }),
-     getOrderById: builder.query({
+    getOrderById: builder.query({
       query: (orderId) => `/api/v1/admin/orders/${orderId}`,
     }),
     addFavouriteBooking: builder.mutation({
@@ -89,6 +89,9 @@ export const profileApi = createApi({
     }),
     getStaticBanners: builder.query({
       query: () => '/api/v1/admin/Banner/all/staticBanner',
+    }),
+    searchCategories: builder.query({
+      query: (searchTerm) => `/api/v1/user/Category/search?search=${encodeURIComponent(searchTerm)}`,
     }),
   }),
 });
@@ -109,5 +112,6 @@ export const {
   useGetOngoingOrdersQuery,
   useGetOrderByIdQuery,
   useAddFavouriteBookingMutation,
-  useGetStaticBannersQuery
+  useGetStaticBannersQuery,
+  useSearchCategoriesQuery
 } = profileApi;
