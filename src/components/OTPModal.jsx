@@ -117,7 +117,7 @@ const OTPModal = ({ isOpen, onClose, phoneNumber,onLoginClose }) => {
             <input
               key={index}
               id={`otp-${index}`}
-              type="text"
+              type="password"
               maxLength={1}
               value={digit}
               onChange={(e) => handleOTPChange(index, e.target.value)}

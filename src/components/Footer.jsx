@@ -5,6 +5,7 @@ import Facebook from '../assets/images/footer/facebook.png';
 import Instagram from '../assets/images/footer/Instagram.png';
 import GooglePlay from '../assets/images/footer/GooglePlay.png';
 import AppStore from '../assets/images/footer/AppStore.png';
+import CircularLoader from './CircularLoader';
 
 const Footer = ({ BannersData,bannerLoading }) => {
   const [isContactPopupOpen, setIsContactPopupOpen] = useState(false);

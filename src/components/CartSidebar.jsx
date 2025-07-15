@@ -8,6 +8,8 @@ const CartSidebar = ({ cartItems, onUpdateQuantity, onRemoveItem, loading, error
   const total = cartItems.reduce((sum, item) => sum + (item.total || 0), 0);
   const navigate = useNavigate(); // Initialize navigate
   const {
+    cartError,
+    serviceAddError,
     cartLoading,
     fetchingCart
   } = useCart();
@@ -15,7 +17,6 @@ const CartSidebar = ({ cartItems, onUpdateQuantity, onRemoveItem, loading, error
   const handleViewCart = () => {
     navigate('/checkout', { state: { cartItems } }); // Navigate to checkout with cartItems state
   };
-
   return (
     <div className="w-[300px] h-[494px] bg-white border-l border-gray-200 flex flex-col rounded-[10px]">
       <div className="p-4 border-b border-gray-200">
@@ -27,9 +28,15 @@ const CartSidebar = ({ cartItems, onUpdateQuantity, onRemoveItem, loading, error
           <div className="text-center text-gray-500 mt-8 flex justify-center">
             <CircularLoader size={20} />
           </div>
-        ) : error ? (
+        ) : (error || serviceAddError) ? (
           <div className="text-center text-red-500 mt-8">
-            <p>{error}</p>
+            <p>{error || cartError?.message || serviceAddError?.message}</p> <br/>
+            {(error || cartError?.message || serviceAddError?.message) ? (
+              <div className="flex justify-center gap-9 ">
+                <button className="border  border-[#FF5534] px-4 py-1 rounded-[12px]" onClick={()=>window.location.reload()}>Yes</button>
+                <button className="border  border-[#FF5534] px-4 py-1 rounded-[12px]" onClick={()=>window.location.reload()}>No</button>
+              </div>
+            ) : ""}
           </div>
         ) : cartItems.length === 0 ? (
           <div className="text-center text-gray-500 mt-8">

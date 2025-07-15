@@ -17,7 +17,7 @@ const LoginModal = ({ isOpen, onClose, onSwitchToSignup }) => {
   const [socialLogin] = useSocialLoginMutation();
   const dispatch = useDispatch();
 
-  // Handle phone number input: allow only digits and limit to 10
+  // Handle phone number input: allow only digits, limit to 10, and validate Indian number
   const handlePhoneNumberChange = (e) => {
     const value = e.target.value.replace(/\D/g, ""); // Remove non-digits
     if (value.length <= 10) {
@@ -27,7 +27,6 @@ const LoginModal = ({ isOpen, onClose, onSwitchToSignup }) => {
   };
 
   const handleGetOTP = async () => {
-    console.log("Attempting to get OTP for phone:", phoneNumber);
     if (!phoneNumber) {
       setError("Please enter a phone number");
       return;
@@ -36,16 +35,20 @@ const LoginModal = ({ isOpen, onClose, onSwitchToSignup }) => {
       setError("Please enter a valid 10-digit phone number");
       return;
     }
+    // Validate Indian phone number (starts with 6, 7, 8, or 9)
+    const indianPhoneRegex = /^[6-9]\d{9}$/;
+    if (!indianPhoneRegex.test(phoneNumber)) {
+      setError("Please enter a valid Indian mobile number starting with 6, 7, 8, or 9");
+      return;
+    }
     try {
       setError(null);
       const response = await loginWithPhone({ phone: phoneNumber }).unwrap();
-      console.log("Login API response:", response?.data?.id);
       setLocalUserId(response?.data?.id);
       dispatch(setUserId(response?.data?.id));
       setPhoneNumber(""); // Clear phone number
       setShowOTPModal(true); // Open OTPModal
     } catch (error) {
-      console.error("Failed to get OTP:", error);
       setError(error?.data?.message || "Failed to send OTP. Please try again.");
     }
   };
@@ -78,7 +81,6 @@ const LoginModal = ({ isOpen, onClose, onSwitchToSignup }) => {
       setPhoneNumber("");
       onClose();
     } catch (error) {
-      console.error("Social login error:", error);
       setError(error?.data?.message || "Social login failed. Please try again.");
     }
   };

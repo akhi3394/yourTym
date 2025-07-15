@@ -17,11 +17,11 @@ import {
 const useCart = () => {
   const dispatch = useDispatch();
   const { token, isAuthenticated } = useSelector((state) => state.auth);
-  const [addToCartPackageCustomise] = useAddToCartPackageCustomiseMutation();
+  const [addToCartSingleService,{error:serviceAddError}] = useAddToCartSingleServiceMutation();
+  const [addToCartPackageCustomise,{error:packageAddError}] = useAddToCartPackageCustomiseMutation();
   const [updateCustomizePackageInCart] = useUpdateCustomizePackageInCartMutation();
   const [addToCartPackageEdit] = useAddToCartPackageEditMutation();
   const [updateCartPackageEdit] = useUpdateCartPackageEditMutation();
-  const [addToCartSingleService] = useAddToCartSingleServiceMutation();
   const [removeFromCart] = useRemoveFromCartMutation();
   const [updateCartServiceQuantity] = useUpdateCartServiceQuantityMutation();
   const [updateCartPackageQuantity] = useUpdateCartPackageQuantityMutation()
@@ -82,7 +82,7 @@ const useCart = () => {
           { ...result, quantity, isPackageService: false, _id: result._id || serviceId },
         ]);
       } catch (err) {
-        setError(err?.data?.message || "Failed to add service to cart");
+        setError( serviceAddError?.message || "Failed to add service to cart");
       } finally {
         setLoading(false);
       }
@@ -226,8 +226,10 @@ const useCart = () => {
     isInCartorNot,
     updatePackageQuantity,
     cartLoading,
-    fetchingCart
-  };cartData
+    fetchingCart,
+    serviceAddError,
+    packageAddError
+  };
 };
 
 export default useCart;
