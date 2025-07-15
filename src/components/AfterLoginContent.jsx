@@ -33,7 +33,7 @@ const AfterLoginContent = () => {
               <img
                 src={item.img}
                 alt={item.title}
-                className="w-full h-[674px] object-fill"
+                className="w-full h-[550px] object-fill"
               />
               {/* <div className="absolute bottom-0 left-0 w-full bg-gradient-to-t from-black/60 to-transparent text-white text-center py-4">
                 <p className="text-lg font-semibold">{item.title}</p>
