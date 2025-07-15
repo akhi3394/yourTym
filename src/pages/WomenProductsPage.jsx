@@ -22,7 +22,7 @@ const WomenProductsPage = () => {
   const { isAuthenticated, token } = useSelector((state) => state.auth);
   const navigate = useNavigate();
   const MAIN_CATEGORY_ID = "670f5fb4199de0d397f32f45";
-console.log(editingPackage,"fromwomens")
+  console.log(editingPackage, "fromwomens")
   const {
     cartItems,
     loading,
@@ -33,6 +33,10 @@ console.log(editingPackage,"fromwomens")
     updateQuantity,
     addToCartSingleServices,
     removeSingleService,
+    isInCartorNot,
+    updatePackageQuantity,
+    cartLoading,
+    fetchingCart
   } = useCart();
 
   const { data: categoriesData, isLoading: categoriesLoading } =
@@ -140,7 +144,7 @@ console.log(editingPackage,"fromwomens")
       };
     });
   }, [packagesData]);
-  console.log(packages[0]?._id,"allpackages")
+  console.log(packages[0]?._id, "allpackages")
   const filteredPackages = useMemo(() => {
     return selectedCategory === "packages"
       ? packages
@@ -194,19 +198,34 @@ console.log(editingPackage,"fromwomens")
   };
 
   const handleUpdateQuantity = (itemId, newQuantity) => {
-    if (newQuantity <= 0) {
-      if (cartItems.find((item) => item._id === itemId)?.isPackageService) {
-        removeCartPackage(itemId);
-      } else {
-        removeSingleService(itemId); // Use itemId as serviceId
+    console.log(itemId, "itemId", newQuantity, "newQuantity");
+
+    try {
+      const cartItem = cartItems.find(item => (item.serviceId || item.packageId) === itemId);
+
+      if (!cartItem) {
+        toast.error('Item not found in cart');
+        return;
       }
-      return;
+
+      // Optional: handle removal if quantity is zero
+      // if (newQuantity <= 0) {
+      //   cartItem.isPackageService ? removeCartPackage(itemId) : removeSingleService(itemId);
+      //   return;
+      // }
+
+      if (cartItem.isPackageService) {
+        updatePackageQuantity(itemId, newQuantity); // for package items
+      } else {
+        updateQuantity(itemId, newQuantity); // for single service items
+      }
+    } catch (err) {
+      toast.error(err?.data?.message || 'Failed to update quantity');
     }
-    updateQuantity(itemId, newQuantity);
   };
 
- const handleRemoveItem = (itemId) => {
-  console.log(itemId ,"removecart")
+  const handleRemoveItem = (itemId) => {
+    console.log(itemId, "removecart")
     const item = cartItems?.find((item) => (item.serviceId || item.packageId) === itemId);
     if (item) {
       if (item.isPackageService) {
@@ -225,9 +244,9 @@ console.log(editingPackage,"fromwomens")
     console.log("Add option for:", service);
   };
 
-  const handleRemovePackage=(itemId)=>{
-    console.log(itemId,"fromnew")
-      removeCartPackage(itemId?._id);
+  const handleRemovePackage = (itemId) => {
+    console.log(itemId, "fromnew")
+    removeCartPackage(itemId?._id);
 
   }
   const isInCart = (serviceId) => cartItems.some((item) => item.serviceId === serviceId);

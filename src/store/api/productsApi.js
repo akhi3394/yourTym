@@ -68,8 +68,9 @@ export const productsApi = createApi({
       }),
       providesTags: ["Cart"],
       transformResponse: (response) => {
-        const { services = [], packages = [] } = response.data || {};
-        return [
+        const { services = [], packages = [], paidAmount, platformFee, taxAmount } = response.data || {};
+
+        const cartItems = [
           ...services.map((item) => ({
             _id: item._id,
             serviceId: item.serviceId._id,
@@ -93,7 +94,15 @@ export const productsApi = createApi({
             images: item.packageId.images,
           })),
         ];
+
+        // Attach extra data to the array object itself
+        cartItems.paidAmount = paidAmount;
+        cartItems.platformFee = platformFee;
+        cartItems.taxAmount = taxAmount;
+
+        return cartItems;
       },
+
       transformErrorResponse: (response) => {
         console.log("Get Cart Error:", response);
         return {
@@ -159,15 +168,31 @@ export const productsApi = createApi({
       query: (data) => ({
         url: "/api/v1/user/Cart/updateQuantity",
         method: "PUT",
-        body: {
-          AddOnServices: data.serviceId, // Assuming AddOnServices is the correct field for service updates
-          quantity: data.quantity,
-        },
+        body: data, // ✅ directly passing the whole object
+
       }),
       invalidatesTags: ["Cart"],
       transformResponse: (response) => response,
       transformErrorResponse: (response) => {
         console.log("Update Cart Service Quantity Error:", response);
+        return {
+          message: response?.data?.message || "Error updating service quantity",
+          status: response?.status,
+        };
+      },
+    }),
+
+    updateCartPackageQuantity: builder.mutation({
+      query: (data) => ({
+        url: "/api/v1/user/Cart/packages/updateQuantity",
+        method: "PUT",
+        body: data, // ✅ directly passing the whole object
+
+      }),
+      invalidatesTags: ["Cart"],
+      transformResponse: (response) => response,
+      transformErrorResponse: (response) => {
+        console.log("Update Cart Package Quantity Error:", response);
         return {
           message: response?.data?.message || "Error updating service quantity",
           status: response?.status,
@@ -339,5 +364,6 @@ export const {
   useRemovePackageFromCartMutation,
   useGetFrequentlyAddedServicesQuery,
   useCheckoutMutation,
-  usePlaceOrderMutation
+  usePlaceOrderMutation,
+  useUpdateCartPackageQuantityMutation
 } = productsApi;

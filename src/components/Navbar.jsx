@@ -12,13 +12,11 @@ import Gift from '../../src/assets/svgs/Gift.svg';
 import Cart from '../../src/assets/svgs/Cart.svg';
 import Profile from '../../src/assets/svgs/profile.svg';
 import LocationAccessModal from './LocationAccessModal';
-import { useGetStaticBannersQuery } from '../store/api/profileApi';
 import CircularLoader from './CircularLoader';
 import SearchBar from './SearchBar';
 
-const Navbar = () => {
+const Navbar = ({BannersData,bannerLoading}) => {
   const { isAuthenticated, cityName } = useAppSelector((state) => state.auth);
-  const { data: BannersData, isLoading: bannerLoading } = useGetStaticBannersQuery();
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showSignupModal, setShowSignupModal] = useState(false);
   const [showWomenPopup, setShowWomenPopup] = useState(false);

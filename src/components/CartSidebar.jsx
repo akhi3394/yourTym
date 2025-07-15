@@ -1,10 +1,16 @@
 import React from "react";
 import { Minus, Plus } from "lucide-react";
 import { useNavigate } from "react-router-dom"; // Import useNavigate
+import CircularLoader from "./CircularLoader";
+import useCart from "../hooks/useCart";
 
 const CartSidebar = ({ cartItems, onUpdateQuantity, onRemoveItem, loading, error }) => {
   const total = cartItems.reduce((sum, item) => sum + (item.total || 0), 0);
   const navigate = useNavigate(); // Initialize navigate
+  const {
+    cartLoading,
+    fetchingCart
+  } = useCart();
 
   const handleViewCart = () => {
     navigate('/checkout', { state: { cartItems } }); // Navigate to checkout with cartItems state
@@ -17,9 +23,9 @@ const CartSidebar = ({ cartItems, onUpdateQuantity, onRemoveItem, loading, error
       </div>
 
       <div className="h-[394px] overflow-y-auto custom-scrollbar p-4">
-        {loading ? (
-          <div className="text-center text-gray-500 mt-8">
-            <p>Loading cart...</p>
+        {(cartLoading || fetchingCart || loading) ? (
+          <div className="text-center text-gray-500 mt-8 flex justify-center">
+            <CircularLoader size={20} />
           </div>
         ) : error ? (
           <div className="text-center text-red-500 mt-8">
@@ -48,7 +54,7 @@ const CartSidebar = ({ cartItems, onUpdateQuantity, onRemoveItem, loading, error
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3 bg-blue-100 rounded-full px-3 py-1">
                     <button
-                      onClick={() => onUpdateQuantity(item._id, item.quantity - 1)}
+                      onClick={() => onUpdateQuantity(item.serviceId || item.packageId, item.quantity - 1)}
                       className="w-6 h-6 rounded-full bg-white flex items-center justify-center hover:bg-gray-50"
                       disabled={item.quantity <= 1}
                     >
@@ -58,7 +64,7 @@ const CartSidebar = ({ cartItems, onUpdateQuantity, onRemoveItem, loading, error
                       {item.quantity}
                     </span>
                     <button
-                      onClick={() => onUpdateQuantity(item._id, item.quantity + 1)}
+                      onClick={() => onUpdateQuantity(item.serviceId || item.packageId, item.quantity + 1)}
                       className="w-6 h-6 rounded-full bg-white flex items-center justify-center hover:bg-gray-50"
                     >
                       <Plus className="w-3 h-3" />

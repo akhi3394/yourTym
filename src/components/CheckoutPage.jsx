@@ -8,73 +8,35 @@ import CouponsModal from './CouponsModal';
 import { useDispatch, useSelector } from 'react-redux';
 import { setSelectedAddress } from '../store/slices/authSlice';
 import { toast } from 'sonner';
-import { useCheckoutMutation } from '../store/api/productsApi';
+import { useCheckoutMutation, useGetFrequentlyAddedServicesQuery, useGetCartQuery } from '../store/api/productsApi';
 import CircularLoader from './CircularLoader';
 import Support from '../assets/svgs/support.svg';
 import LocationPin from '../assets/svgs/LocationPin.svg';
-import free from '../assets/svgs/serviceTotal/FreeService.svg';
-import Tip from '../assets/svgs/serviceTotal/tip.svg';
 import Coupon from '../assets/svgs/serviceTotal/coupon.svg';
-import Wallet from '../assets/svgs/serviceTotal/walletUsed.svg';
 import SURG from '../assets/svgs/serviceTotal/surg.svg';
-import Cancelation from '../assets/svgs/serviceTotal/cancelcharges.svg';
 import Safety from '../assets/svgs/serviceTotal/safety.svg';
-import locationIcon from '../assets/svgs/locationIcon.svg';
-import time from '../assets/svgs/time.svg';
-import { useGetCartQuery, useGetFrequentlyAddedServicesQuery, useLazyCartQuery } from '../store/api/productsApi';
-import useCart from '../hooks/useCart';
 import Tick from '../assets/images/cartCheckMark.png';
+import useCart from '../hooks/useCart';
 import { useGetCouponsQuery } from '../store/api/profileApi';
 
 const CheckoutPage = () => {
-  const { token, isAuthenticated, mobile, user } = useSelector((state) => state.auth);
+  const { token, isAuthenticated, mobile } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
-  const [triggerGetCart, { data: cartData, isLoading, isError }] = useLazyCartQuery();
+  const { data: cartData, isLoading: cartLoadingCheckout, error: cartError,isFetching:fetchingCheckout } = useGetCartQuery(undefined, {
+    skip: !isAuthenticated,
+  });
   const { data: frequentlyAddedServices = [], isLoading: isFrequentlyLoading } = useGetFrequentlyAddedServicesQuery(undefined, {
     skip: !isAuthenticated,
   });
-  const { isLoading: cartLoading } = useGetCartQuery(undefined, {
+  const { data: couponsData, isLoading: couponLoading, error: couponError } = useGetCouponsQuery(undefined, {
     skip: !isAuthenticated,
   });
+  const [checkout, { isLoading: isCheckoutLoading, error: checkoutError }] = useCheckoutMutation();
   const [payableAmount, setPayableAmount] = useState(0);
   const [selectedCoupon, setSelectedCoupon] = useState(null);
-  const [checkout, { data: checkoutData, isLoading: isCheckoutLoading, error: checkoutError }] = useCheckoutMutation();
-  const { data: couponsData, isLoading:couponLoading, error:couponError } = useGetCouponsQuery(undefined, {
-    skip: !isAuthenticated,
-  });
   const [orderId, setOrderId] = useState(null);
   const [isPaymentLoading, setIsPaymentLoading] = useState(false);
   const [showCouponsModal, setShowCouponsModal] = useState(false);
-
-  useEffect(() => {
-    if (isAuthenticated) {
-      triggerGetCart();
-    }
-  }, [isAuthenticated, triggerGetCart]);
-
-  useEffect(() => {
-    if (cartData?.data) {
-      let total = cartData.data.paidAmount || 0;
-      if (selectedCoupon) {
-        total = Math.max(0, total - selectedCoupon.discount);
-      }
-      setPayableAmount(total);
-    }
-  }, [cartData, selectedCoupon]);
-
-  const {
-    cartItems,
-    loading,
-    error,
-    addToCartPackage,
-    removeCartPackage,
-    updateCartPackage,
-    updateQuantity,
-    addToCartSingleServices,
-    removeSingleService,
-    isInCartorNot,
-  } = useCart();
-
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [showAddressModal, setShowAddressModal] = useState(false);
   const [showSlotModal, setShowSlotModal] = useState(false);
@@ -82,14 +44,54 @@ const CheckoutPage = () => {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [selectedAddress, setSelectedAddress] = useState(null);
 
+  const {
+    cartItems,
+    loading,
+    error,
+    addToCartPackage,
+    removeCartPackage,
+    updateQuantity,
+    addToCartSingleServices,
+    removeSingleService,
+    isInCartorNot,
+    updatePackageQuantity,
+    cartLoading,
+    fetchingCart
+  } = useCart();
+
+console.log(cartData?.paidAmount,"cartdtaafrom cartttt")
+
+  useEffect(() => {
+    if (cartData) {
+      let total = cartData?.paidAmount || 0;
+      if (selectedCoupon) {
+        total = Math.max(0, total - selectedCoupon.discount);
+      }
+      setPayableAmount(total);
+    }
+    if (cartError) {
+      toast.error(cartError?.data?.message || 'Failed to load cart');
+    }
+    if (couponError) {
+      toast.error(couponError?.data?.message || 'Failed to load coupons');
+    }
+    if (checkoutError) {
+      toast.error(checkoutError?.data?.message || 'Failed to initiate checkout');
+    }
+  }, [cartData, selectedCoupon, cartError, couponError, checkoutError]);
+
   const serviceTotal = cartData?.data?.services?.reduce((sum, service) => sum + (service.total || 0), 0) || 0;
   const tipAmount = cartData?.data?.tipProvided || 0;
   const couponDiscount = selectedCoupon ? selectedCoupon.discount : (cartData?.data?.coupan || 0);
   const walletUsed = cartData?.data?.wallet || 0;
-  const platformFee = cartData?.data?.platformFee || 0;
-  const taxAmount = cartData?.data?.taxAmount || 0;
+  const platformFee = cartData?.platformFee || 0;
+  const taxAmount = cartData?.taxAmount || 0;
   const additionalFee = cartData?.data?.additionalFee || 0;
   const finalTotal = payableAmount;
+
+
+  console.log(payableAmount, "hhhh")
+  console.log(cartData, "ggg")
 
   const handleAddressSave = (address) => {
     setSelectedAddress(address);
@@ -129,7 +131,7 @@ const CheckoutPage = () => {
       setOrderId(response.data.orderId);
       setShowPaymentModal(true);
     } catch (error) {
-      toast.error('Failed to initiate checkout: ' + (error?.data?.message || 'Unknown error'));
+      toast.error(error?.data?.message || 'Failed to initiate checkout');
       console.error('Checkout error:', error);
     } finally {
       setIsPaymentLoading(false);
@@ -137,42 +139,61 @@ const CheckoutPage = () => {
   };
 
   const handleAddToCart = (item) => {
-    const isCustomized = item.packageType === "Customize";
-    if (item.hasOwnProperty("services")) {
-      addToCartPackage(item._id, 1, isCustomized, item.selectedServices);
-      triggerGetCart();
-    } else {
-      addToCartSingleServices(item._id, 1, item.location?.[0]?.sector || "67beed95c3e00990a579d596");
-      triggerGetCart();
+    try {
+      const isCustomized = item.packageType === "Customize";
+      if (item.hasOwnProperty("services")) {
+        addToCartPackage(item._id, 1, isCustomized, item.selectedServices);
+      } else {
+        addToCartSingleServices(item._id, 1, item.location?.[0]?.sector || "67beed95c3e00990a579d596");
+      }
+    } catch (err) {
+      toast.error(err?.data?.message || 'Failed to add item to cart');
     }
   };
 
   const handleUpdateQuantity = (itemId, newQuantity) => {
-    if (newQuantity <= 0) {
-      if (cartItems.find((item) => item._id === itemId)?.isPackageService) {
-        removeCartPackage(itemId);
-      } else {
-        removeSingleService(itemId);
+    console.log(itemId, "itemId", newQuantity, "newQuantity");
+
+    try {
+      const cartItem = cartItems.find(item => (item.serviceId || item.packageId) === itemId);
+      
+      if (!cartItem) {
+        toast.error('Item not found in cart');
+        return;
       }
-      triggerGetCart();
-      return;
+
+      // Optional: handle removal if quantity is zero
+      // if (newQuantity <= 0) {
+      //   cartItem.isPackageService ? removeCartPackage(itemId) : removeSingleService(itemId);
+      //   return;
+      // }
+
+      if (cartItem.isPackageService) {
+        updatePackageQuantity(itemId, newQuantity); // for package items
+      } else {
+        updateQuantity(itemId, newQuantity); // for single service items
+      }
+    } catch (err) {
+      toast.error(err?.data?.message || 'Failed to update quantity');
     }
-    updateQuantity(itemId, newQuantity);
-    triggerGetCart();
   };
 
+
   const handleRemoveItem = (itemId) => {
-    const item = cartItems?.find((item) => (item.serviceId || item.packageId) === itemId);
-    if (item) {
-      if (item.isPackageService) {
-        removeCartPackage(itemId);
-        triggerGetCart();
+    try {
+      const item = cartItems?.find((item) => (item.serviceId || item.packageId) === itemId);
+      if (item) {
+        if (item.isPackageService) {
+          removeCartPackage(itemId);
+        } else {
+          removeSingleService(itemId);
+        }
       } else {
-        removeSingleService(itemId);
-        triggerGetCart();
+        console.warn(`Item with ID ${itemId} not found in cart`);
+        toast.error('Item not found in cart');
       }
-    } else {
-      console.warn(`Item with ID ${itemId} not found in cart`);
+    } catch (err) {
+      toast.error(err?.data?.message || 'Failed to remove item from cart');
     }
   };
 
@@ -188,118 +209,90 @@ const CheckoutPage = () => {
 
           {/* Services */}
           <div className="bg-white rounded-lg p-6 shadow-sm border max-h-[400px] overflow-y-scroll">
-            {(cartLoading || isLoading || loading) ? (
+            {(cartLoading || loading || cartLoadingCheckout || fetchingCheckout || fetchingCart) ? (
               <div className="flex justify-center items-center h-32">
-                <p className="text-gray-600"><CircularLoader /></p>
+                <CircularLoader />
+              </div>
+            ) : error ? (
+              <div className="text-center text-red-500 mt-8">
+                <p>{error}</p>
+              </div>
+            ) : cartItems.length === 0 ? (
+              <div className="text-center text-gray-500 mt-8">
+                <p>Your cart is empty</p>
               </div>
             ) : (
-              <>
-                {cartData?.data?.services?.map((item) => (
-                  <div key={item._id} className="border-b border-gray-100 pb-4">
-                    <div className="flex justify-between items-start mb-3">
-                      <h4 className="font-medium text-sm text-gray-900 flex-1 pr-2">
-                        {item.serviceId.title} x{item.quantity}
-                      </h4>
+              cartItems.map((item) => (
+                <div key={item._id} className="border-b border-gray-100 pb-4">
+                  <div className="flex justify-between items-start mb-3">
+                    <h4 className="font-medium text-sm text-gray-900 flex-1 pr-2">
+                      {item.title} x{item.quantity}
+                    </h4>
+                    <button
+                      onClick={() => handleRemoveItem(item.serviceId || item.packageId)}
+                      className="text-gray-400 hover:text-red-500 text-xs"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3 bg-blue-100 rounded-full px-3 py-1">
                       <button
-                        onClick={() => handleRemoveItem(item.serviceId._id || item._id)}
-                        className="text-gray-400 hover:text-red-500 text-xs"
+                        onClick={() => handleUpdateQuantity(item.serviceId || item.packageId, item.quantity - 1)}
+                        className="w-6 h-6 rounded-full bg-white flex items-center justify-center hover:bg-gray-50"
+                        disabled={item.quantity <= 1}
                       >
-                        ✕
+                        <Minus className="w-3 h-3" />
+                      </button>
+                      <span className="text-sm font-medium w-8 text-center">
+                        {item.quantity}
+                      </span>
+                      <button
+                        onClick={() => handleUpdateQuantity(item.serviceId || item.packageId, item.quantity + 1)}
+                        className="w-6 h-6 rounded-full bg-white flex items-center justify-center hover:bg-gray-50"
+                      >
+                        <Plus className="w-3 h-3" />
                       </button>
                     </div>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3 bg-blue-100 rounded-full px-3 py-1">
-                        <button
-                          onClick={() => handleUpdateQuantity(item._id, item.quantity - 1)}
-                          className="w-6 h-6 rounded-full bg-white flex items-center justify-center hover:bg-gray-50"
-                          disabled={item.quantity <= 1}
-                        >
-                          <Minus className="w-3 h-3" />
-                        </button>
-                        <span className="text-sm font-medium w-8 text-center">
-                          {item.quantity}
-                        </span>
-                        <button
-                          onClick={() => handleUpdateQuantity(item._id, item.quantity + 1)}
-                          className="w-6 h-6 rounded-full bg-white flex items-center justify-center hover:bg-gray-50"
-                        >
-                          <Plus className="w-3 h-3" />
-                        </button>
-                      </div>
-                      <span className="text-sm font-semibold">₹{item.total}</span>
-                    </div>
+                    <span className="text-sm font-semibold">₹{item.total}</span>
                   </div>
-                ))}
-                {cartData?.data?.packages?.length > 0 && cartData.data.packages.map((item) => (
-                  <div key={item._id} className="border-b border-gray-100 pb-4">
-                    <div className="flex justify-between items-start mb-3">
-                      <h4 className="font-medium text-sm text-gray-900 flex-1 pr-2">
-                        {item.packageId.title} x{item.quantity}
-                      </h4>
-                      <button
-                        onClick={() => handleRemoveItem(item.packageId._id)}
-                        className="text-gray-400 hover:text-red-500 text-xs"
-                      >
-                        ✕
-                      </button>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3 bg-blue-100 rounded-full px-3 py-1">
-                        <button
-                          onClick={() => handleUpdateQuantity(item._id, item.quantity - 1)}
-                          className="w-6 h-6 rounded-full bg-white flex items-center justify-center hover:bg-gray-50"
-                          disabled={item.quantity <= 1}
-                        >
-                          <Minus className="w-3 h-3" />
-                        </button>
-                        <span className="text-sm font-medium w-8 text-center">
-                          {item.quantity}
-                        </span>
-                        <button
-                          onClick={() => handleUpdateQuantity(item._id, item.quantity + 1)}
-                          className="w-6 h-6 rounded-full bg-white flex items-center justify-center hover:bg-gray-50"
-                        >
-                          <Plus className="w-3 h-3" />
-                        </button>
-                      </div>
-                      <span className="text-sm font-semibold">₹{item.total}</span>
-                    </div>
-                  </div>
-                ))}
-                {error && <div className='flex justify-center text-[20px] font-serif font-bold'>{error}</div>}
-
-                <div className="mt-6 pt-4 border-t">
-                  <p className="text-sm text-gray-600 mb-4">Frequently added together</p>
-                  {isFrequentlyLoading ? (
-                    <div className="flex justify-center items-center h-32">
-                      <p className="text-gray-600">Loading frequently added services...</p>
-                    </div>
-                  ) : (
-                    <div className="flex overflow-x-auto space-x-4 pb-4">
-                      {frequentlyAddedServices.map((service) => (
-                        <div key={service._id} className="border rounded-lg p-4 min-w-[200px] flex-shrink-0">
-                          <div className="w-16 h-16 bg-gray-100 rounded-lg mb-3">
-                            <img src={service?.images[0]?.img} alt="" className='w-16 h-16' />
-                          </div>
-                          <p className="text-sm font-medium">{service.title}</p>
-                          <p className="text-sm text-gray-600">₹{service.location[0]?.originalPrice}</p>
-                          <button
-                            onClick={() => handleAddToCart(service)}
-                            className={`mt-2 text-sm font-medium rounded px-3 py-1 ${isInCartorNot(service._id)
-                              ? 'bg-gray-400 text-white cursor-not-allowed'
-                              : 'text-[#FF5534] border border-[#FF5534] hover:bg-red-50'
-                              }`}
-                            disabled={isInCartorNot(service._id)}
-                          >
-                            {isInCartorNot(service._id) ? 'In Cart' : 'Add'}
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
                 </div>
-              </>
+              ))
             )}
+            <div className="mt-6 pt-4 border-t">
+              <p className="text-sm text-gray-600 mb-4">Frequently added together</p>
+              {isFrequentlyLoading ? (
+                <div className="flex justify-center items-center h-32">
+                  <CircularLoader />
+                </div>
+              ) : frequentlyAddedServices.length === 0 ? (
+                <div className="text-center text-gray-500 mt-8">
+                  <p>No frequently added services available</p>
+                </div>
+              ) : (
+                <div className="flex overflow-x-auto space-x-4 pb-4">
+                  {frequentlyAddedServices.map((service) => (
+                    <div key={service._id} className="border rounded-lg p-4 min-w-[200px] flex-shrink-0">
+                      <div className="w-16 h-16 bg-gray-100 rounded-lg mb-3">
+                        <img src={service?.images[0]?.img || 'https://via.placeholder.com/150'} alt={service.title} className="w-16 h-16" />
+                      </div>
+                      <p className="text-sm font-medium">{service.title}</p>
+                      <p className="text-sm text-gray-600">₹{service.location[0]?.originalPrice || 0}</p>
+                      <button
+                        onClick={() => handleAddToCart(service)}
+                        className={`mt-2 text-sm font-medium rounded px-3 py-1 ${isInCartorNot(service._id)
+                          ? 'bg-gray-400 text-white cursor-not-allowed'
+                          : 'text-[#FF5534] border border-[#FF5534] hover:bg-red-50'
+                          }`}
+                        disabled={isInCartorNot(service._id)}
+                      >
+                        {isInCartorNot(service._id) ? 'In Cart' : 'Add'}
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
           <div className="mt-6 pt-4">
             <h4 className="font-medium text-gray-900 mb-2">Cancellation policy</h4>
@@ -385,7 +378,7 @@ const CheckoutPage = () => {
               {selectedSlot || (cartData?.data?.Date && cartData?.data?.startTime) ? (
                 <>
                   <p className="text-[14px] font-medium text-[#444444] mb-2 mx-6">
-                    {cartData?.data?.startTime || selectedSlot?.time} - {cartData?.data?.endTime}
+                    {cartData?.data?.startTime || selectedSlot?.time} - {cartData?.data?.endTime || selectedSlot?.endTime || ''}
                   </p>
                   <button
                     onClick={() => setShowSlotModal(true)}
@@ -416,9 +409,9 @@ const CheckoutPage = () => {
               <button
                 onClick={handlePayment}
                 className="w-full bg-[#FF5534] text-white text-sm font-semibold rounded-lg py-2 hover:bg-[#e64a2e] transition flex items-center justify-center"
-                disabled={isPaymentLoading}
+                disabled={isPaymentLoading || isCheckoutLoading || cartItems.length === 0}
               >
-                {isPaymentLoading ? <CircularLoader size={20} /> : 'Select payment method'}
+                {isPaymentLoading || isCheckoutLoading ? <CircularLoader size={20} /> : 'Select payment method'}
               </button>
             </div>
           </div>
@@ -444,77 +437,67 @@ const CheckoutPage = () => {
           {/* Payment Summary */}
           <div className="bg-white rounded-lg shadow-sm p-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Payment summary</h3>
-
-            <div className="space-y-3 mb-4">
-              {cartData?.data?.services?.map((item) => (
-                <div key={item._id} className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">{item.serviceId.title}</span>
-                  <span className="text-sm text-gray-900">₹{item.total}</span>
-                </div>
-              ))}
-              {cartData?.data?.packages?.length > 0 && cartData.data.packages.map((item) => (
-                <div key={item._id} className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">{item.packageId.title}</span>
-                  <span className="text-sm text-gray-900">₹{item.total}</span>
-                </div>
-              ))}
-            </div>
-
-            <div className="border-t border-gray-100 pt-4 mb-4">
-              <div className="flex justify-between items-center font-semibold">
-                <span className="text-gray-900">Service Total</span>
-                <span className="text-gray-900">₹{cartData?.data?.totalAmount || 0}</span>
+            {cartItems.length === 0 ? (
+              <div className="text-center text-gray-500 mt-8">
+                <p>No items in cart</p>
               </div>
-            </div>
-
-            <div className="space-y-2 text-sm mb-4">
-              <div className="flex justify-between items-center">
-                <div className="flex items-center space-x-2">
-                  <span className="">
-                    <img src={Coupon} alt="coupon" />
-                  </span>
-                  <span className="text-gray-600">Coupon Discount</span>
+            ) : (
+              <>
+                <div className="space-y-3 mb-4">
+                  {cartItems.map((item) => (
+                    <div key={item._id} className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">{item.title}</span>
+                      <span className="text-sm text-gray-900">₹{item.total}</span>
+                    </div>
+                  ))}
                 </div>
-                <div className="flex items-center space-x-2">
-                  <span className="text-green-600">₹{couponDiscount}</span>
-                  {selectedCoupon && (
-                    <button
-                      onClick={handleRemoveCoupon}
-                      className="text-red-500 hover:text-red-700"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                  )}
+                <div className="border-t border-gray-100 pt-4 mb-4">
+                  <div className="flex justify-between items-center font-semibold">
+                    <span className="text-gray-900">Service Total</span>
+                    <span className="text-gray-900">₹{serviceTotal}</span>
+                  </div>
                 </div>
-              </div>
-
-              <div className="flex justify-between items-center">
-                <div className="flex items-center space-x-2">
-                  <span className="">
-                    <img src={SURG} alt="surg" />
-                  </span>
-                  <span className="text-gray-600">Platform Fee</span>
+                <div className="space-y-2 text-sm mb-4">
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center space-x-2">
+                      <span><img src={Coupon} alt="coupon" /></span>
+                      <span className="text-gray-600">Coupon Discount</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <span className="text-green-600">₹{couponDiscount}</span>
+                      {selectedCoupon && (
+                        <button
+                          onClick={handleRemoveCoupon}
+                          className="text-red-500 hover:text-red-700"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center space-x-2">
+                      <span><img src={SURG} alt="surg" /></span>
+                      <span className="text-gray-600">Platform Fee</span>
+                    </div>
+                    <span className="text-gray-900">₹{platformFee}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center space-x-2">
+                      <span><img src={Safety} alt="safety" /></span>
+                      <span className="text-gray-600">Safety & Hygiene kit Charges</span>
+                    </div>
+                    <span className="text-gray-900">₹{taxAmount}</span>
+                  </div>
                 </div>
-                <span className="text-gray-900">₹{platformFee}</span>
-              </div>
-
-              <div className="flex justify-between items-center">
-                <div className="flex items-center space-x-2">
-                  <span className="">
-                    <img src={Safety} alt="safety" />
-                  </span>
-                  <span className="text-gray-600">Safety & Hygiene kit Charges</span>
+                <div className="border-t border-gray-100 pt-4">
+                  <div className="flex justify-between items-center font-bold text-lg">
+                    <span className="text-gray-900">Payable Amount</span>
+                    <span className="text-gray-900">₹{payableAmount}</span>
+                  </div>
                 </div>
-                <span className="text-gray-900">₹{taxAmount}</span>
-              </div>
-            </div>
-
-            <div className="border-t border-gray-100 pt-4">
-              <div className="flex justify-between items-center font-bold text-lg">
-                <span className="text-gray-900">Payable Amount</span>
-                <span className="text-gray-900">₹{payableAmount}</span>
-              </div>
-            </div>
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -526,14 +509,12 @@ const CheckoutPage = () => {
         onSave={handleAddressSave}
         selectedAddress={selectedAddress}
       />
-
       <SlotModal
         isOpen={showSlotModal}
         onClose={() => setShowSlotModal(false)}
         onSelect={handleSlotSelect}
         selectedSlot={selectedSlot}
       />
-
       <PaymentModal
         isOpen={showPaymentModal}
         onClose={() => setShowPaymentModal(false)}
@@ -545,12 +526,10 @@ const CheckoutPage = () => {
         orderId={orderId}
         isCheckoutLoading={isCheckoutLoading}
       />
-
       <SuccessModal
         isOpen={showSuccessModal}
         onClose={() => setShowSuccessModal(false)}
       />
-
       <CouponsModal
         isOpen={showCouponsModal}
         onClose={() => setShowCouponsModal(false)}

@@ -23,16 +23,19 @@ const MenProductPremiumPage = () => {
   const navigate = useNavigate();
   const MAIN_CATEGORY_ID = "680f7ee387a593819687d9fd"; // Men's Premium ID
 
-  const {
+ const {
     cartItems,
     loading,
     error,
     addToCartPackage,
     removeCartPackage,
-    updateCartPackage,
     updateQuantity,
     addToCartSingleServices,
     removeSingleService,
+    isInCartorNot,
+    updatePackageQuantity,
+    cartLoading,
+    fetchingCart
   } = useCart();
 
   const { data: categoriesData, isLoading: categoriesLoading } =
@@ -193,15 +196,30 @@ const MenProductPremiumPage = () => {
   };
 
   const handleUpdateQuantity = (itemId, newQuantity) => {
-    if (newQuantity <= 0) {
-      if (cartItems.find((item) => item._id === itemId)?.isPackageService) {
-        removeCartPackage(itemId);
-      } else {
-        removeSingleService(itemId);
+    console.log(itemId, "itemId", newQuantity, "newQuantity");
+
+    try {
+      const cartItem = cartItems.find(item => (item.serviceId || item.packageId) === itemId);
+      
+      if (!cartItem) {
+        toast.error('Item not found in cart');
+        return;
       }
-      return;
+
+      // Optional: handle removal if quantity is zero
+      // if (newQuantity <= 0) {
+      //   cartItem.isPackageService ? removeCartPackage(itemId) : removeSingleService(itemId);
+      //   return;
+      // }
+
+      if (cartItem.isPackageService) {
+        updatePackageQuantity(itemId, newQuantity); // for package items
+      } else {
+        updateQuantity(itemId, newQuantity); // for single service items
+      }
+    } catch (err) {
+      toast.error(err?.data?.message || 'Failed to update quantity');
     }
-    updateQuantity(itemId, newQuantity);
   };
 
    const handleRemoveItem = (itemId) => {

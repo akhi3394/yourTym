@@ -6,7 +6,7 @@ import Instagram from '../assets/images/footer/Instagram.png';
 import GooglePlay from '../assets/images/footer/GooglePlay.png';
 import AppStore from '../assets/images/footer/AppStore.png';
 
-const Footer = () => {
+const Footer = ({ BannersData,bannerLoading }) => {
   const [isContactPopupOpen, setIsContactPopupOpen] = useState(false);
 
   const toggleContactPopup = () => {
@@ -17,11 +17,18 @@ const Footer = () => {
     <footer className="bg-white border-t border-gray-200 py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 items-start px-5">
-          
+
           {/* Company (with logo on top) */}
           <div>
-            <img src={Logo} alt="logo" className="h-[53px] w-[152px] mb-5"/>
-            <div>
+            {bannerLoading ? (
+              <CircularLoader size={20} />
+            ) : (
+              <img
+                src={BannersData?.data[0]?.image ?? ""}
+                alt="logo"
+                className="h-[80px] w-[152px] bg-cover"
+              />
+            )}         <div>
               <h3 className="font-semibold text-[#000000] text-[24px] mb-4">Company</h3>
               <ul className="space-y-2 text-[#000000] text-[16px]">
                 <li><a href="#" className="hover:text-[#FF5534] transition-colors">About us</a></li>
@@ -41,8 +48,8 @@ const Footer = () => {
               <li><a href="#" className="hover:text-[#FF5534] transition-colors">Categories near you</a></li>
               <li><a href="#" className="hover:text-[#FF5534] transition-colors">Blog</a></li>
               <li>
-                <button 
-                  onClick={toggleContactPopup} 
+                <button
+                  onClick={toggleContactPopup}
                   className="hover:text-[#FF5534] transition-colors text-left"
                 >
                   Contact us
@@ -98,9 +105,9 @@ const Footer = () => {
                 </li>
                 <li className="flex items-center">
                   <FaWhatsapp className="w-[24px] h-[24px] mr-2 text-[#000000]" />
-                  <a 
-                    href="https://wa.me/8299847641" 
-                    target="_blank" 
+                  <a
+                    href="https://wa.me/8299847641"
+                    target="_blank"
                     rel="noopener noreferrer"
                     className="text-[#000000] hover:text-[#FF5534] transition-colors"
                   >
@@ -108,7 +115,7 @@ const Footer = () => {
                   </a>
                 </li>
               </ul>
-              <button 
+              <button
                 onClick={toggleContactPopup}
                 className="mt-6 bg-[#FF5534] text-white px-4 py-2 rounded hover:bg-[#e04a2f] transition-colors"
               >

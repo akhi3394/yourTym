@@ -11,6 +11,7 @@ import {
   useGetCartQuery,
   useUpdateCartServiceQuantityMutation,
   useRemovePackageFromCartMutation,
+  useUpdateCartPackageQuantityMutation,
 } from "../store/api/productsApi";
 
 const useCart = () => {
@@ -23,8 +24,9 @@ const useCart = () => {
   const [addToCartSingleService] = useAddToCartSingleServiceMutation();
   const [removeFromCart] = useRemoveFromCartMutation();
   const [updateCartServiceQuantity] = useUpdateCartServiceQuantityMutation();
+  const [updateCartPackageQuantity] = useUpdateCartPackageQuantityMutation()
   const [removePackageFromCart] = useRemovePackageFromCartMutation(); // Use the new mutation
-  const { data: cartData, isLoading: cartLoading, error: cartError } = useGetCartQuery(undefined, {
+  const { data: cartData, isLoading: cartLoading, error: cartError,isFetching:fetchingCart } = useGetCartQuery(undefined, {
     skip: !isAuthenticated,
   });
 
@@ -47,11 +49,11 @@ const useCart = () => {
       try {
         let result;
         const payload = { packageId: packageId, quantity };
-         result = await addToCartPackageCustomise({
-            ...payload,
-            packageServices: selectedServices,
-          }).unwrap();
-        
+        result = await addToCartPackageCustomise({
+          ...payload,
+          packageServices: selectedServices,
+        }).unwrap();
+
         setCartItems((prev) => [
           ...prev,
           { ...result, quantity, isPackageService: true, _id: result._id || packageId },
@@ -111,7 +113,7 @@ const useCart = () => {
 
   const removeCartPackage = useCallback(
     async (cartItemId) => {
-      console.log(cartItemId,"fromuseCart")
+      console.log(cartItemId, "fromuseCart")
       setLoading(true);
       setError(null);
       try {
@@ -164,12 +166,14 @@ const useCart = () => {
     [updateCustomizePackageInCart, updateCartPackageEdit]
   );
 
+  // service quantity update
   const updateQuantity = useCallback(
     async (itemId, quantity) => {
+      console.log(itemId, "itemIdfromuseCart", quantity, "quantity")
       setLoading(true);
       setError(null);
       try {
-        const result = await updateCartServiceQuantity({ Services: itemId, quantity }).unwrap();
+        const result = await updateCartServiceQuantity({ Services: itemId, quantity: quantity }).unwrap();
         setCartItems((prev) =>
           prev.map((item) =>
             item._id === itemId ? { ...item, quantity, total: item.price * quantity } : item
@@ -184,7 +188,27 @@ const useCart = () => {
     [updateCartServiceQuantity]
   );
 
-   const isInCartorNot = useCallback(
+  const updatePackageQuantity = useCallback(
+    async (itemId, quantity) => {
+      console.log(itemId, "itemIdfromuseCart", quantity, "quantity")
+      setLoading(true);
+      setError(null);
+      try {
+        const result = await updateCartPackageQuantity({ packageId: itemId, quantity: quantity }).unwrap();
+        setCartItems((prev) =>
+          prev.map((item) =>
+            item._id === itemId ? { ...item, quantity, total: item.price * quantity } : item
+          )
+        );
+      } catch (err) {
+        setError(err?.data?.message || "Failed to update quantity");
+      } finally {
+        setLoading(false);
+      }
+    },
+    [updateCartPackageQuantity]
+  );
+  const isInCartorNot = useCallback(
     (serviceId) => cartItems.some((item) => item.serviceId === serviceId && !item.isPackageService),
     [cartItems]
   );
@@ -199,8 +223,11 @@ const useCart = () => {
     updateQuantity,
     addToCartSingleServices,
     removeSingleService,
-    isInCartorNot
-  };
+    isInCartorNot,
+    updatePackageQuantity,
+    cartLoading,
+    fetchingCart
+  };cartData
 };
 
 export default useCart;
