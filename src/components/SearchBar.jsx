@@ -1,13 +1,16 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { useSearchCategoriesQuery } from '../store/api/profileApi';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useSearchCategoriesQuery, useGetMostSearchedQuery } from '../store/api/profileApi';
 import { useAppSelector } from '../hooks/useAppSelector';
 import SearchIcon from '../assets/svgs/searchIcon.svg';
 import CircularLoader from './CircularLoader';
+import recentSearch from '/recent-search.svg'
 
 const SearchBar = ({ setShowLogin }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
-  const { isAuthenticated } = useAppSelector((state) => state.auth);
+  const [isInputFocused, setIsInputFocused] = useState(false);
+  const { isAuthenticated, token } = useAppSelector((state) => state.auth);
+  const searchRef = useRef(null);
 
   // Debounce function
   const debounce = (func, delay) => {
@@ -22,9 +25,9 @@ const SearchBar = ({ setShowLogin }) => {
   const handleSearchChange = (e) => {
     if (!isAuthenticated) {
       setShowLogin(true);
-    } else {
-      setSearchTerm(e.target.value);
+      return;
     }
+    setSearchTerm(e.target.value);
   };
 
   // Debounced function to update search term
@@ -40,12 +43,31 @@ const SearchBar = ({ setShowLogin }) => {
     updateDebouncedSearch(searchTerm);
   }, [searchTerm, updateDebouncedSearch]);
 
-  const { data, isLoading, isFetching, error } = useSearchCategoriesQuery(debouncedSearchTerm, {
-    skip: !debouncedSearchTerm, // Skip query if debouncedSearchTerm is empty
+  // Fetch search categories
+  const { data: categoryData, isLoading, isFetching, error } = useSearchCategoriesQuery(debouncedSearchTerm, {
+    skip: !debouncedSearchTerm || !isAuthenticated,
   });
 
+  // Fetch most searched queries
+  const { data: mostSearchedData } = useGetMostSearchedQuery(undefined, {
+    skip: !isAuthenticated,
+  });
+
+  // Handle click outside to close popup and clear search
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (searchRef.current && !searchRef.current.contains(event.target)) {
+        setIsInputFocused(false);
+        setSearchTerm('');
+        setDebouncedSearchTerm('');
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [searchRef]);
+
   return (
-    <div className="relative w-full max-w-[600px]">
+    <div className="relative w-full max-w-[600px]" ref={searchRef}>
       <div className="flex-1 relative">
         <img
           src={SearchIcon}
@@ -56,44 +78,72 @@ const SearchBar = ({ setShowLogin }) => {
           type="text"
           placeholder="Search for ..."
           value={searchTerm}
+          onFocus={() => setIsInputFocused(true)}
           onChange={handleSearchChange}
           className="w-full h-[40px] border border-[#E5E5E5] rounded-[8px] pl-10 pr-4 text-[14px] focus:outline-none focus:ring-1 focus:ring-[#FF5534] focus:border-[#FF5534] placeholder-[#999999]"
         />
       </div>
 
-      {/* Search Results Dropdown */}
-      {(debouncedSearchTerm && (isLoading || isFetching || error || (data?.data?.length > 0))) && (
-        <div className="absolute top-[48px] left-0 right-0 bg-white border border-[#E5E5E5] rounded-[8px] shadow-lg max-h-[300px] overflow-y-auto z-50">
-          {(isLoading || isFetching) && (
-            <div className="p-4 text-center text-[#333333] flex justify-center">
-              <CircularLoader size={20} />
+      {/* Search Results and History Dropdown */}
+      {(isInputFocused || debouncedSearchTerm) && (
+        <div className="absolute top-[48px] left-0 right-0 bg-white border border-[#E5E5E5] rounded-[8px] shadow-lg z-50">
+          {debouncedSearchTerm && (
+            <div className="max-h-[200px] overflow-y-auto">
+              {(isLoading || isFetching) && (
+                <div className="p-4 text-center text-[#333333] flex justify-center">
+                  <CircularLoader size={20} />
+                </div>
+              )}
+              {error && (
+                <div className="p-4 text-center text-[#FF5534]">
+                  Error: {error.message || 'Something went wrong'}
+                </div>
+              )}
+              {categoryData?.data?.length > 0 && !isLoading && !isFetching && (
+                <ul className="divide-y divide-[#E5E5E5]">
+                  {categoryData.data.map((item) => (
+                    <li
+                      key={item._id}
+                      className="p-4 hover:bg-[#F5F5F5] cursor-pointer flex justify-between items-center"
+                      onClick={() => setSearchTerm(item.title)}
+                    >
+                      <span className="text-[#333333] text-[14px]">
+                        {item.title}
+                      </span>
+                      <span className="text-[#FF5534] text-[14px] font-medium">
+                        ₹{item.location[0]?.discountPrice || item.location[0]?.originalPrice}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              {debouncedSearchTerm && !isLoading && !isFetching && categoryData?.data?.length === 0 && (
+                <div className="p-4 text-center text-[#333333]">
+                  No results found
+                </div>
+              )}
             </div>
           )}
-          {error && (
-            <div className="p-4 text-center text-[#FF5534]">
-              Error: {error.message || 'Something went wrong'}
-            </div>
-          )}
-          {data?.data?.length > 0 && !isLoading && !isFetching && (
-            <ul className="divide-y divide-[#E5E5E5]">
-              {data.data.map((item) => (
-                <li
-                  key={item._id}
-                  className="p-4 hover:bg-[#F5F5F5] cursor-pointer flex justify-between items-center"
-                >
-                  <span className="text-[#333333] text-[14px]">
-                    {item.title}
-                  </span>
-                  <span className="text-[#FF5534] text-[14px] font-medium">
-                    ₹{item.location[0]?.discountPrice || item.location[0]?.originalPrice}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          )}
-          {debouncedSearchTerm && !isLoading && !isFetching && data?.data?.length === 0 && (
-            <div className="p-4 text-center text-[#333333]">
-              No results found
+          {isInputFocused && !debouncedSearchTerm && mostSearchedData?.data?.length > 0 && (
+            <div className="max-h-[200px] overflow-y-auto mt-2 pt-2 ">
+              <div className="p-2 text-[#333333] font-medium text-center border-dashed  border-b-2">Search History</div>
+              <ul className=" ">
+                {[...mostSearchedData.data]
+                  .sort((a, b) => b.searchCount - a.searchCount)
+                  .slice(0, 10)
+                  .map((item) => (
+                    <li
+                      key={item.searchQuery}
+                      className="p-2 hover:bg-[#F5F5F5] cursor-pointer text-[#333333] text-[14px] border-dashed  border-b-2"
+                      onClick={() => setSearchTerm(item.searchQuery)}
+                    >
+                      <span className='flex gap-5'>
+                        <img src={recentSearch} alt="" />
+                        {item.searchQuery}
+                      </span>
+                    </li>
+                  ))}
+              </ul>
             </div>
           )}
         </div>

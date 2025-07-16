@@ -97,6 +97,9 @@ export const profileApi = createApi({
       query: () => '/api/v1/admin/Coupan/listCoupan',
       providesTags: ['Coupons'],
     }),
+    getMostSearched: builder.query({
+      query: () => '/api/v1/user/most-searched',
+    }),
   }),
 });
 
@@ -118,5 +121,7 @@ export const {
   useAddFavouriteBookingMutation,
   useGetStaticBannersQuery,
   useSearchCategoriesQuery,
-  useGetCouponsQuery
+  useGetCouponsQuery,
+  useGetMostSearchedQuery
+
 } = profileApi;
