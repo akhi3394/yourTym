@@ -11,6 +11,7 @@ import packageImage from "../assets/images/package.png";
 import {
   useGetAllCategoriesQuery,
   useGetAllServicesQuery,
+  useGetAllSubCategoriesQuery,
   useGetPackagesByMainCategoryQuery,
 } from "../store/api/productsApi";
 import useCart from "../hooks/useCart";
@@ -22,8 +23,9 @@ const MenProductPremiumPage = () => {
   const { isAuthenticated, token } = useSelector((state) => state.auth);
   const navigate = useNavigate();
   const MAIN_CATEGORY_ID = "680f7ee387a593819687d9fd"; // Men's Premium ID
+  const { data: allsubCategoryData } = useGetAllSubCategoriesQuery();
 
- const {
+  const {
     cartItems,
     loading,
     error,
@@ -148,14 +150,67 @@ const MenProductPremiumPage = () => {
     return selectedCategory === "packages"
       ? packages
       : packages.filter((pkg) =>
-          pkg.services.some((s) =>
-            s.category.categoryId.name
-              .toLowerCase()
-              .replace(/\s+/g, "-")
-              .replace(/[^a-z0-9-]/g, "") === selectedCategory
-          )
+        pkg.services.some((s) =>
+          s.category.categoryId.name
+            .toLowerCase()
+            .replace(/\s+/g, "-")
+            .replace(/[^a-z0-9-]/g, "") === selectedCategory
+        )
       );
   }, [packages, selectedCategory]);
+
+
+
+  const womenCategory = useMemo(() => {
+    return (
+      categoriesData?.data?.find(
+        (item) => item.category?._id === MAIN_CATEGORY_ID
+      ) || null
+    );
+  }, [categoriesData]);
+
+
+  const filteredSubCategories = allsubCategoryData?.data?.filter(
+    (item) => item.mainCategoryId._id === MAIN_CATEGORY_ID
+  ) || [];
+
+
+  const transformSubCategories = (subCategoryData, womenCategory) => {
+    // Create a map of category names to their images from womenCategory.subCategories
+    const categoryImageMap = womenCategory?.subCategories?.reduce((acc, subCategory) => {
+      acc[subCategory.name] = subCategory.image;
+      return acc;
+    }, {}) || {};
+
+    // Group items by categoryId.name
+    const groupedByCategory = subCategoryData.reduce((acc, item) => {
+      const categoryName = item.categoryId.name;
+      if (!acc[categoryName]) {
+        acc[categoryName] = [];
+      }
+      acc[categoryName].push(item);
+      return acc;
+    }, {});
+
+    // Create the final array with separators
+    const result = [];
+    Object.keys(groupedByCategory).forEach((categoryName) => {
+      // Add separator object using image from womenCategory.subCategories
+      result.push({
+        type: "separator",
+        name: categoryName,
+        image: categoryImageMap[categoryName] || "https://dummyimage.com/default.jpg", // Fallback image
+      });
+      // Add all items for this category
+      result.push(...groupedByCategory[categoryName]);
+    });
+
+    return result;
+  };
+
+
+  const transformedSubCategories = transformSubCategories(filteredSubCategories, womenCategory);
+
 
   const handleSubCategoryClick = (subCategory) => {
     const sectionId =
@@ -196,11 +251,10 @@ const MenProductPremiumPage = () => {
   };
 
   const handleUpdateQuantity = (itemId, newQuantity) => {
-    console.log(itemId, "itemId", newQuantity, "newQuantity");
 
     try {
       const cartItem = cartItems.find(item => (item.serviceId || item.packageId) === itemId);
-      
+
       if (!cartItem) {
         toast.error('Item not found in cart');
         return;
@@ -222,8 +276,7 @@ const MenProductPremiumPage = () => {
     }
   };
 
-   const handleRemoveItem = (itemId) => {
-  console.log(itemId ,"removecart")
+  const handleRemoveItem = (itemId) => {
     const item = cartItems?.find((item) => (item.serviceId || item.packageId) === itemId);
     if (item) {
       if (item.isPackageService) {
@@ -236,11 +289,6 @@ const MenProductPremiumPage = () => {
     }
   };
 
-
-
-  const handleAddOption = (service) => {
-    console.log("Add option for:", service);
-  };
 
   const handleRemovePackage = (itemId) => {
     removeCartPackage(itemId?._id);
@@ -273,8 +321,8 @@ const MenProductPremiumPage = () => {
               {selectedCategory === "packages"
                 ? "Create a custom package"
                 : `Packages for ${selectedCategory
-                    .replace(/-/g, " ")
-                    .replace(/\b\w/g, (l) => l.toUpperCase())}`}
+                  .replace(/-/g, " ")
+                  .replace(/\b\w/g, (l) => l.toUpperCase())}`}
             </h2>
             <div className="space-y-4">
               {packagesLoading ? (
@@ -300,40 +348,8 @@ const MenProductPremiumPage = () => {
             </div>
           </div>
 
-          <div id={selectedCategory} className="mb-8">
-            <div className="space-y-4">
-              {servicesLoading ? (
-                <ServiceCard isLoading={true} />
-              ) : servicesError ? (
-                <div className="text-center py-8 text-red-500">
-                  Error loading services: {servicesError.message}
-                </div>
-              ) : mensServices.length > 0 ? (
-                mensServices
-                  .filter((service) => {
-                    const sectionId = service.categoryId?.name
-                      ?.toLowerCase()
-                      ?.replace(/\s+/g, "-")
-                      ?.replace(/[^a-z0-9-]/g, "");
-                    return sectionId === selectedCategory || selectedCategory === "packages";
-                  })
-                  .map((service) => (
-                    <ServiceCard
-                      key={service._id}
-                      service={service}
-                      onAddOption={handleAddOption}
-                      onAddToCart={handleAddToCart}
-                      onRemoveFromCart={handleRemoveItem}
-                      isInCart={isInCart(service._id)}
-                    />
-                  ))
-              ) : (
-                <div className="text-center py-8 text-gray-500">
-                  No services available for {selectedCategory.replace(/-/g, " ")}.
-                </div>
-              )}
-            </div>
-          </div>
+          <ServiceCard subCategories={transformedSubCategories} />
+
         </div>
 
         <CartSidebar

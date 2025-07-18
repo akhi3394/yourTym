@@ -71,7 +71,6 @@ const WomenProductsPage = () => {
     );
   }, [categoriesData]);
 
-  console.log(womenCategory, "womenCatogry")
   const subCategories = useMemo(() => {
     const apiSubCategories =
       womenCategory?.subCategories?.map((subCategory) => ({
@@ -181,7 +180,6 @@ const WomenProductsPage = () => {
   const filteredSubCategories = allsubCategoryData?.data?.filter(
     (item) => item.mainCategoryId._id === MAIN_CATEGORY_ID
   ) || [];
-  console.log(filteredSubCategories, "filteredSubCategories")
 
 
   const transformSubCategories = (subCategoryData, womenCategory) => {
@@ -217,13 +215,8 @@ const WomenProductsPage = () => {
     return result;
   };
 
-  console.log(transformSubCategories(filteredSubCategories), "function")
 
   const transformedSubCategories = transformSubCategories(filteredSubCategories, womenCategory);
-
-
-
-
 
 
   const filteredPackages = useMemo(() => {
@@ -255,8 +248,7 @@ const WomenProductsPage = () => {
   };
 
   const handleSavePackage = (updatedPackage) => {
-    console.log(updatedPackage?._id, "id")
-    console.log(updatedPackage?.selectedServices, "selected")
+
     const isCustomized = updatedPackage.packageType === "Customize";
 
     if (updatedPackage.selectedServices) {
@@ -277,7 +269,6 @@ const WomenProductsPage = () => {
   };
 
   const handleUpdateQuantity = (itemId, newQuantity) => {
-    console.log(itemId, "itemId", newQuantity, "newQuantity");
 
     try {
       const cartItem = cartItems.find(item => (item.serviceId || item.packageId) === itemId);
@@ -298,7 +289,6 @@ const WomenProductsPage = () => {
   };
 
   const handleRemoveItem = (itemId) => {
-    console.log(itemId, "removecart");
     const item = cartItems?.find((item) => (item.serviceId || item.packageId) === itemId);
     if (item) {
       if (item.isPackageService) {
@@ -311,14 +301,7 @@ const WomenProductsPage = () => {
     }
   };
 
-  const handleAddOption = (service) => {
-    console.log("Add option for:", service);
-  };
 
-  const handleRemovePackage = (itemId) => {
-    console.log(itemId, "fromnew");
-    removeCartPackage(itemId?._id);
-  };
 
   const isInCart = (serviceId) => cartItems.some((item) => item.serviceId === serviceId);
   const isInCartPackage = (packageId) => cartItems.some((item) => item.packageId === packageId);
