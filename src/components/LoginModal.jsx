@@ -151,7 +151,7 @@ const LoginModal = ({ isOpen, onClose, onSwitchToSignup }) => {
                 Create New Account?
               </button>
 
-              <div className="text-center">
+              {/* <div className="text-center">
                 <p className="text-[16px] text-[#444444] font-extrabold mb-4">
                   Login with Social Media
                 </p>
@@ -169,7 +169,7 @@ const LoginModal = ({ isOpen, onClose, onSwitchToSignup }) => {
                     onClick={() => handleSocialLogin("google")}
                   />
                 </div>
-              </div>
+              </div> */}
             </div>
           </div>
         </div>

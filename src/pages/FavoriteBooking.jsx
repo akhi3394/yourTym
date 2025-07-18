@@ -111,18 +111,16 @@ const FavoriteBooking = () => {
     <div className="bg-[#F5F5F5] pt-[100px] pb-[80px] px-4 sm:px-6 lg:px-8 min-h-screen">
       {/* Main Content */}
       <div className="max-w-7xl mx-auto py-8">
-        <h2 className="text-2xl font-bold text-gray-900 mb-8">
+        <h2 className="text-2xl font-bold text-gray-900 mb-20">
           Favorite Booking
         </h2>
-
-        {/* Services Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <h2 className="text-[#000] text-[20px] text-center font-extrabold" >No favourites found </h2>
+        {/* <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {services.map((service) => (
             <div
               key={service.id}
               className="bg-white rounded-lg shadow-sm overflow-hidden"
             >
-              {/* Service Header */}
               <div className="p-4 border-b border-gray-200">
                 <div className="flex items-center justify-between mb-2">
                   <h3 className=" text-gray-900 text-[16px] font-bold">
@@ -159,9 +157,7 @@ const FavoriteBooking = () => {
                 </div>
               </div>
 
-              {/* Service Image and Details */}
               <div className="flex p-4">
-                {/* Left section: checkboxes and text */}
                 <div className="flex-1 pr-4">
                   <div className="space-y-2">
                     {service.checkboxes.map((item, index) => (
@@ -181,16 +177,13 @@ const FavoriteBooking = () => {
                       </div>
                     ))}
 
-                    {/* 9 More+ on the left side */}
                     <div className="text-sm font-bold pl-4 text-[#FF5534] cursor-pointer mt-2">
                       9 More+
                     </div>
                   </div>
                 </div>
 
-                {/* Right section: image and View Details below it */}
                 <div className="w-24 flex flex-col items-end justify-between">
-                  {/* Image with Best Seller tag */}
                   <div className="relative w-24 h-24">
                     <img
                       src={service.image}
@@ -202,7 +195,6 @@ const FavoriteBooking = () => {
                     </div>
                   </div>
 
-                  {/* View Details below image, aligned to right */}
                   <div className="text-[12px] font-semibold text-[#FF5534] cursor-pointer flex items-center mt-2">
                     View Details
                     <img
@@ -215,7 +207,6 @@ const FavoriteBooking = () => {
                 </div>
               </div>
 
-              {/* Add to Cart Button */}
               <div className="p-0 pt-0">
                 <button className="w-full  bg-[#FF5534] hover:bg-[#cd4c32] text-white h-[38px] rounded-b text-sm font-bold">
                   ADD TO CART
@@ -223,7 +214,7 @@ const FavoriteBooking = () => {
               </div>
             </div>
           ))}
-        </div>
+        </div> */}
       </div>
     </div>
   );

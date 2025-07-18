@@ -331,7 +331,7 @@ const SignupModal = ({ isOpen, onClose, onSwitchToLogin }) => {
               </button>
             </div>
 
-            <div className="text-center">
+            {/* <div className="text-center">
               <p className="text-[16px] text-[#444444] font-extrabold mb-4">Login with Social Media</p>
               <div className="flex justify-center space-x-4">
                 <img
@@ -347,7 +347,7 @@ const SignupModal = ({ isOpen, onClose, onSwitchToLogin }) => {
                   onClick={() => handleSocialLogin('google')}
                 />
               </div>
-            </div>
+            </div> */}
           </div>
         </div>
       </div>

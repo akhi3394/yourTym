@@ -261,14 +261,22 @@ const ProfileSection = () => {
       </div>
 
       {/* Join as Partner Section */}
-      <div className="bg-white rounded-lg shadow-sm border p-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="font-semibold text-gray-800 mb-1">Join as a Partner</h3>
-            <p className="text-sm text-gray-500">app.version.1.48.5</p>
+      <a
+        href="https://play.google.com/store/apps/details?id=com.yourtym_user"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="block"
+      >
+        <div className="bg-white rounded-lg shadow-sm border p-4 hover:shadow-md transition">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="font-semibold text-gray-800 mb-1">Join as a Partner</h3>
+              <p className="text-sm text-gray-500">app.version.1.48.5</p>
+            </div>
           </div>
         </div>
-      </div>
+      </a>
+
     </div>
   );
 };

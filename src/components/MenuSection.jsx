@@ -51,6 +51,25 @@ const MenuSection = () => {
 
   const { data: profileData } = useGetProfileQuery();
   const referralcode = profileData?.data?.refferalCode;
+  const handleShare = async () => {
+    const shareData = {
+      title: 'Share YYGM',
+      text: 'Check out this awesome app!',
+      url: 'https://your-tym.vercel.app/',
+    };
+
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+      } catch (err) {
+        console.error('Share failed:', err.message);
+      }
+    } else {
+      // Fallback if Web Share API is not supported
+      const shareUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareData.text + " " + shareData.url)}`;
+      window.open(shareUrl, '_blank');
+    }
+  };
 
   return (
     <>
@@ -93,7 +112,7 @@ const MenuSection = () => {
             <MenuItem icon={<Headphones className="w-5 h-5" />} title="Support" onClick={() => setIsSupportModalOpen(true)} />
             <MenuItem icon={<MessageCircle className="w-5 h-5" />} title="Give us a Feedback" onClick={() => setIsFeedbackOpen(true)} />
             <MenuItem icon={<Star className="w-5 h-5" />} title="My Rating" onClick={() => setIsRatingOpen(true)} />
-            <MenuItem icon={<Share className="w-5 h-5" />} title="Share YYGM" onClick={() => navigate("/share-yygm")} />
+            <MenuItem icon={<Share className="w-5 h-5" />} title="Share YYGM" onClick={handleShare} />
           </div>
         </div>
       </div>

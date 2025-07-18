@@ -10,34 +10,7 @@ const MyBookings = () => {
   const navigate=useNavigate()
 
   const historyBookings = [
-    {
-      orderId: "1659297452",
-      service: "Salon at Home",
-      date: "08-May, 2023 Mon,",
-      time: "16:30-17:00",
-      status: "Cancelled",
-    },
-    {
-      orderId: "1659297452",
-      service: "Salon at Home",
-      date: "08-May, 2023 Mon,",
-      time: "16:30-17:00",
-      status: "Cancelled",
-    },
-    {
-      orderId: "1659297452",
-      service: "Salon at Home",
-      date: "08-May, 2023 Mon,",
-      time: "16:30-17:00",
-      status: "Cancelled",
-    },
-    {
-      orderId: "1659297452",
-      service: "Salon at Home",
-      date: "08-May, 2023 Mon,",
-      time: "16:30-17:00",
-      status: "Cancelled",
-    },
+ 
   ];
 
 
@@ -55,7 +28,7 @@ const MyBookings = () => {
         </h1>
 
         {/* Ongoing Section */}
-        <div className="mb-12">
+        <div className="mb-12 h-[500px] overflow-y-scroll">
           <div className="bg-[#F6DDD8] rounded-lg p-6">
             <div className="flex items-center justify-center mb-6">
               <span className="text-lg font-medium text-[#444444]">
