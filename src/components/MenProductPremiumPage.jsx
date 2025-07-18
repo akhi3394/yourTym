@@ -229,14 +229,12 @@ const MenProductPremiumPage = () => {
     setShowEditModal(true);
   };
 
-  const handleSavePackage = (updatedPackage) => {
-    if (updatedPackage.selectedServices) {
-      updateCartPackage(
-        updatedPackage._id,
-        updatedPackage.selectedServices,
-        [],
-        updatedPackage.quantity || 1
-      );
+   const handleSavePackage = (updatedPackage) => {
+    console.log(updatedPackage, "fromnatu");
+    const isCustomized = updatedPackage.packageType === "Customize";
+
+    if (updatedPackage.serviceIds) {
+      addToCartPackage(updatedPackage.packageId,1, isCustomized, updatedPackage.serviceIds);
     }
     setShowEditModal(false);
   };
@@ -366,12 +364,7 @@ const MenProductPremiumPage = () => {
         onClose={() => setShowEditModal(false)}
         packages={editingPackage}
         onSave={handleSavePackage}
-        services={mensServices.map((service) => ({
-          _id: service._id,
-          title: service.title,
-          image: service.images?.[0]?.img || "https://via.placeholder.com/150",
-          price: service.location?.[0]?.discountPrice || service.location?.[0]?.originalPrice,
-        }))}
+        packagesData={packagesData?.data}
       />
     </div>
   );

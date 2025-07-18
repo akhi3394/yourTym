@@ -55,6 +55,8 @@ const WomenProductsPage = () => {
     useGetPackagesByMainCategoryQuery(MAIN_CATEGORY_ID, {
       skip: !isAuthenticated,
     });
+
+  console.log(packagesData?.data, "packagesDatafromWomen")
   const { data: servicesData, isLoading: servicesLoading, error: servicesError } =
     useGetAllServicesQuery(undefined, { skip: !isAuthenticated });
 
@@ -248,13 +250,11 @@ const WomenProductsPage = () => {
   };
 
   const handleSavePackage = (updatedPackage) => {
-
+    console.log(updatedPackage, "fromnatu");
     const isCustomized = updatedPackage.packageType === "Customize";
 
-    if (updatedPackage.selectedServices) {
-
-      addToCartPackage(updatedPackage?._id, 1, isCustomized, "6806a35d1a630944660209c9",);
-
+    if (updatedPackage.serviceIds) {
+      addToCartPackage(updatedPackage.packageId,1, isCustomized, updatedPackage.serviceIds);
     }
     setShowEditModal(false);
   };
@@ -268,33 +268,33 @@ const WomenProductsPage = () => {
     }
   };
 
-const handleUpdateQuantity = (itemId, newQuantity) => {
-  try {
-    const cartItem = cartItems.find(item => (item.serviceId || item.packageId) === itemId);
-    
-    if (!cartItem) {
-      toast.error('Item not found in cart');
-      return;
-    }
+  const handleUpdateQuantity = (itemId, newQuantity) => {
+    try {
+      const cartItem = cartItems.find(item => (item.serviceId || item.packageId) === itemId);
 
-    if (newQuantity <= 0) {
-      if (cartItem.isPackageService) {
-        removeCartPackage(itemId);
-      } else {
-        removeSingleService(itemId);
+      if (!cartItem) {
+        toast.error('Item not found in cart');
+        return;
       }
-      return;
-    }
 
-    if (cartItem.isPackageService) {
-      updatePackageQuantity(itemId, newQuantity); // for package items
-    } else {
-      updateQuantity(itemId, newQuantity); // for single service items
+      if (newQuantity <= 0) {
+        if (cartItem.isPackageService) {
+          removeCartPackage(itemId);
+        } else {
+          removeSingleService(itemId);
+        }
+        return;
+      }
+
+      if (cartItem.isPackageService) {
+        updatePackageQuantity(itemId, newQuantity); // for package items
+      } else {
+        updateQuantity(itemId, newQuantity); // for single service items
+      }
+    } catch (err) {
+      toast.error(err?.data?.message || 'Failed to update quantity');
     }
-  } catch (err) {
-    toast.error(err?.data?.message || 'Failed to update quantity');
-  }
-};
+  };
 
   const handleRemoveItem = (itemId) => {
     const item = cartItems?.find((item) => (item.serviceId || item.packageId) === itemId);
@@ -381,15 +381,7 @@ const handleUpdateQuantity = (itemId, newQuantity) => {
         onClose={() => setShowEditModal(false)}
         packages={editingPackage}
         onSave={handleSavePackage}
-        services={Object.values(servicesByCategory)
-          .flatMap((category) =>
-            category.services.map((service) => ({
-              _id: service._id,
-              title: service.title,
-              image: service.images?.[0]?.img || "https://via.placeholder.com/150",
-              price: service.location?.[0]?.discountPrice || service.location?.[0]?.originalPrice,
-            }))
-          )}
+        packagesData={packagesData?.data}
       />
     </div>
   );
