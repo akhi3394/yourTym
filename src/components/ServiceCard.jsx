@@ -107,6 +107,7 @@ const ServiceCard = ({ subCategories }) => {
                 </button>
                 <button
                   className="px-4 py-1 border border-[#FF5534] text-[#FF5534] rounded-[10px]"
+                  onClick={() => handleAddOptionClick(item)}
                   disabled={!item?._id}
                 >
                   Add
@@ -132,11 +133,11 @@ const ServiceCard = ({ subCategories }) => {
               </div>
 
               {isLoadingAdd ? (
-                <p className="text-[14px] flex justify-center"><CircularLoader/></p>
+                <p className="text-[14px] flex justify-center"><CircularLoader /></p>
               ) : error ? (
                 <p className="text-red-500 text-[14px]">Error loading options: {error.message}</p>
               ) : isLoading ? (
-                <p className="text-[14px] flex justify-center"><CircularLoader/></p>
+                <p className="text-[14px] flex justify-center"><CircularLoader /></p>
               ) : filteredServices.length > 0 ? (
                 filteredServices.map((service, index) => (
                   <div

@@ -1,21 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { X, Calendar, Clock } from 'lucide-react';
 import { toast } from 'sonner';
-import { useAddDateAndTimeToCartMutation, useLazyGetAllSlotsQuery } from '../store/api/profileApi';
+import { useAddDateAndTimeToCartMutation } from '../store/api/profileApi';
 import CircularLoader from './CircularLoader';
 
 const SlotModal = ({ isOpen, onClose, onSelect, selectedSlot }) => {
   const [selectedDate, setSelectedDate] = useState('');
   const [selectedTime, setSelectedTime] = useState('');
   const [addDateAndTimeToCart] = useAddDateAndTimeToCartMutation();
-  const [triggerGetAllSlots, { data: slotsData, isLoading: slotsLoading, error: slotsError }] = useLazyGetAllSlotsQuery();
 
-  // Generate dynamic dates (current day and next 2 days)
+  // Generate static dates for one week starting from today
   const getDynamicDates = () => {
     const now = new Date();
     now.setHours(now.getHours() + (5 * 60 + 30) / 60); // Adjust to IST (UTC+5:30)
     const dates = [];
-    for (let i = 0; i < 3; i++) {
+    for (let i = 0; i < 7; i++) {
       const nextDate = new Date(now);
       nextDate.setDate(now.getDate() + i);
       dates.push({
@@ -24,16 +23,31 @@ const SlotModal = ({ isOpen, onClose, onSelect, selectedSlot }) => {
         fullDate: nextDate.toISOString().split('T')[0], // YYYY-MM-DD format for API
       });
     }
-    // Include API's latest date (June 26, 2025) if within range
-    const latestApiDate = '2025-06-26';
-    if (!dates.some(d => d.fullDate === latestApiDate)) {
-      dates.push({
-        day: new Date(latestApiDate).toLocaleDateString('en-US', { weekday: 'short' }),
-        date: new Date(latestApiDate).getDate().toString().padStart(2, '0'),
-        fullDate: latestApiDate,
+    return dates;
+  };
+
+  // Generate static time slots from 7:00 AM to 8:00 PM in one-hour intervals
+  const getTimeSlots = (selectedDate) => {
+    const now = new Date();
+    now.setHours(now.getHours() + (5 * 60 + 30) / 60); // Adjust to IST (UTC+5:30)
+    const currentDate = now.toISOString().split('T')[0];
+    const currentHour = now.getHours();
+    const currentMinute = now.getMinutes();
+
+    const slots = [];
+    for (let hour = 7; hour <= 19; hour++) {
+      const startTime = `${hour.toString().padStart(2, '0')}:00`;
+      const endTime = `${(hour + 1).toString().padStart(2, '0')}:00`;
+      // Disable slots for today if the end time has passed
+      const isCompleted =
+        selectedDate === currentDate &&
+        (hour + 1 < currentHour || (hour + 1 === currentHour && currentMinute >= 0));
+      slots.push({
+        time: `${startTime}-${endTime}`,
+        isCompleted,
       });
     }
-    return dates;
+    return slots;
   };
 
   // Convert 24-hour time to AM/PM format for display
@@ -45,40 +59,7 @@ const SlotModal = ({ isOpen, onClose, onSelect, selectedSlot }) => {
   };
 
   const dates = getDynamicDates();
-  const [timeSlots, setTimeSlots] = useState([]);
-
-  // Trigger API call when modal opens
-  useEffect(() => {
-    if (isOpen) {
-      triggerGetAllSlots();
-    }
-  }, [isOpen, triggerGetAllSlots]);
-
-  // Filter slots based on selected date from API data
-  useEffect(() => {
-    if (slotsData?.data && selectedDate) {
-      const filteredSlots = slotsData.data.filter(slot => {
-        const slotDate = new Date(slot.dateFrom).toISOString().split('T')[0];
-        return slotDate === selectedDate && slot.status === false && slot.totalBookedUsers < slot.jobAcceptance;
-      }).map(slot => ({
-        time: `${slot.timeFrom}-${slot.timeTo}`,
-        isCompleted: false, // Assume available unless booked out
-      }));
-      setTimeSlots(filteredSlots);
-    } else if (slotsData?.data && !selectedDate && dates.length > 0) {
-      // Default to the latest available API date if no selection
-      const defaultDate = '2025-06-26'; // Latest date from API
-      const filteredSlots = slotsData.data.filter(slot => {
-        const slotDate = new Date(slot.dateFrom).toISOString().split('T')[0];
-        return slotDate === defaultDate && slot.status === false && slot.totalBookedUsers < slot.jobAcceptance;
-      }).map(slot => ({
-        time: `${slot.timeFrom}-${slot.timeTo}`,
-        isCompleted: false,
-      }));
-      setTimeSlots(filteredSlots);
-      setSelectedDate(defaultDate);
-    }
-  }, [slotsData]);
+  const timeSlots = getTimeSlots(selectedDate);
 
   // Set default selected date and time on mount or when modal opens
   useEffect(() => {
@@ -87,14 +68,14 @@ const SlotModal = ({ isOpen, onClose, onSelect, selectedSlot }) => {
         setSelectedDate(selectedSlot.date);
         setSelectedTime(selectedSlot.time);
       } else if (dates.length > 0 && !selectedDate) {
-        setSelectedDate(dates.find(d => d.fullDate === '2025-06-26')?.fullDate || dates[0].fullDate); // Default to June 26 or first date
+        setSelectedDate(dates[0].fullDate); // Default to first date
       }
       if (timeSlots.length > 0 && !selectedTime) {
         const availableSlots = timeSlots.filter(slot => !slot.isCompleted);
         setSelectedTime(availableSlots.length > 0 ? availableSlots[0].time : timeSlots[0].time); // Default to first available slot
       }
     }
-  }, [isOpen]);
+  }, [isOpen, selectedSlot, dates, timeSlots]);
 
   const handleProceed = async () => {
     if (!selectedDate || !selectedTime) {
@@ -102,10 +83,10 @@ const SlotModal = ({ isOpen, onClose, onSelect, selectedSlot }) => {
       return;
     }
 
-    // Parse start and end times from the selected time slot (e.g., "08:00-08:30")
+    // Parse start and end times from the selected time slot (e.g., "08:00-09:00")
     const [startTime, endTime] = selectedTime.split('-');
 
-    // Prepare payload for API
+    // Prepare payload for API in 24-hour format
     const payload = {
       date: selectedDate,
       startTime,
@@ -146,77 +127,69 @@ const SlotModal = ({ isOpen, onClose, onSelect, selectedSlot }) => {
 
         {/* Scrollable Content */}
         <div className="p-6 overflow-y-auto flex-1">
-          {slotsLoading ? (
-            <div className="flex justify-center items-center h-full">
-              <CircularLoader />
-            </div>
-          ) : slotsError ? (
-            <div className="flex justify-center items-center h-full text-red-500">
-              Failed to load slots. Please try again.
-            </div>
-          ) : (
-            <>
-              {/* Date Selection */}
-              <div className="mb-6">
-                <div className="flex items-center mb-4">
-                  <Calendar size={20} className="text-[#FF5534] mr-2" />
-                  <h3 className="font-medium text-gray-900">Select service date</h3>
-                </div>
-                <div className="flex gap-3">
-                  {dates.map((date) => (
-                    <button
-                      key={date.fullDate}
-                      onClick={() => setSelectedDate(date.fullDate)}
-                      className={`flex flex-col items-center py-3 px-6 rounded-lg border-2 transition-colors ${
-                        selectedDate === date.fullDate
-                          ? 'border-[#FF5534] bg-red-50'
-                          : 'border-gray-200 hover:border-[#FF5534]'
+          <>
+            {/* Date Selection with Horizontal Scroll */}
+            <div className="mb-6">
+              <div className="flex items-center mb-4">
+                <Calendar size={20} className="text-[#FF5534] mr-2" />
+                <h3 className="font-medium text-gray-900">Select service date</h3>
+              </div>
+              <div className="flex gap-3 overflow-x-auto pb-2">
+                {dates.map((date) => (
+                  <button
+                    key={date.fullDate}
+                    onClick={() => setSelectedDate(date.fullDate)}
+                    className={`flex flex-col items-center py-3 px-6 rounded-lg border-2 transition-colors ${
+                      selectedDate === date.fullDate
+                        ? 'border-[#FF5534] bg-red-50'
+                        : 'border-gray-200 hover:border-[#FF5534]'
+                    } flex-shrink-0`}
+                    style={{ minWidth: '100px' }} // Pixel-perfect width
+                  >
+                    <span className="text-sm text-gray-600">{date.day}</span>
+                    <span
+                      className={`text-xl font-semibold ${
+                        selectedDate === date.fullDate ? 'text-[#FF5534]' : 'text-gray-900'
                       }`}
-                      style={{ minWidth: '100px' }} // Pixel-perfect width
                     >
-                      <span className="text-sm text-gray-600">{date.day}</span>
-                      <span
-                        className={`text-xl font-semibold ${
-                          selectedDate === date.fullDate ? 'text-[#FF5534]' : 'text-gray-900'
-                        }`}
-                      >
-                        {date.date}
-                      </span>
-                    </button>
-                  ))}
-                </div>
+                      {date.date}
+                    </span>
+                  </button>
+                ))}
               </div>
+            </div>
 
-              {/* Time Selection */}
-              <div className="mb-6">
-                <div className="flex items-center mb-4">
-                  <Clock size={20} className="text-[#FF5534] mr-2" />
-                  <h3 className="font-medium text-gray-900">Select service time slot</h3>
-                </div>
-                <div className="grid grid-cols-3 gap-3">
-                  {timeSlots.length > 0 ? (
-                    timeSlots.map((slot, index) => (
-                      <button
-                        key={index}
-                        onClick={() => !slot.isCompleted && setSelectedTime(slot.time)}
-                        disabled={slot.isCompleted}
-                        className={`py-2 px-4 rounded-lg border text-sm font-medium transition-colors w-[170px] ${
-                          selectedTime === slot.time && !slot.isCompleted
-                            ? 'border-[#FF5534] bg-red-50 text-[#FF5534]'
-                            : 'border-gray-200 text-gray-700 hover:border-[#FF5534]'
-                        } ${slot.isCompleted ? 'opacity-50 bg-gray-100 cursor-not-allowed' : ''}`}
-                        style={{ height: '40px' }} // Pixel-perfect height
-                      >
-                        {formatToAMPM(slot.time)}
-                      </button>
-                    ))
-                  ) : (
-                    <div className="col-span-3 text-center text-gray-500">No slots available for the selected date.</div>
-                  )}
-                </div>
+            {/* Time Selection */}
+            <div className="mb-6">
+              <div className="flex items-center mb-4">
+                <Clock size={20} className="text-[#FF5534] mr-2" />
+                <h3 className="font-medium text-gray-900">Select service time slot</h3>
               </div>
-            </>
-          )}
+              <div className="grid grid-cols-3 gap-3">
+                {timeSlots.length > 0 ? (
+                  timeSlots.map((slot, index) => (
+                    <button
+                      key={
+
+index}
+                      onClick={() => !slot.isCompleted && setSelectedTime(slot.time)}
+                      disabled={slot.isCompleted}
+                      className={`py-2 px-4 rounded-lg border text-sm font-medium transition-colors w-[170px] ${
+                        selectedTime === slot.time && !slot.isCompleted
+                          ? 'border-[#FF5534] bg-red-50 text-[#FF5534]'
+                          : 'border-gray-200 text-gray-700 hover:border-[#FF5534]'
+                      } ${slot.isCompleted ? 'opacity-50 bg-gray-100 cursor-not-allowed' : ''}`}
+                      style={{ height: '40px' }} // Pixel-perfect height
+                    >
+                      {formatToAMPM(slot.time)}
+                    </button>
+                  ))
+                ) : (
+                  <div className="col-span-3 text-center text-gray-500">No slots available for the selected date.</div>
+                )}
+              </div>
+            </div>
+          </>
         </div>
 
         {/* Sticky Footer with Proceed Button */}
@@ -225,7 +198,7 @@ const SlotModal = ({ isOpen, onClose, onSelect, selectedSlot }) => {
             onClick={handleProceed}
             className="w-full bg-[#FF5534] text-white py-3 rounded-lg font-medium hover:bg-red-600 transition-colors"
             style={{ height: '48px' }} // Pixel-perfect height
-            disabled={slotsLoading || !timeSlots.length}
+            disabled={!timeSlots.some(slot => !slot.isCompleted)}
           >
             Proceed to Checkout
           </button>

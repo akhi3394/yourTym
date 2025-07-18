@@ -268,25 +268,33 @@ const WomenProductsPage = () => {
     }
   };
 
-  const handleUpdateQuantity = (itemId, newQuantity) => {
-
-    try {
-      const cartItem = cartItems.find(item => (item.serviceId || item.packageId) === itemId);
-
-      if (!cartItem) {
-        toast.error('Item not found in cart');
-        return;
-      }
-
-      if (cartItem.isPackageService) {
-        updatePackageQuantity(itemId, newQuantity);
-      } else {
-        updateQuantity(itemId, newQuantity);
-      }
-    } catch (err) {
-      toast.error(err?.data?.message || 'Failed to update quantity');
+const handleUpdateQuantity = (itemId, newQuantity) => {
+  try {
+    const cartItem = cartItems.find(item => (item.serviceId || item.packageId) === itemId);
+    
+    if (!cartItem) {
+      toast.error('Item not found in cart');
+      return;
     }
-  };
+
+    if (newQuantity <= 0) {
+      if (cartItem.isPackageService) {
+        removeCartPackage(itemId);
+      } else {
+        removeSingleService(itemId);
+      }
+      return;
+    }
+
+    if (cartItem.isPackageService) {
+      updatePackageQuantity(itemId, newQuantity); // for package items
+    } else {
+      updateQuantity(itemId, newQuantity); // for single service items
+    }
+  } catch (err) {
+    toast.error(err?.data?.message || 'Failed to update quantity');
+  }
+};
 
   const handleRemoveItem = (itemId) => {
     const item = cartItems?.find((item) => (item.serviceId || item.packageId) === itemId);

@@ -25,6 +25,7 @@ import TermsandConditions from "./pages/TermsandCondition";
 import MenProductPremiumPage from "./components/MenProductPremiumPage";
 import MenProductClassicPage from "./components/MenProductClassicPage";
 import BookingDetail from "./pages/BookingDetail";
+import ScrollToTop from "./components/ScrollToTop";
 
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated } = useAppSelector((state) => state.auth);
@@ -35,6 +36,7 @@ const App = () => (
   <TooltipProvider>
     <Sonner />
     <BrowserRouter>
+    <ScrollToTop />
       <Routes>
         <Route element={<Layout />}>
           <Route path="/" element={<Index />} />

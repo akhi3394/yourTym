@@ -22,7 +22,7 @@ import { useGetCouponsQuery } from '../store/api/profileApi';
 const CheckoutPage = () => {
   const { token, isAuthenticated, mobile } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
-  const { data: cartData, isLoading: cartLoadingCheckout, error: cartError,isFetching:fetchingCheckout } = useGetCartQuery(undefined, {
+  const { data: cartData, isLoading: cartLoadingCheckout, error: cartError, isFetching: fetchingCheckout } = useGetCartQuery(undefined, {
     skip: !isAuthenticated,
   });
   const { data: frequentlyAddedServices = [], isLoading: isFrequentlyLoading } = useGetFrequentlyAddedServicesQuery(undefined, {
@@ -59,7 +59,7 @@ const CheckoutPage = () => {
     fetchingCart
   } = useCart();
 
-console.log(cartData?.paidAmount,"cartdtaafrom cartttt")
+  console.log(cartData?.paidAmount, "cartdtaafrom cartttt")
 
   useEffect(() => {
     if (cartData) {
@@ -152,21 +152,22 @@ console.log(cartData?.paidAmount,"cartdtaafrom cartttt")
   };
 
   const handleUpdateQuantity = (itemId, newQuantity) => {
-    console.log(itemId, "itemId", newQuantity, "newQuantity");
-
     try {
       const cartItem = cartItems.find(item => (item.serviceId || item.packageId) === itemId);
-      
+
       if (!cartItem) {
         toast.error('Item not found in cart');
         return;
       }
 
-      // Optional: handle removal if quantity is zero
-      // if (newQuantity <= 0) {
-      //   cartItem.isPackageService ? removeCartPackage(itemId) : removeSingleService(itemId);
-      //   return;
-      // }
+      if (newQuantity <= 0) {
+        if (cartItem.isPackageService) {
+          removeCartPackage(itemId);
+        } else {
+          removeSingleService(itemId);
+        }
+        return;
+      }
 
       if (cartItem.isPackageService) {
         updatePackageQuantity(itemId, newQuantity); // for package items
@@ -240,7 +241,7 @@ console.log(cartData?.paidAmount,"cartdtaafrom cartttt")
                       <button
                         onClick={() => handleUpdateQuantity(item.serviceId || item.packageId, item.quantity - 1)}
                         className="w-6 h-6 rounded-full bg-white flex items-center justify-center hover:bg-gray-50"
-                        disabled={item.quantity <= 1}
+                        // disabled={item.quantity <= 1}
                       >
                         <Minus className="w-3 h-3" />
                       </button>

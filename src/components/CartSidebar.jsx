@@ -30,13 +30,7 @@ const CartSidebar = ({ cartItems, onUpdateQuantity, onRemoveItem, loading, error
           </div>
         ) : (error || serviceAddError) ? (
           <div className="text-center text-red-500 mt-8">
-            <p>{error || cartError?.message || serviceAddError?.message}</p> <br/>
-            {(error || cartError?.message || serviceAddError?.message) ? (
-              <div className="flex justify-center gap-9 ">
-                <button className="border  border-[#FF5534] px-4 py-1 rounded-[12px]" onClick={()=>window.location.reload()}>Yes</button>
-                <button className="border  border-[#FF5534] px-4 py-1 rounded-[12px]" onClick={()=>window.location.reload()}>No</button>
-              </div>
-            ) : ""}
+            <p>{serviceAddError?.message ?? error ?? cartError?.message }</p> <br/>
           </div>
         ) : cartItems.length === 0 ? (
           <div className="text-center text-gray-500 mt-8">
@@ -63,7 +57,7 @@ const CartSidebar = ({ cartItems, onUpdateQuantity, onRemoveItem, loading, error
                     <button
                       onClick={() => onUpdateQuantity(item.serviceId || item.packageId, item.quantity - 1)}
                       className="w-6 h-6 rounded-full bg-white flex items-center justify-center hover:bg-gray-50"
-                      disabled={item.quantity <= 1}
+                      // disabled={item.quantity <= 1}
                     >
                       <Minus className="w-3 h-3" />
                     </button>
