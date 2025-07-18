@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { X, MapPin } from 'lucide-react';
-import { useGetAllAddressesQuery, useAddAddressMutation, useUpdateAddressMutation, useAddAddressToCartMutation, useLazyGetAllAddressesQuery } from '../store/api/profileApi';
+import { useGetAllAddressesQuery, useAddAddressMutation, useUpdateAddressMutation, useAddAddressToCartMutation, useLazyGetAllAddressesQuery, useDeleteAddressMutation } from '../store/api/profileApi';
 import { toast } from 'sonner';
+import CircularLoader from './CircularLoader';
 
 const AddressModal = ({ isOpen, onClose, onSave, selectedAddress }) => {
   const { data: allAddresses, isLoading: isFetchingAll, isError: isAllError, refetch: refetchAll } = useGetAllAddressesQuery();
@@ -9,12 +10,14 @@ const AddressModal = ({ isOpen, onClose, onSave, selectedAddress }) => {
   const [updateAddress, { isLoading: isUpdating }] = useUpdateAddressMutation();
   const [addAddressToCart] = useAddAddressToCartMutation();
   const [triggerGetAddressById, { data: addressDetail, isLoading: isLoadingAddress, isError: isAddressError }] = useLazyGetAllAddressesQuery();
+  const [deletingId, setDeletingId] = useState(null);
+  const [deleteAddress, { isLoading: isDeleting }] = useDeleteAddressMutation();
 
   const [formData, setFormData] = useState({
     houseNumber: '',
     apartment: '',
     landmark: '',
-    type: 'Home',
+    type: 'home',
     editId: null,
   });
   const [selectedAddressId, setSelectedAddressId] = useState(null);
@@ -35,7 +38,7 @@ const AddressModal = ({ isOpen, onClose, onSave, selectedAddress }) => {
           houseNumber: address.houseFlat || '',
           apartment: address.appartment || '',
           landmark: address.landMark || '',
-          type: address.houseType || 'Home',
+          type: address.houseType || 'home',
           editId: address._id,
         });
       }
@@ -44,7 +47,7 @@ const AddressModal = ({ isOpen, onClose, onSave, selectedAddress }) => {
         houseNumber: addressDetail.houseFlat || '',
         apartment: addressDetail.appartment || '',
         landmark: addressDetail.landMark || '',
-        type: addressDetail.houseType || 'Home',
+        type: addressDetail.houseType || 'home',
         editId: addressDetail._id,
       });
     } else if (!isEditing) {
@@ -52,7 +55,7 @@ const AddressModal = ({ isOpen, onClose, onSave, selectedAddress }) => {
         houseNumber: '',
         apartment: '',
         landmark: '',
-        type: 'Home',
+        type: 'home',
         editId: null,
       });
     }
@@ -98,7 +101,7 @@ const AddressModal = ({ isOpen, onClose, onSave, selectedAddress }) => {
         houseNumber: '',
         apartment: '',
         landmark: '',
-        type: 'Home',
+        type: 'home',
         editId: null,
       });
     } catch (error) {
@@ -132,12 +135,24 @@ const AddressModal = ({ isOpen, onClose, onSave, selectedAddress }) => {
       houseNumber: '',
       apartment: '',
       landmark: '',
-      type: 'Home',
+      type: 'home',
       editId: null,
     });
     setSelectedAddressId(null);
   };
 
+  const handleDelete = async (id) => {
+    setDeletingId(id);
+    try {
+      await deleteAddress(id).unwrap();
+      toast.success("Address deleted successfully");
+      refetch();
+    } catch (error) {
+      console.log(error,"error")
+    } finally {
+      setDeletingId(null);
+    }
+  };
   if (!isOpen) return null;
 
   return (
@@ -170,13 +185,32 @@ const AddressModal = ({ isOpen, onClose, onSave, selectedAddress }) => {
                   <p className="text-sm text-gray-600">{`${address.houseFlat}, ${address.landMark || ''}, ${address.appartment}`}</p>
                   <p className="text-sm text-gray-600">{address.details || 'No details available'}</p>
                 </div>
-                <button
-                  onClick={() => handleEdit(address)}
-                  className="text-[#FF5534] font-medium text-sm hover:text-red-600"
-                  disabled={isLoadingAddress}
-                >
-                  Change
-                </button>
+                <div className="flex gap-5">
+                  <button
+                    onClick={() => handleEdit(address)}
+                    className="text-[#FF5534] font-medium text-sm hover:text-red-600"
+                    disabled={isLoadingAddress}
+                  >
+                    Change
+                  </button>
+                  <div className="">
+                    <button
+                      onClick={() => handleDelete(address._id)}
+                      className="text-red-500 hover:text-red-700 disabled:opacity-50"
+                      disabled={deletingId === address._id}
+                    >
+                      {deletingId === address._id ? (
+                        <CircularLoader size={16} />
+                      ) : (
+                        <img
+                          src="/delete.svg"
+                          alt="Delete"
+                          className="w-4 h-4"
+                        />
+                      )}
+                    </button>
+                  </div>
+                </div>
               </div>
             ))
           ) : (
@@ -218,19 +252,17 @@ const AddressModal = ({ isOpen, onClose, onSave, selectedAddress }) => {
             <div className="flex gap-3">
               <button
                 type="button"
-                onClick={() => setFormData({ ...formData, type: 'Home' })}
-                className={`px-4 py-2 rounded-lg border font-medium text-sm ${
-                  formData.type === 'Home' ? 'bg-[#FF5534] text-white border-[#FF5534]' : 'bg-white text-gray-700 border-gray-300 hover:border-[#FF5534]'
-                }`}
+                onClick={() => setFormData({ ...formData, type: 'home' })}
+                className={`px-4 py-2 rounded-lg border font-medium text-sm ${formData.type === 'home' ? 'bg-[#FF5534] text-white border-[#FF5534]' : 'bg-white text-gray-700 border-gray-300 hover:border-[#FF5534]'
+                  }`}
               >
                 Home
               </button>
               <button
                 type="button"
                 onClick={() => setFormData({ ...formData, type: 'Other' })}
-                className={`px-4 py-2 rounded-lg border font-medium text-sm ${
-                  formData.type === 'Other' ? 'bg-[#FF5534] text-white border-[#FF5534]' : 'bg-white text-gray-700 border-gray-300 hover:border-[#FF5534]'
-                }`}
+                className={`px-4 py-2 rounded-lg border font-medium text-sm ${formData.type === 'Other' ? 'bg-[#FF5534] text-white border-[#FF5534]' : 'bg-white text-gray-700 border-gray-300 hover:border-[#FF5534]'
+                  }`}
               >
                 Other
               </button>
