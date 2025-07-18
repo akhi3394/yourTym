@@ -1,148 +1,193 @@
-import React from "react";
-import { Star, Clock, ShoppingCart, Trash2 } from "lucide-react";
+import { useState } from "react";
+import { useGetServicesByCategoryQuery } from "../store/api/productsApi";
+import useCart from "../hooks/useCart";
+import CircularLoader from "./CircularLoader";
+import { toast } from "sonner";
 
-const ServiceCard = React.memo(
-  ({ service, onAddToCart, onRemoveFromCart, isInCart, isLoading, error }) => {
-    if (isLoading) {
-      return (
-        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden mb-4 shadow-sm h-[500px] w-full animate-pulse">
-          <div className="h-52 bg-gray-200"></div>
-          <div className="p-4">
-            <div className="h-4 w-1/2 bg-gray-200 rounded mb-2"></div>
-            <div className="h-10 w-full bg-gray-200 rounded mb-3"></div>
-            <div className="flex items-center gap-2 mb-3">
-              <div className="h-4 w-12 bg-gray-200 rounded"></div>
-              <div className="h-4 w-16 bg-gray-200 rounded ml-auto"></div>
-            </div>
-            <div className="h-10 w-full bg-gray-200 rounded-lg"></div>
-          </div>
-        </div>
+const ServiceCard = ({ subCategories }) => {
+  const [selectedSubCategory, setSelectedSubCategory] = useState(null);
+  const [isPopupOpen, setIsPopupOpen] = useState(false);
+  const [isLoadingAdd, setIsLoadingAdd] = useState(false);
+
+  const {
+    addToCartSingleServices,
+    serviceApiSuccess
+  } = useCart();
+
+  const handleAddOptionClick = (item) => {
+    setSelectedSubCategory({
+      mainCategoryId: item.mainCategoryId?._id,
+      categoryId: item.categoryId?._id,
+      subCategoryId: item._id,
+    });
+    setIsLoadingAdd(true);
+    setTimeout(() => {
+      setIsPopupOpen(true);
+      setIsLoadingAdd(false);
+    }, 1000); // Simulate API delay
+  };
+
+  const closePopup = () => {
+    setIsPopupOpen(false);
+    setSelectedSubCategory(null);
+  };
+
+  const handleAddToCart = async (item) => {
+    try {
+      console.log(item, "utemsdds");
+      setIsLoadingAdd(true);
+
+      const response = await addToCartSingleServices(
+        item._id,
+        1,
+        item.location?.[0]?.sector || "67beed95c3e00990a579d596"
       );
+
+      console.log(response, "fromresponse");
+
+      if (response?.status === 200) {
+        toast.info("Service Added to Cart");
+        closePopup();
+      } else {
+        toast.error("Failed to add service to cart");
+      }
+    } catch (error) {
+      console.error("Add to cart error:", error);
+      toast.error("Something went wrong. Please try again.");
+    } finally {
+      setIsLoadingAdd(false);
     }
+  };
 
-    if (error) {
-      return (
-        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden mb-4 shadow-sm h-[500px] w-full flex items-center justify-center">
-          <p className="text-red-500 text-sm">{error.message || error}</p>
-        </div>
-      );
-    }
 
-    const {
-      _id,
-      title,
-      images,
-      description,
-      rating,
-      sellCount,
-      totalTime,
-      location,
-    } = service;
 
-    const imageUrl = images?.[0]?.img || "https://via.placeholder.com/150";
-    const originalPrice = location?.[0]?.originalPrice || 0;
-    const discountPrice = location?.[0]?.discountPrice || originalPrice;
-    const discountActive = location?.[0]?.discountActive || false;
+  const { data: servicesData, isLoading, error } = useGetServicesByCategoryQuery(
+    selectedSubCategory || {},
+    { skip: !selectedSubCategory }
+  );
 
-    const formattedTime = totalTime || "00 hr 00 min";
+  const filteredServices = servicesData?.data?.filter(
+    (service) => service.subCategoryId?._id === selectedSubCategory?.subCategoryId
+  ) || [];
 
-    const handleAddToCartClick = () => {
-      onAddToCart(service);
-    };
-
-    const handleRemoveFromCartClick = () => {
-      onRemoveFromCart(_id);
-    };
-
-    // ✅ Description cleaner — Remove HTML tags
-    const cleanDescription = description
-      ? description.replace(/<[^>]+>/g, "").split("\n").filter(Boolean)
-      : [];
-
-    return (
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden mb-4 shadow-md w-full flex flex-col justify-between">
-        {/* Top Image */}
-        <div className="relative h-[200px]">
-          <img
-            src={imageUrl}
-            alt={title}
-            className="w-full h-full object-cover"
-            onError={(e) => (e.target.src = "https://via.placeholder.com/150")}
-          />
-        </div>
-
-        {/* Content */}
-        <div className="flex items-start justify-between gap-4 p-4 flex-1">
-          <div className="flex-1">
-            <h3 className="text-[24px] leading-[30px] font-bold text-[#704E20] mb-1">
-              {title}
-            </h3>
-            <div className="flex items-center gap-1 text-[#444] text-[14px] mb-2">
-              <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-              <span>{rating || 0}</span>
-              <span>({sellCount || 0} Reviews)</span>
+  return (
+    <div className="w-full max-w-3xl mt-5">
+      {subCategories?.map((item, index) => (
+        <><div key={item?._id || `separator-${index}`} id={item.name.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "")} className="mb-6">
+          {item?.type === "separator" ? (
+            <div className="category-header">
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">{item?.name}</h2>
+              <img
+                src={item?.image}
+                alt={item?.name || "Category Image"}
+                className="w-full h-48 object-cover rounded-lg" />
             </div>
-
-            <div className="flex items-center gap-3 mb-2">
-              {discountActive && originalPrice > discountPrice && (
-                <span className="text-gray-500 line-through text-[14px]">
-                  ₹ {originalPrice}
-                </span>
-              )}
-              <span className="text-[#16A34A] text-[16px] font-bold">
-                ₹ {discountPrice}/-
-              </span>
-              <div className="flex items-center gap-1 text-gray-600 text-sm">
-                <Clock className="w-4 h-4" />
-                <span>{formattedTime}</span>
+          ) : (
+            <div className="subcategory-item bg-white rounded-lg p-5 shadow-md border border-gray-200">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-[16px] font-semibold text-[#000] flex flex-col">
+                    {item?.name}
+                    <span className="text-[#000] ml-2 text-[14px] font-normal text-start">⭐ 4.9 (500 Reviews)</span>
+                  </h3>
+                  <p className="text-[#000000] text-[14px] mt-2" dangerouslySetInnerHTML={{ __html: item?.description || "No description available" }} />
+                </div>
+                <img
+                  src={item?.image}
+                  alt={item?.name || "Service Image"}
+                  className="w-20 h-20 object-cover rounded-lg ml-4" />
+              </div>
+              <div className="mt-4 flex justify-between">
+                <button
+                  className="px-4 py-1 border border-[#000000] rounded-[10px] text-[#000000]"
+                  onClick={() => handleAddOptionClick(item)}
+                  disabled={!item?._id}
+                >
+                  Add Option
+                </button>
+                <button
+                  className="px-4 py-1 border border-[#FF5534] text-[#FF5534] rounded-[10px]"
+                  disabled={!item?._id}
+                >
+                  Add
+                </button>
               </div>
             </div>
+          )}
+        </div><div className="border-b-4 border-[#EFEFEF] mb-3"></div></>
+      ))}
 
-            <ul className="text-[13px] text-[#444] space-y-1 mb-4 list-disc pl-4">
-              {cleanDescription.length > 0 ? (
-                cleanDescription.map((line, index) => (
-                  <li key={index}>{line}</li>
+      {(isPopupOpen) && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg w-full max-w-md h-[500px] overflow-y-scroll border border-gray-300 flex flex-col">
+            <img
+              src={subCategories.find(item => item._id === selectedSubCategory?.subCategoryId)?.image}
+              alt="Service Header"
+              className="w-full h-[120px] object-cover rounded-t-lg"
+            />
+            <div className="p-4 flex flex-col gap-4 flex-1 overflow-y-auto">
+              <div>
+                <h2 className="text-[15px] font-semibold text-gray-800">{subCategories.find(item => item._id === selectedSubCategory?.subCategoryId)?.name}</h2>
+                <p className="text-[13px] text-gray-600">✨ 4.9 (500 Reviews)</p>
+              </div>
+
+              {isLoadingAdd ? (
+                <p className="text-[14px] flex justify-center"><CircularLoader/></p>
+              ) : error ? (
+                <p className="text-red-500 text-[14px]">Error loading options: {error.message}</p>
+              ) : isLoading ? (
+                <p className="text-[14px] flex justify-center"><CircularLoader/></p>
+              ) : filteredServices.length > 0 ? (
+                filteredServices.map((service, index) => (
+                  <div
+                    key={service?._id}
+                    className="bg-white border border-gray-200 rounded-lg p-3 flex justify-between items-start relative shadow-sm"
+                  >
+                    <div className="flex-1">
+                      <h3 className="text-[14px] font-semibold text-gray-800">
+                        {service?.title || "Untitled"} – ₹{service?.location?.[0]?.discountPrice || "N/A"}/-
+                      </h3>
+                      <p className="text-[12px] text-gray-500 mt-1">30 min</p>
+                      <div
+                        className="text-[13px] text-gray-600 mt-2 leading-[18px]"
+                        dangerouslySetInnerHTML={{ __html: service?.description || "No description available" }}
+                      />
+                    </div>
+
+                    <div className="flex flex-col items-center justify-between ml-3 h-full">
+                      <img
+                        src={service?.images?.[0]?.img}
+                        alt={service?.title || "Service"}
+                        className="w-[60px] h-[60px] object-cover rounded-lg"
+                      />
+                      <button
+                        className="mt-2 px-6 py-[6px] bg-[#ff5c39] text-white text-sm font-medium rounded hover:bg-[#e94f2f] transition"
+                        disabled={!service?.location?.[0]?.discountPrice || isLoadingAdd}
+                        onClick={() => handleAddToCart(service)}
+                      >
+                        {isLoadingAdd ? "Adding..." : "Add"}
+                      </button>
+                    </div>
+                  </div>
                 ))
               ) : (
-                <li>No description available</li>
+                <p className="text-[14px] flex justify-center"><CircularLoader size={20} /></p>
               )}
-            </ul>
-          </div>
-
-          {/* Product Thumbnail */}
-          <div className="w-[90px] h-[90px]">
-            <img
-              src={imageUrl}
-              alt="Product"
-              className="w-full h-full object-cover rounded-md border border-gray-300"
-              onError={(e) => (e.target.src = "https://via.placeholder.com/150")}
-            />
+            </div>
+            <div className="p-4 border-t border-gray-200">
+              <button
+                className="w-full px-4 py-2 bg-gray-100 text-gray-800 rounded hover:bg-gray-200 text-sm"
+                onClick={closePopup}
+              >
+                Close
+              </button>
+            </div>
           </div>
         </div>
+      )}
 
-        {/* Bottom Action Button */}
-        <div className="flex justify-end p-4">
-          {!isInCart ? (
-            <button
-              onClick={handleAddToCartClick}
-              className="bg-[#FF5534] rounded-lg px-5 py-2 text-sm text-white hover:bg-[#e04a2e] flex items-center gap-2"
-            >
-              <ShoppingCart className="w-4 h-4" /> Add
-            </button>
-          ) : (
-            <button
-              onClick={handleRemoveFromCartClick}
-              className="bg-red-500 rounded-lg px-5 py-2 text-sm text-white hover:bg-red-600 flex items-center gap-2"
-            >
-              <Trash2 className="w-4 h-4" /> Remove
-            </button>
-          )}
-        </div>
-      </div>
-    );
-  }
-);
+    </div>
+  );
+};
 
-ServiceCard.displayName = "ServiceCard";
 export default ServiceCard;
-

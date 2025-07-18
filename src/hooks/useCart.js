@@ -17,8 +17,8 @@ import {
 const useCart = () => {
   const dispatch = useDispatch();
   const { token, isAuthenticated } = useSelector((state) => state.auth);
-  const [addToCartSingleService,{error:serviceAddError}] = useAddToCartSingleServiceMutation();
-  const [addToCartPackageCustomise,{error:packageAddError}] = useAddToCartPackageCustomiseMutation();
+  const [addToCartSingleService, { error: serviceAddError, isSuccess: serviceApiSuccess }] = useAddToCartSingleServiceMutation();
+  const [addToCartPackageCustomise, { error: packageAddError }] = useAddToCartPackageCustomiseMutation();
   const [updateCustomizePackageInCart] = useUpdateCustomizePackageInCartMutation();
   const [addToCartPackageEdit] = useAddToCartPackageEditMutation();
   const [updateCartPackageEdit] = useUpdateCartPackageEditMutation();
@@ -26,7 +26,7 @@ const useCart = () => {
   const [updateCartServiceQuantity] = useUpdateCartServiceQuantityMutation();
   const [updateCartPackageQuantity] = useUpdateCartPackageQuantityMutation()
   const [removePackageFromCart] = useRemovePackageFromCartMutation(); // Use the new mutation
-  const { data: cartData, isLoading: cartLoading, error: cartError,isFetching:fetchingCart } = useGetCartQuery(undefined, {
+  const { data: cartData, isLoading: cartLoading, error: cartError, isFetching: fetchingCart } = useGetCartQuery(undefined, {
     skip: !isAuthenticated,
   });
 
@@ -77,12 +77,16 @@ const useCart = () => {
           quantity,
           serviceTypeId,
         }).unwrap();
+
         setCartItems((prev) => [
           ...prev,
           { ...result, quantity, isPackageService: false, _id: result._id || serviceId },
         ]);
+
+        return { status: 200, data: result }; // ✅ Return a success object
       } catch (err) {
-        setError( serviceAddError?.message || "Failed to add service to cart");
+        setError(serviceAddError?.message || "Failed to add service to cart");
+        return { status: 500, error: err }; // ✅ Return failure
       } finally {
         setLoading(false);
       }
@@ -228,7 +232,8 @@ const useCart = () => {
     cartLoading,
     fetchingCart,
     serviceAddError,
-    packageAddError
+    packageAddError,
+    serviceApiSuccess
   };
 };
 

@@ -11,7 +11,9 @@ import packageImage from "../assets/images/package.png";
 import {
   useGetAllCategoriesQuery,
   useGetAllServicesQuery,
+  useGetAllSubCategoriesQuery,
   useGetPackagesByMainCategoryQuery,
+  useGetSubCategoryQuery,
 } from "../store/api/productsApi";
 import useCart from "../hooks/useCart";
 
@@ -22,7 +24,15 @@ const WomenProductsPage = () => {
   const { isAuthenticated, token } = useSelector((state) => state.auth);
   const navigate = useNavigate();
   const MAIN_CATEGORY_ID = "670f5fb4199de0d397f32f45";
-  console.log(editingPackage, "fromwomens")
+
+  const { data: subCategorydata, isLoading } = useGetSubCategoryQuery({
+    categoryId: '670f5fb4199de0d397f32f45',
+    subCategoryId: '670f61d6199de0d397f32f6a'
+  });
+  const { data: allsubCategoryData } = useGetAllSubCategoriesQuery();
+  // Filter subcategories by mainCategoryId
+
+
   const {
     cartItems,
     loading,
@@ -36,7 +46,7 @@ const WomenProductsPage = () => {
     isInCartorNot,
     updatePackageQuantity,
     cartLoading,
-    fetchingCart
+    fetchingCart,
   } = useCart();
 
   const { data: categoriesData, isLoading: categoriesLoading } =
@@ -61,6 +71,7 @@ const WomenProductsPage = () => {
     );
   }, [categoriesData]);
 
+  console.log(womenCategory, "womenCatogry")
   const subCategories = useMemo(() => {
     const apiSubCategories =
       womenCategory?.subCategories?.map((subCategory) => ({
@@ -87,13 +98,32 @@ const WomenProductsPage = () => {
     return subCategories.map((subCategory) => subCategory.name).join(", ");
   }, [subCategories]);
 
-  const womensServices = useMemo(() => {
-    if (!servicesData?.data) return [];
-    return servicesData.data.flatMap((item) =>
-      item.services.filter((service) => service.mainCategoryId === MAIN_CATEGORY_ID)
-    );
+  // Group services by category
+  const servicesByCategory = useMemo(() => {
+    if (!servicesData?.data) return {};
+    return servicesData.data.reduce((acc, item) => {
+      const categoryName = item.category.name;
+      if (!acc[categoryName]) {
+        acc[categoryName] = {
+          name: categoryName,
+          image: item.category.image,
+          services: [],
+        };
+      }
+      acc[categoryName].services = [
+        ...acc[categoryName].services,
+        ...item.services
+          .filter((service) => service.mainCategoryId === MAIN_CATEGORY_ID)
+          .map((service) => ({
+            ...service,
+            category: { name: categoryName, image: item.category.image },
+          })),
+      ];
+      return acc;
+    }, {});
   }, [servicesData, MAIN_CATEGORY_ID]);
 
+  console.log(servicesByCategory, "servicesByCategory");
   const packages = useMemo(() => {
     if (!packagesData?.data) return [];
     return packagesData.data.map((pkg) => {
@@ -144,7 +174,58 @@ const WomenProductsPage = () => {
       };
     });
   }, [packagesData]);
-  console.log(packages[0]?._id, "allpackages")
+
+
+
+
+  const filteredSubCategories = allsubCategoryData?.data?.filter(
+    (item) => item.mainCategoryId._id === MAIN_CATEGORY_ID
+  ) || [];
+  console.log(filteredSubCategories, "filteredSubCategories")
+
+
+  const transformSubCategories = (subCategoryData, womenCategory) => {
+    // Create a map of category names to their images from womenCategory.subCategories
+    const categoryImageMap = womenCategory?.subCategories?.reduce((acc, subCategory) => {
+      acc[subCategory.name] = subCategory.image;
+      return acc;
+    }, {}) || {};
+
+    // Group items by categoryId.name
+    const groupedByCategory = subCategoryData.reduce((acc, item) => {
+      const categoryName = item.categoryId.name;
+      if (!acc[categoryName]) {
+        acc[categoryName] = [];
+      }
+      acc[categoryName].push(item);
+      return acc;
+    }, {});
+
+    // Create the final array with separators
+    const result = [];
+    Object.keys(groupedByCategory).forEach((categoryName) => {
+      // Add separator object using image from womenCategory.subCategories
+      result.push({
+        type: "separator",
+        name: categoryName,
+        image: categoryImageMap[categoryName] || "https://dummyimage.com/default.jpg", // Fallback image
+      });
+      // Add all items for this category
+      result.push(...groupedByCategory[categoryName]);
+    });
+
+    return result;
+  };
+
+  console.log(transformSubCategories(filteredSubCategories), "function")
+
+  const transformedSubCategories = transformSubCategories(filteredSubCategories, womenCategory);
+
+
+
+
+
+
   const filteredPackages = useMemo(() => {
     return selectedCategory === "packages"
       ? packages
@@ -159,12 +240,10 @@ const WomenProductsPage = () => {
   }, [packages, selectedCategory]);
 
   const handleSubCategoryClick = (subCategory) => {
-    const sectionId =
-      subCategory.sectionId ||
-      subCategory.name
-        .toLowerCase()
-        .replace(/\s+/g, "-")
-        .replace(/[^a-z0-9-]/g, "");
+    const sectionId = subCategory.name
+      .toLowerCase()
+      .replace(/\s+/g, "-")
+      .replace(/[^a-z0-9-]/g, "");
     setSelectedCategory(sectionId);
     const element = document.getElementById(sectionId);
     if (element) element.scrollIntoView({ behavior: "smooth" });
@@ -176,19 +255,19 @@ const WomenProductsPage = () => {
   };
 
   const handleSavePackage = (updatedPackage) => {
+    console.log(updatedPackage?._id, "id")
+    console.log(updatedPackage?.selectedServices, "selected")
+    const isCustomized = updatedPackage.packageType === "Customize";
+
     if (updatedPackage.selectedServices) {
-      updateCartPackage(
-        updatedPackage._id,
-        updatedPackage.selectedServices,
-        [],
-        updatedPackage.quantity || 1
-      );
+
+      addToCartPackage(updatedPackage?._id, 1, isCustomized, "6806a35d1a630944660209c9",);
+
     }
     setShowEditModal(false);
   };
 
   const handleAddToCart = (item) => {
-    // const mainCategoryId = item.mainCategoryId || MAIN_CATEGORY_ID;
     const isCustomized = item.packageType === "Customize";
     if (item.hasOwnProperty("services")) {
       addToCartPackage(item._id, 1, isCustomized, item.selectedServices);
@@ -208,16 +287,10 @@ const WomenProductsPage = () => {
         return;
       }
 
-      // Optional: handle removal if quantity is zero
-      // if (newQuantity <= 0) {
-      //   cartItem.isPackageService ? removeCartPackage(itemId) : removeSingleService(itemId);
-      //   return;
-      // }
-
       if (cartItem.isPackageService) {
-        updatePackageQuantity(itemId, newQuantity); // for package items
+        updatePackageQuantity(itemId, newQuantity);
       } else {
-        updateQuantity(itemId, newQuantity); // for single service items
+        updateQuantity(itemId, newQuantity);
       }
     } catch (err) {
       toast.error(err?.data?.message || 'Failed to update quantity');
@@ -225,7 +298,7 @@ const WomenProductsPage = () => {
   };
 
   const handleRemoveItem = (itemId) => {
-    console.log(itemId, "removecart")
+    console.log(itemId, "removecart");
     const item = cartItems?.find((item) => (item.serviceId || item.packageId) === itemId);
     if (item) {
       if (item.isPackageService) {
@@ -238,17 +311,15 @@ const WomenProductsPage = () => {
     }
   };
 
-
-
   const handleAddOption = (service) => {
     console.log("Add option for:", service);
   };
 
   const handleRemovePackage = (itemId) => {
-    console.log(itemId, "fromnew")
+    console.log(itemId, "fromnew");
     removeCartPackage(itemId?._id);
+  };
 
-  }
   const isInCart = (serviceId) => cartItems.some((item) => item.serviceId === serviceId);
   const isInCartPackage = (packageId) => cartItems.some((item) => item.packageId === packageId);
 
@@ -271,6 +342,7 @@ const WomenProductsPage = () => {
         </div>
 
         <div className="flex-1 bg-white overflow-y-auto custom-scrollbar p-6 rounded-[10px]">
+          {/* Package Cards */}
           <div id="packages" className="mb-8">
             <h2 className="text-xl font-semibold text-gray-900 mb-6">
               {selectedCategory === "packages"
@@ -295,48 +367,13 @@ const WomenProductsPage = () => {
                 ))
               ) : (
                 <div className="text-center py-8 text-gray-500">
-                  <p>
-                    No packages available for {selectedCategory.replace(/-/g, " ")}.
-                  </p>
+                  No packages available for {selectedCategory.replace(/-/g, " ")}.
                 </div>
               )}
             </div>
           </div>
 
-          <div id={selectedCategory} className="mb-8">
-            <div className="space-y-4">
-              {servicesLoading ? (
-                <ServiceCard isLoading={true} />
-              ) : servicesError ? (
-                <div className="text-center py-8 text-red-500">
-                  Error loading services: {servicesError.message}
-                </div>
-              ) : womensServices.length > 0 ? (
-                womensServices
-                  .filter((service) => {
-                    const sectionId = service.categoryId?.name
-                      ?.toLowerCase()
-                      ?.replace(/\s+/g, "-")
-                      ?.replace(/[^a-z0-9-]/g, "");
-                    return sectionId === selectedCategory || selectedCategory === "packages";
-                  })
-                  .map((service) => (
-                    <ServiceCard
-                      key={service._id}
-                      service={service}
-                      onAddOption={handleAddOption}
-                      onAddToCart={handleAddToCart}
-                      onRemoveFromCart={handleRemoveItem}
-                      isInCart={isInCart(service._id)}
-                    />
-                  ))
-              ) : (
-                <div className="text-center py-8 text-gray-500">
-                  No services available for {selectedCategory.replace(/-/g, " ")}.
-                </div>
-              )}
-            </div>
-          </div>
+          <ServiceCard subCategories={transformedSubCategories} />
         </div>
 
         <CartSidebar
@@ -353,12 +390,15 @@ const WomenProductsPage = () => {
         onClose={() => setShowEditModal(false)}
         packages={editingPackage}
         onSave={handleSavePackage}
-        services={womensServices.map((service) => ({
-          _id: service._id,
-          title: service.title,
-          image: service.images?.[0]?.img || "https://via.placeholder.com/150",
-          price: service.location?.[0]?.discountPrice || service.location?.[0]?.originalPrice,
-        }))}
+        services={Object.values(servicesByCategory)
+          .flatMap((category) =>
+            category.services.map((service) => ({
+              _id: service._id,
+              title: service.title,
+              image: service.images?.[0]?.img || "https://via.placeholder.com/150",
+              price: service.location?.[0]?.discountPrice || service.location?.[0]?.originalPrice,
+            }))
+          )}
       />
     </div>
   );

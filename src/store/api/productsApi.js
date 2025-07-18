@@ -344,6 +344,54 @@ export const productsApi = createApi({
         };
       },
     }),
+    getSubCategory: builder.query({
+      query: ({ categoryId, subCategoryId }) => ({
+        url: `/api/v1/admin/SubCategory/${categoryId}/${subCategoryId}`,
+        method: "GET",
+      }),
+      transformResponse: (response) => response,
+      transformErrorResponse: (response) => {
+        console.log("SubCategory Error:", response);
+        return {
+          message: response?.data?.message || "Error fetching subcategory",
+          status: response?.status,
+        };
+      },
+    }),
+    getAllSubCategories: builder.query({
+      query: () => ({
+        url: "/api/v1/admin/getAllSubCategories",
+        method: "GET",
+      }),
+      transformResponse: (response) => response,
+      transformErrorResponse: (response) => {
+        console.log("All SubCategories Error:", response);
+        return {
+          message: response?.data?.message || "Error fetching all subcategories",
+          status: response?.status,
+        };
+      },
+    }),
+    getAllCompleteCategory: builder.query({
+      query: ({ categoryId }) => ({
+        url: `/api/v1/admin/Category/allCategory/${categoryId}`,
+        method: "GET",
+      }),
+    }),
+    getServicesByCategory: builder.query({
+      query: ({ mainCategoryId, categoryId }) => ({
+        url: `/api/v1/admin/Servicebycategory/${mainCategoryId}/${categoryId}`,
+        method: "GET",
+      }),
+      transformResponse: (response) => response,
+      transformErrorResponse: (response) => {
+        console.log("Services by Category Error:", response);
+        return {
+          message: response?.data?.message || "Error fetching services by category",
+          status: response?.status,
+        };
+      },
+    }),
   }),
 });
 
@@ -365,5 +413,9 @@ export const {
   useGetFrequentlyAddedServicesQuery,
   useCheckoutMutation,
   usePlaceOrderMutation,
-  useUpdateCartPackageQuantityMutation
+  useUpdateCartPackageQuantityMutation,
+  useGetSubCategoryQuery,
+  useGetAllSubCategoriesQuery,
+  useGetAllCompleteCategoryQuery,
+  useGetServicesByCategoryQuery, // New hook
 } = productsApi;
