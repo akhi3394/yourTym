@@ -5,7 +5,7 @@ const ProductsYTPromise = () => {
   return (
     <div className="bg-white rounded-lg p-6">
       <div className="flex items-center gap-3 mb-4">
-        <h3 className="text-lg font-semibold text-gray-800">YT Promise</h3>
+        <h3 className="text-lg font-semibold text-gray-800">Yourtym Promise</h3>
       </div>
       <div className="flex justify-between items-center gap-5">
         <div className="flex flex-col gap-y-4"> {/* Vertical gap between points */}

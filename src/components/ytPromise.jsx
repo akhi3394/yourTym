@@ -43,7 +43,7 @@ const YTPromise = () => {
     return (
         <section className="bg-[#FFFFFF] py-10 px-4">
             <div className="max-w-[1280px] mx-auto w-full">
-                <h2 className="text-center text-[#444444] text-[24px] font-semibold mb-10">YT Promise</h2>
+                <h2 className="text-center text-[#444444] text-[24px] font-semibold mb-10">YourTym Promise</h2>
 
                 {/* Responsive Grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4">

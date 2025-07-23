@@ -43,7 +43,6 @@ const CheckoutPage = () => {
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [selectedAddress, setSelectedAddress] = useState(null);
-
   const {
     cartItems,
     loading,
@@ -59,7 +58,7 @@ const CheckoutPage = () => {
     fetchingCart
   } = useCart();
 
-  console.log(cartData?.paidAmount, "cartdtaafrom cartttt")
+  console.log(cartData, "cartdtaafrom cartttt")
 
   useEffect(() => {
     if (cartData) {
@@ -80,12 +79,12 @@ const CheckoutPage = () => {
     }
   }, [cartData, selectedCoupon, cartError, couponError, checkoutError]);
 
-  const serviceTotal = cartData?.data?.services?.reduce((sum, service) => sum + (service.total || 0), 0) || 0;
   const tipAmount = cartData?.data?.tipProvided || 0;
   const couponDiscount = selectedCoupon ? selectedCoupon.discount : (cartData?.data?.coupan || 0);
   const walletUsed = cartData?.data?.wallet || 0;
   const platformFee = cartData?.platformFee || 0;
   const taxAmount = cartData?.taxAmount || 0;
+  const serviceTotal=cartData?.totalDiscountPrice
   const additionalFee = cartData?.data?.additionalFee || 0;
   const finalTotal = payableAmount;
 
@@ -486,7 +485,7 @@ const CheckoutPage = () => {
                   <div className="flex justify-between items-center">
                     <div className="flex items-center space-x-2">
                       <span><img src={Safety} alt="safety" /></span>
-                      <span className="text-gray-600">Safety & Hygiene kit Charges</span>
+                      <span className="text-gray-600">Tax Amount</span>
                     </div>
                     <span className="text-gray-900">₹{taxAmount}</span>
                   </div>

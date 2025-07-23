@@ -68,7 +68,7 @@ export const productsApi = createApi({
       }),
       providesTags: ["Cart"],
       transformResponse: (response) => {
-        const { services = [], packages = [], paidAmount, platformFee, taxAmount } = response.data || {};
+        const { services = [], packages = [], paidAmount, platformFee, taxAmount,totalDiscountPrice,totalOriginalPrice } = response.data || {};
 
         const cartItems = [
           ...services.map((item) => ({
@@ -99,6 +99,8 @@ export const productsApi = createApi({
         cartItems.paidAmount = paidAmount;
         cartItems.platformFee = platformFee;
         cartItems.taxAmount = taxAmount;
+        cartItems.totalDiscountPrice = totalDiscountPrice;
+        cartItems.totalOriginalPrice = totalOriginalPrice;
 
         return cartItems;
       },
