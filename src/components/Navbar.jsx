@@ -15,7 +15,7 @@ import LocationAccessModal from './LocationAccessModal';
 import CircularLoader from './CircularLoader';
 import SearchBar from './SearchBar';
 
-const Navbar = ({BannersData,bannerLoading}) => {
+const Navbar = ({ BannersData, bannerLoading }) => {
   const { isAuthenticated, cityName } = useAppSelector((state) => state.auth);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showSignupModal, setShowSignupModal] = useState(false);
@@ -181,7 +181,7 @@ const Navbar = ({BannersData,bannerLoading}) => {
                   </p>
                 </div>
               </div>
-              <SearchBar setShowLogin={setShowLoginModal}/>
+              <SearchBar setShowLogin={setShowLoginModal} />
             </div>
 
             {/* Navigation Items */}
@@ -213,21 +213,19 @@ const Navbar = ({BannersData,bannerLoading}) => {
                     <div className="flex items-center space-x-6">
                       <button
                         onClick={() => handleTabChange('classic')}
-                        className={`px-4 py-2 relative transition-colors text-[16px] font-medium ${
-                          activeTab === 'classic'
+                        className={`px-4 py-2 relative transition-colors text-[16px] font-medium ${activeTab === 'classic'
                             ? 'text-[#FF5534] after:content-[""] after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-[#FF5534]'
                             : 'text-[#333333] hover:text-[#FF5534]'
-                        }`}
+                          }`}
                       >
                         Classic
                       </button>
                       <button
                         onClick={() => handleTabChange('premium')}
-                        className={`px-4 py-2 relative transition-colors text-[16px] font-medium ${
-                          activeTab === 'premium'
+                        className={`px-4 py-2 relative transition-colors text-[16px] font-medium ${activeTab === 'premium'
                             ? 'text-[#FF5534] after:content-[""] after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-[#FF5534]'
                             : 'text-[#333333] hover:text-[#FF5534]'
-                        }`}
+                          }`}
                       >
                         Premium
                       </button>

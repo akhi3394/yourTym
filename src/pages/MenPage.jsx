@@ -23,10 +23,12 @@ import Biotique from '../assets/images/WomenBrands/Biotique.png';
 import Jovees from '../assets/images/WomenBrands/Jovees.png';
 import YTPromise from '../components/ytPromise';
 import RatingsTestimonialsFaq from '../components/RatingsTestimonialsFaq';
+import { useGetStaticBannersQuery } from '../store/api/profileApi';
 
 const MenPage = () => {
   const banners = [Banner1, Banner2, Banner3, Banner4];
   const [currentBanner, setCurrentBanner] = useState(0);
+  const { data: BannersData, isLoading: bannerLoading } = useGetStaticBannersQuery();
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -42,7 +44,7 @@ const MenPage = () => {
 
   return (
     <div className="min-h-screen bg-[#F5F5F5]">
-      <Navbar />
+      <Navbar BannersData={BannersData} bannerLoading={bannerLoading}/>
       <div className="max-w-7xl mx-auto px-4 mt-[130px]">
         <div className="bg-[#F4F4F4] w-full">
           {/* Banner */}
