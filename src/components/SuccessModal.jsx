@@ -10,10 +10,10 @@ const SuccessModal = ({ isOpen, onClose }) => {
         {/* Close Icon */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+          className="absolute top-4 right-4 text-black hover:text-gray-600"
           aria-label="Close"
         >
-          <X size={20} />
+          <X size={26} />
         </button>
 
         {/* Success Animation */}

@@ -126,9 +126,9 @@ const RazorpayPayment = ({
       <Button
         onClick={handlePayment}
         disabled={isLoading}
-        className="btn btn-primary"
+        className="btn btn-primary w-full text-[#fff] bg-[#FF5534] px-5 py-3 rounded-[8px]"
       >
-        {isLoading ? "Processing..." : "Pay ₹" + amount}
+        {isLoading ? "Processing..." : "Proceed to payment" }
       </Button>
       {showModalAfterSuccess && <PaymentSuccessModal />}
     </>

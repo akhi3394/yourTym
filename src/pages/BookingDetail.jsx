@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useParams } from "react-router-dom";
-import { useGetOrderByIdQuery, useAddFavouriteBookingMutation } from "../store/api/profileApi";
+import { useGetOrderByIdQuery, useAddFavouriteBookingMutation, useGetProfileQuery } from "../store/api/profileApi";
 import Support from '../assets/svgs/support.svg';
 import LocationPin from '../assets/svgs/LocationPin.svg';
 import free from '../assets/svgs/serviceTotal/FreeService.svg';
@@ -16,17 +16,19 @@ import CircularLoader from "../components/CircularLoader";
 import ReferImg from '../assets/images/refer/ReferinOrders.png';
 import Swal from 'sweetalert2';
 import { toast } from "sonner";
+import ReferAndEarnModal from "../components/ReferAndEarnModal";
 
 const BookingDetail = () => {
     const { orderId } = useParams();
-    console.log(orderId, "from new");
+    const [isReferModalOpen, setIsReferModalOpen] = useState(false); // State for modal
+    const { data: order, isLoading: singleLoading, error } = useGetOrderByIdQuery(orderId);
+    const { data: profileData } = useGetProfileQuery(); // Fetch profile data for referral code
+    const [addFavouriteBooking, { isLoading: favouriteLoading }] = useAddFavouriteBookingMutation();
+    const referralcode = profileData?.data?.refferalCode; // Extract referral code
 
     if (!orderId) {
         return <div>Invalid Order ID</div>;
     }
-
-    const { data: order, isLoading: singleLoading, error } = useGetOrderByIdQuery(orderId);
-    const [addFavouriteBooking, { isLoading: favouriteLoading }] = useAddFavouriteBookingMutation();
 
     if (error) return <div>Error loading order details: {error.message}</div>;
     if (!order || !order.data) return <div>No order data available</div>;
@@ -40,21 +42,24 @@ const BookingDetail = () => {
             weekday: 'short'
         });
     };
+
     if (singleLoading) {
-        return (singleLoading && <div className="flex justify-center items-center">
-            <CircularLoader size={30} />
-        </div>)
+        return (
+            <div className="flex justify-center items-center">
+                <CircularLoader size={30} />
+            </div>
+        );
     }
 
     const handleMarkAsFavourite = () => {
-            addFavouriteBooking(orderId)
-                .unwrap()
-                .then(() => {
-                    toast.success('Successfully added as favourite!');
-                })
-                .catch((err) => {
-                    toast.error('Failed to add as favourite');
-                });
+        addFavouriteBooking(orderId)
+            .unwrap()
+            .then(() => {
+                toast.success('Successfully added as favourite!');
+            })
+            .catch((err) => {
+                toast.error('Failed to add as favourite');
+            });
     };
 
     return (
@@ -82,21 +87,44 @@ const BookingDetail = () => {
 
                             <div className="border-b-2 border-dashed mb-3"></div>
 
-                            <div className="flex items-start space-x-4 mb-6">
-                                <img
-                                    src={order.data.services[0]?.serviceId?.images[0]?.img || 'https://via.placeholder.com/64'}
-                                    alt={order.data.services[0]?.serviceId?.title || 'Service'}
-                                    className="w-16 h-16 rounded-lg object-cover"
-                                />
-                                <div className="flex-1">
-                                    <h3 className="font-semibold text-gray-900 mb-1">{order.data.services[0]?.serviceId?.title || 'Service'}</h3>
-                                    <div className="flex items-center space-x-2 text-sm text-gray-600">
-                                        <span>{order.data.services[0]?.serviceId?.totalTime || 'N/A'}</span>
-                                        <span>•</span>
-                                        <span>₹{order.data.services[0]?.price || 0}</span>
+                            {/* Services */}
+                            {order.data.services.map((service, index) => (
+                                <div key={index} className="flex items-start space-x-4 mb-6">
+                                    <img
+                                        src={service.serviceId?.images[0]?.img || 'https://via.placeholder.com/64'}
+                                        alt={service.serviceId?.title || 'Service'}
+                                        className="w-16 h-16 rounded-lg object-cover"
+                                    />
+                                    <div className="flex-1">
+                                        <h3 className="font-semibold text-gray-900 mb-1">{service.serviceId?.title || 'Service'}</h3>
+                                        <div className="flex items-center space-x-2 text-sm text-gray-600">
+                                            <span>{service.serviceId?.totalTime || 'N/A'}</span>
+                                            <span>•</span>
+                                            <span>₹{service.price || 0}</span>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
+                            ))}
+
+                            {/* Packages */}
+                            {order.data.packages.map((pkg, index) => (
+                                <div key={index} className="flex items-start space-x-4 mb-6">
+                                    <img
+                                        src={pkg.packageId?.images[0]?.img || 'https://via.placeholder.com/64'}
+                                        alt={pkg.packageId?.title || 'Package'}
+                                        className="w-16 h-16 rounded-lg object-cover"
+                                    />
+                                    <div className="flex-1">
+                                        <h3 className="font-semibold text-gray-900 mb-1">{pkg.packageId?.title || 'Package'}</h3>
+                                        <div className="flex items-center space-x-2 text-sm text-gray-600">
+                                            <span>{pkg.packageId?.totalTime || 'N/A'}</span>
+                                            <span>•</span>
+                                            <span>₹{pkg.price || 0}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+
                             <div className="border-b-2 border-dashed mb-3"></div>
 
                             <div className="pt-4">
@@ -155,10 +183,10 @@ const BookingDetail = () => {
                             </div>
                         </div>
 
-                        {/* Support Section (Full width below) */}
+                        {/* Support Section */}
                         <div className="bg-white rounded-lg shadow-sm p-6 mt-6">
                             <div className="text-center mb-4">
-                                <h3 className="text-sm font-medium text-gray-900 mb-4 ">Need help with this order?</h3>
+                                <h3 className="text-sm font-medium text-gray-900 mb-4">Need help with this order?</h3>
                                 <p className="border-b border-dashed border-b-2-2"></p>
                             </div>
 
@@ -175,7 +203,7 @@ const BookingDetail = () => {
                                         <div className="text-xs text-gray-600">your order</div>
                                     </div>
                                 </div>
-                                <div className="">
+                                <div>
                                     <img src={Support} alt="support" />
                                 </div>
                             </div>
@@ -214,65 +242,82 @@ const BookingDetail = () => {
                             </div>
 
                             <div className="space-y-2 text-sm mb-4">
-                                <div className="flex justify-between items-center">
-                                    <div className="flex items-center space-x-2">
-                                        <img src={free} alt="free" />
-                                        <span className="text-gray-600">Free service</span>
+                                {order.data.freeServiceCount > 0 && (
+                                    <div className="flex justify-between items-center">
+                                        <div className="flex items-center space-x-2">
+                                            <img src={free} alt="free" />
+                                            <span className="text-gray-600">Free service</span>
+                                        </div>
+                                        <span className="text-gray-900">₹0</span>
                                     </div>
-                                    <span className="text-gray-900">₹0</span>
-                                </div>
+                                )}
 
-                                <div className="flex justify-between items-center">
-                                    <div className="flex items-center space-x-2">
-                                        <img src={Tip} alt="tip" />
-                                        <span className="text-gray-600">Tip For Service Provider</span>
+                                {order.data.tipProvided > 0 && (
+                                    <div className="flex justify-between items-center">
+                                        <div className="flex items-center space-x-2">
+                                            <img src={Tip} alt="tip" />
+                                            <span className="text-gray-600">Tip For Service Provider</span>
+                                        </div>
+                                        <span className="text-gray-900">₹{order.data.tipProvided}</span>
                                     </div>
-                                    <span className="text-gray-900">₹{order.data.tipProvided || 0}</span>
-                                </div>
+                                )}
 
-                                <div className="flex justify-between items-center">
-                                    <div className="flex items-center space-x-2">
-                                        <img src={Coupon} alt="coupon" />
-                                        <span className="text-gray-600">Coupon Discount</span>
+                                {order.data.coupan > 0 && (
+                                    <div className="flex justify-between items-center">
+                                        <div className="flex items-center space-x-2">
+                                            <img src={Coupon} alt="coupon" />
+                                            <span className="text-gray-600">Coupon Discount</span>
+                                        </div>
+                                        <span className="text-green-600">₹{order.data.coupan}</span>
                                     </div>
-                                    <span className="text-green-600">₹{order.data.coupan || 0}</span>
-                                </div>
+                                )}
 
-                                <div className="flex justify-between items-center">
-                                    <div className="flex items-center space-x-2">
-                                        <img src={Wallet} alt="wallet" />
-                                        <span className="text-gray-600">Wallet Used</span>
+                                {order.data.wallet > 0 && (
+                                    <div className="flex justify-between items-center">
+                                        <div className="flex items-center space-x-2">
+                                            <img src={Wallet} alt="wallet" />
+                                            <span className="text-gray-600">Wallet Used</span>
+                                        </div>
+                                        <span className="text-red-600">₹{order.data.wallet}</span>
                                     </div>
-                                    <span className="text-red-600">₹{order.data.wallet || 0}</span>
-                                </div>
+                                )}
 
-                                <div className="flex justify-between items-center">
-                                    <div className="flex items-center space-x-2">
-                                        <img src={SURG} alt="surg" />
-                                        <span className="text-gray-600">Platform Fee</span>
+                                {order.data.platformFee > 0 && (
+                                    <div className="flex justify-between items-center">
+                                        <div className="flex items-center space-x-2">
+                                            <img src={SURG} alt="surg" />
+                                            <span className="text-gray-600">Platform Fee</span>
+                                        </div>
+                                        <span className="text-gray-900">₹{order.data.platformFee}</span>
                                     </div>
-                                    <span className="text-gray-900">₹{order.data.platformFee || 0}</span>
-                                </div>
+                                )}
 
-                                <div className="flex justify-between items-center">
-                                    <div className="flex items-center space-x-2">
-                                        <img src={Safety} alt="safety" />
-                                        <span className="text-gray-600">Tax Amount</span>
+                                {order.data.taxAmount > 0 && (
+                                    <div className="flex justify-between items-center">
+                                        <div className="flex items-center space-x-2">
+                                            <img src={Safety} alt="safety" />
+                                            <span className="text-gray-600">Tax Amount</span>
+                                        </div>
+                                        <span className="text-gray-900">₹{order.data.taxAmount}</span>
                                     </div>
-                                    <span className="text-gray-900">₹{order.data.taxAmount || 0}</span>
-                                </div>
+                                )}
                             </div>
 
                             <div className="border-t border-gray-100 pt-4">
                                 <div className="flex justify-between items-center font-bold text-lg">
-                                    <span className="text-gray-900">Payble Amount</span>
+                                    <span className="text-gray-900">Payable Amount</span>
                                     <span className="text-gray-900">₹{order.data.paidAmount || 0}</span>
                                 </div>
                             </div>
                         </div>
 
                         <div className="bg-white rounded-lg shadow-sm p-6 mb-3">
-                            <img src={ReferImg} alt="refer" />
+                            <img
+                                src={ReferImg}
+                                alt="refer"
+                                className="cursor-pointer"
+                                onClick={() => setIsReferModalOpen(true)} // Open modal on click
+                            />
                         </div>
 
                         <div className="bg-white rounded-lg shadow-sm p-6">
@@ -301,6 +346,13 @@ const BookingDetail = () => {
                     </div>
                 </div>
             </div>
+
+            {/* Refer and Earn Modal */}
+            <ReferAndEarnModal
+                isOpen={isReferModalOpen}
+                onClose={() => setIsReferModalOpen(false)}
+                referralcode={referralcode}
+            />
         </div>
     );
 };

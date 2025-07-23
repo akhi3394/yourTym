@@ -2,19 +2,20 @@ import React, { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 import { usePlaceOrderMutation } from '../store/api/productsApi';
 import { useGetProfileQuery } from '../store/api/profileApi';
-import CircularLoader from './CircularLoader'; // Assuming CircularLoader is available
+import CircularLoader from './CircularLoader';
 import RazorpayPayment from './RazorpayPayment';
 
 const PaymentModal = ({ isOpen, onClose, onPayment, amount, orderId, isCheckoutLoading }) => {
   const [selectedPaymentMode, setSelectedPaymentMode] = useState(null);
   const [placeOrder, { isLoading: isPlaceOrderLoading }] = usePlaceOrderMutation();
   const { data: profileData, isLoading: profileLoading, error: profileError } = useGetProfileQuery();
-  // Use the orderId prop directly instead of local state
+
   useEffect(() => {
     if (!orderId) {
       console.warn("Order ID is not provided to PaymentModal");
     }
   }, [orderId]);
+
   const handlePlaceOrder = async (paymentMode) => {
     if (!paymentMode) return;
 
@@ -32,7 +33,7 @@ const PaymentModal = ({ isOpen, onClose, onPayment, amount, orderId, isCheckoutL
         console.error("Failed to place COD order:", error);
       }
     } else if (paymentMode === 'Upi') {
-      // Handle UPI/Razorpay payment
+      // UPI payment is handled by RazorpayPayment component
       onClose(); // Close modal to show Razorpay
     }
   };
@@ -62,9 +63,16 @@ const PaymentModal = ({ isOpen, onClose, onPayment, amount, orderId, isCheckoutL
     onFailure(error);
   };
 
+  // Define onFailure function to handle errors
+  const onFailure = (error) => {
+    console.error("Payment failure:", error);
+    // Optionally notify parent component or show error to user
+    onClose();
+  };
+
   if (!isOpen) return null;
 
-  const isLoading = isPlaceOrderLoading || isCheckoutLoading; // Combine loading states if needed
+  const isLoading = isPlaceOrderLoading || isCheckoutLoading;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
@@ -93,10 +101,11 @@ const PaymentModal = ({ isOpen, onClose, onPayment, amount, orderId, isCheckoutL
           <div className="mb-6">
             <div className="space-y-4">
               <label
-                className={`flex items-center p-4 border rounded-lg cursor-pointer transition-colors ${selectedPaymentMode === 'Cod'
+                className={`flex items-center p-4 border rounded-lg cursor-pointer transition-colors ${
+                  selectedPaymentMode === 'Cod'
                     ? 'border-[#FF5534] bg-red-50'
                     : 'border-gray-200 hover:border-[#FF5534]'
-                  }`}
+                }`}
               >
                 <input
                   type="radio"
@@ -106,10 +115,11 @@ const PaymentModal = ({ isOpen, onClose, onPayment, amount, orderId, isCheckoutL
                   onChange={() => setSelectedPaymentMode('Cod')}
                   className="sr-only"
                 />
-                <div className={`w-5 h-5 rounded-full border-2 mr-4 flex items-center justify-center ${selectedPaymentMode === 'Cod'
-                    ? 'border-[#FF5534] bg-[#FF5534]'
-                    : 'border-gray-300'
-                  }`}>
+                <div
+                  className={`w-5 h-5 rounded-full border-2 mr-4 flex items-center justify-center ${
+                    selectedPaymentMode === 'Cod' ? 'border-[#FF5534] bg-[#FF5534]' : 'border-gray-300'
+                  }`}
+                >
                   {selectedPaymentMode === 'Cod' && (
                     <div className="w-2 h-2 bg-white rounded-full"></div>
                   )}
@@ -120,10 +130,11 @@ const PaymentModal = ({ isOpen, onClose, onPayment, amount, orderId, isCheckoutL
                 </div>
               </label>
               <label
-                className={`flex items-center p-4 border rounded-lg cursor-pointer transition-colors ${selectedPaymentMode === 'Upi'
+                className={`flex items-center p-4 border rounded-lg cursor-pointer transition-colors ${
+                  selectedPaymentMode === 'Upi'
                     ? 'border-[#FF5534] bg-red-50'
                     : 'border-gray-200 hover:border-[#FF5534]'
-                  }`}
+                }`}
               >
                 <input
                   type="radio"
@@ -133,10 +144,11 @@ const PaymentModal = ({ isOpen, onClose, onPayment, amount, orderId, isCheckoutL
                   onChange={() => setSelectedPaymentMode('Upi')}
                   className="sr-only"
                 />
-                <div className={`w-5 h-5 rounded-full border-2 mr-4 flex items-center justify-center ${selectedPaymentMode === 'Upi'
-                    ? 'border-[#FF5534] bg-[#FF5534]'
-                    : 'border-gray-300'
-                  }`}>
+                <div
+                  className={`w-5 h-5 rounded-full border-2 mr-4 flex items-center justify-center ${
+                    selectedPaymentMode === 'Upi' ? 'border-[#FF5534] bg-[#FF5534]' : 'border-gray-300'
+                  }`}
+                >
                   {selectedPaymentMode === 'Upi' && (
                     <div className="w-2 h-2 bg-white rounded-full"></div>
                   )}
@@ -154,20 +166,19 @@ const PaymentModal = ({ isOpen, onClose, onPayment, amount, orderId, isCheckoutL
             <RazorpayPayment
               amount={amount}
               prefill={{
-                name: profileData?.data?.fullName,
-                email: profileData?.data?.email,
-                contact: profileData?.data?.phone
+                name: profileData?.data?.fullName || '',
+                email: profileData?.data?.email || '',
+                contact: profileData?.data?.phone || ''
               }}
               metadata={{ orderId }}
               onSuccess={handleRazorpaySuccess}
               onFailure={handleRazorpayFailure}
               onClose={onClose}
-              showModalAfterSuccess={false} // Handled by parent modal
+              showModalAfterSuccess={false}
               buttonText={isLoading ? 'Processing...' : 'Proceed to Pay'}
-              buttonClassName={`w-full py-3 rounded-lg font-medium transition-colors flex items-center justify-center ${isLoading
-                  ? 'bg-gray-400 text-white cursor-not-allowed'
-                  : 'bg-[#FF5534] text-white hover:bg-red-600'
-                }`}
+              buttonClassName={`w-full py-3 rounded-lg font-medium transition-colors flex items-center justify-center ${
+                isLoading ? 'bg-gray-400 text-white cursor-not-allowed' : 'bg-[#FF5534] text-white hover:bg-red-600'
+              }`}
             />
           ) : (
             <button
@@ -181,7 +192,7 @@ const PaymentModal = ({ isOpen, onClose, onPayment, amount, orderId, isCheckoutL
                   <span className="ml-2">Processing...</span>
                 </div>
               ) : (
-                'Proceed to Pay'
+                selectedPaymentMode === 'Cod' ? 'Proceed to Order' : 'Select a Payment Method'
               )}
               <style jsx>{`
                 button {

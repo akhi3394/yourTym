@@ -63,10 +63,11 @@ const CheckoutPage = () => {
   useEffect(() => {
     if (cartData) {
       let total = cartData?.paidAmount || 0;
+      const safetyHygieneFee = 100; // Static Safety and Hygiene fee
       if (selectedCoupon) {
         total = Math.max(0, total - selectedCoupon.discount);
       }
-      setPayableAmount(total);
+      setPayableAmount(total + safetyHygieneFee); // Add safety fee to payable amount
     }
     if (cartError) {
       toast.error(cartError?.data?.message || 'Failed to load cart');
@@ -84,10 +85,10 @@ const CheckoutPage = () => {
   const walletUsed = cartData?.data?.wallet || 0;
   const platformFee = cartData?.platformFee || 0;
   const taxAmount = cartData?.taxAmount || 0;
-  const serviceTotal=cartData?.totalDiscountPrice
+  const safetyHygieneFee = 100; // Static Safety and Hygiene fee
+  const serviceTotal = cartData?.totalDiscountPrice;
   const additionalFee = cartData?.data?.additionalFee || 0;
   const finalTotal = payableAmount;
-
 
   console.log(payableAmount, "hhhh")
   console.log(cartData, "ggg")
@@ -178,7 +179,6 @@ const CheckoutPage = () => {
     }
   };
 
-
   const handleRemoveItem = (itemId) => {
     try {
       const item = cartItems?.find((item) => (item.serviceId || item.packageId) === itemId);
@@ -240,7 +240,6 @@ const CheckoutPage = () => {
                       <button
                         onClick={() => handleUpdateQuantity(item.serviceId || item.packageId, item.quantity - 1)}
                         className="w-6 h-6 rounded-full bg-white flex items-center justify-center hover:bg-gray-50"
-                        // disabled={item.quantity <= 1}
                       >
                         <Minus className="w-3 h-3" />
                       </button>
@@ -488,6 +487,13 @@ const CheckoutPage = () => {
                       <span className="text-gray-600">Tax Amount</span>
                     </div>
                     <span className="text-gray-900">₹{taxAmount}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center space-x-2">
+                      <span><img src={Safety} alt="safety" /></span>
+                      <span className="text-gray-600">Safety and Hygiene Fee</span>
+                    </div>
+                    <span className="text-gray-900">₹{safetyHygieneFee}</span>
                   </div>
                 </div>
                 <div className="border-t border-gray-100 pt-4">
