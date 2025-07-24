@@ -333,6 +333,9 @@ const MenProductClassicPage = () => {
                     onAddToCart={handleAddToCart}
                     onRemoveFromCart={handleRemoveItem}
                     isInCart={isInCartPackage(pkg._id)}
+                    onUpdateQuantity={handleUpdateQuantity}
+                    cartItems={cartItems}
+
                   />
                 ))
               ) : (

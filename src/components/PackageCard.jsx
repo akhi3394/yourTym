@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import { Star, Trash2, Pencil, Clock } from "lucide-react";
+import { Star, Pencil, Clock, Minus, Plus } from "lucide-react";
 import parse from "html-react-parser";
 
 const PackageCard = React.memo(
@@ -7,8 +7,8 @@ const PackageCard = React.memo(
     package: pkg = {},
     onEditPackage = () => {},
     onAddToCart = () => {},
-    onRemoveFromCart = () => {},
-    isInCart = false,
+    onUpdateQuantity = () => {},
+    cartItems = [],
     isLoading = false,
   }) => {
     if (isLoading) {
@@ -71,10 +71,16 @@ const PackageCard = React.memo(
       return `${hours > 0 ? `${hours} hr ` : ""}${minutes > 0 ? `${minutes} min` : ""}`.trim() || "0 min";
     }, [timeInMin]);
 
-    const handleAddToCart = () => onAddToCart(pkg);
-    const handleRemoveFromCart = () => onRemoveFromCart(_id);
-    const handleEdit = () => onEditPackage(pkg);
+    // Find quantity from cart items
+    const cartItem = cartItems.find((item) => item.packageId === _id);
+    const quantity = cartItem?.quantity || 0;
 
+    const handleAddToCart = () => onAddToCart(pkg);
+    const handleEdit = () => onEditPackage(pkg);
+    const handleIncrement = () => onUpdateQuantity(_id, quantity + 1);
+    const handleDecrement = () => onUpdateQuantity(_id, quantity - 1);
+    console.log(cartItem,"cartitempackage")
+    console.log(quantity,"quantpackage")
     return (
       <div className="bg-white rounded-xl border border-gray-200 overflow-hidden mb-4 shadow-sm flex hover:shadow-md transition-all">
         {/* Left Section */}
@@ -101,32 +107,19 @@ const PackageCard = React.memo(
             <div className="text-[13px] text-[#4b4b4b] mb-3">
               {groupedServices.map(({ category, titles }, index) => (
                 <div key={index} className="mb-2">
-                  <strong>{category}:</strong>
-                  <ul className="ml-4">
-                    {titles.map((title, idx) => (
-                      <li key={idx} className="leading-[18px]">
-                        • {title}
-                      </li>
-                    ))}
-                  </ul>
+                  <strong>{category}:</strong> {titles.join(", ")}
                 </div>
               ))}
-              {description && (
-                <div className="mt-2 text-[12px]">
-                  {parse(description.replace(/<br\s*\/?>/gi, ""))}
-                </div>
-              )}
             </div>
           </div>
 
           {/* Bottom Row */}
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-start gap-4 ">
             <button
               onClick={handleEdit}
               className="flex items-center gap-1 text-[12px] text-black border border-black px-2 py-[5px] rounded-md hover:bg-gray-100"
             >
-              <Pencil className="w-3 h-3" />
-              Edit Package
+              Edit Your Package
             </button>
 
             <div className="flex items-center gap-2 text-xs text-black">
@@ -137,7 +130,7 @@ const PackageCard = React.memo(
         </div>
 
         {/* Right Section */}
-        <div className="w-[140px] relative flex flex-col items-center justify-between p-2">
+        <div className="w-[140px] relative flex flex-col items-center justify-between p-2 mb-2">
           <img
             src={image || "https://via.placeholder.com/140x85"}
             alt={title}
@@ -152,8 +145,8 @@ const PackageCard = React.memo(
             ₹ {discountPrice}
           </div>
 
-          {/* Add / Remove Button */}
-          {!isInCart ? (
+          {/* Add / Quantity Controls */}
+          {quantity === 0 ? (
             <button
               onClick={handleAddToCart}
               className="mt-2 border border-[#FF5534] text-[#FF5534] text-[13px] font-semibold px-6 py-[5px] rounded-md hover:bg-[#ff553419]"
@@ -161,13 +154,23 @@ const PackageCard = React.memo(
               Add
             </button>
           ) : (
-            <button
-              onClick={handleRemoveFromCart}
-              className="mt-2 bg-red-100 border border-red-500 text-red-500 text-[13px] font-semibold px-4 py-[5px] rounded-md hover:bg-red-200"
-            >
-              <Trash2 className="w-4 h-4 inline mr-1" />
-              Remove
-            </button>
+            <div className="flex items-center gap-3 bg-blue-100 rounded-full px-3 py-1 mt-2">
+              <button
+                onClick={handleDecrement}
+                className="w-6 h-6 rounded-full bg-white flex items-center justify-center hover:bg-gray-50"
+              >
+                <Minus className="w-3 h-3" />
+              </button>
+              <span className="text-sm font-medium w-8 text-center">
+                {quantity}
+              </span>
+              <button
+                onClick={handleIncrement}
+                className="w-6 h-6 rounded-full bg-white flex items-center justify-center hover:bg-gray-50"
+              >
+                <Plus className="w-3 h-3" />
+              </button>
+            </div>
           )}
         </div>
       </div>

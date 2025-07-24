@@ -351,9 +351,11 @@ const WomenProductsPage = () => {
                     key={pkg._id}
                     package={pkg}
                     onEditPackage={handleEditPackage}
+                    onUpdateQuantity={handleUpdateQuantity}
                     onAddToCart={handleAddToCart}
                     onRemoveFromCart={handleRemoveItem}
                     isInCart={isInCartPackage(pkg._id)}
+                    cartItems={cartItems}
                   />
                 ))
               ) : (

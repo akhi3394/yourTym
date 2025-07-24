@@ -229,12 +229,12 @@ const MenProductPremiumPage = () => {
     setShowEditModal(true);
   };
 
-   const handleSavePackage = (updatedPackage) => {
+  const handleSavePackage = (updatedPackage) => {
     console.log(updatedPackage, "fromnatu");
     const isCustomized = updatedPackage.packageType === "Customize";
 
     if (updatedPackage.serviceIds) {
-      addToCartPackage(updatedPackage.packageId,1, isCustomized, updatedPackage.serviceIds);
+      addToCartPackage(updatedPackage.packageId, 1, isCustomized, updatedPackage.serviceIds);
     }
     setShowEditModal(false);
   };
@@ -334,6 +334,9 @@ const MenProductPremiumPage = () => {
                     onAddToCart={handleAddToCart}
                     onRemoveFromCart={handleRemoveItem}
                     isInCart={isInCartPackage(pkg._id)}
+                    onUpdateQuantity={handleUpdateQuantity}
+                    cartItems={cartItems}
+
                   />
                 ))
               ) : (
