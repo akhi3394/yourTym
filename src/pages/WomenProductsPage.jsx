@@ -296,8 +296,8 @@ const WomenProductsPage = () => {
   const isInCartPackage = (packageId) => cartItems.some((item) => item.packageId === packageId);
 
   return (
-    <div className="min-h-screen mx-10">
-      <div className="max-w-[1280px] mx-auto flex h-screen mt-[150px] gap-3">
+    <div className="min-h-screen mx-4" style={{ overflowX: 'auto' }}>
+      <div className="max-w-[1280px] mx-auto flex mt-[150px] gap-3" style={{ minWidth: '1050px', minHeight: 'calc(100vh - 150px)' }}>
         {/* Category Sidebar */}
         <div className="w-[450px] h-[500px] bg-[#FFE8CF] rounded-[10px]">
           <div className="rounded-lg mb-6">
