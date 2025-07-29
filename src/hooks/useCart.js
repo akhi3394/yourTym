@@ -25,8 +25,8 @@ const useCart = () => {
   const [updateCartPackageEdit] = useUpdateCartPackageEditMutation();
   const [removeFromCart] = useRemoveFromCartMutation();
   const [updateCartServiceQuantity] = useUpdateCartServiceQuantityMutation();
-  const [updateCartPackageQuantity] = useUpdateCartPackageQuantityMutation()
-  const [removePackageFromCart] = useRemovePackageFromCartMutation(); // Use the new mutation
+  const [updateCartPackageQuantity] = useUpdateCartPackageQuantityMutation();
+  const [removePackageFromCart] = useRemovePackageFromCartMutation();
   const { data: cartData, isLoading: cartLoading, error: cartError, isFetching: fetchingCart } = useGetCartQuery(undefined, {
     skip: !isAuthenticated,
   });
@@ -36,10 +36,11 @@ const useCart = () => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (cartData && !cartLoading && !cartError) {
-      setCartItems(cartData);
+    if (!cartLoading && !cartError) {
+      setCartItems(cartData || []);
     } else if (cartError) {
       setError(cartError?.message || "Failed to load cart");
+      setCartItems([]);
     }
   }, [cartData, cartLoading, cartError]);
 
@@ -112,9 +113,8 @@ const useCart = () => {
         toast.success("Service added to cart successfully!");
         return { status: 200, data: result };
       } catch (err) {
-        // setError(err?.data?.message || "Failed to add service to cart");
-        // toast.error(err?.data?.message || "Failed to add service to cart");
-        console.err(err)
+        setError(err?.data?.message || "Failed to add service to cart");
+        toast.error(err?.data?.message || "Failed to add service to cart");
         return { status: 500, error: err };
       } finally {
         setLoading(false);
@@ -122,7 +122,6 @@ const useCart = () => {
     },
     [addToCartSingleService, cartItems]
   );
-
 
   const removeSingleService = useCallback(
     async (serviceId) => {
@@ -133,9 +132,14 @@ const useCart = () => {
           serviceId,
           isPackageService: false,
         }).unwrap();
-        setCartItems((prev) => prev.filter((item) => item.serviceId !== serviceId));
+        setCartItems((prev) => {
+          const newCartItems = prev.filter((item) => item.serviceId !== serviceId);
+          return newCartItems.length === 0 ? [] : newCartItems;
+        });
+        toast.success("Service removed from cart successfully!");
       } catch (err) {
         setError(err?.data?.message || "Failed to remove service from cart");
+        toast.error(err?.data?.message || "Failed to remove service from cart");
       } finally {
         setLoading(false);
       }
@@ -145,19 +149,22 @@ const useCart = () => {
 
   const removeCartPackage = useCallback(
     async (cartItemId) => {
-      console.log(cartItemId, "fromuseCart")
       setLoading(true);
       setError(null);
       try {
-        // Find the cart item to get the packageId
         const cartItem = cartItems.find((item) => (item.serviceId || item.packageId) === cartItemId);
         if (!cartItem || !cartItem.isPackageService) {
           throw new Error("Package not found in cart");
         }
         await removePackageFromCart({ packageId: cartItem.packageId }).unwrap();
-        setCartItems((prev) => prev.filter((item) => item._id !== cartItemId));
+        setCartItems((prev) => {
+          const newCartItems = prev.filter((item) => item._id !== cartItemId);
+          return newCartItems.length === 0 ? [] : newCartItems;
+        });
+        toast.success("Package removed from cart successfully!");
       } catch (err) {
         setError(err?.data?.message || "Failed to remove package from cart");
+        toast.error(err?.data?.message || "Failed to remove package from cart");
       } finally {
         setLoading(false);
       }
@@ -170,8 +177,18 @@ const useCart = () => {
       setLoading(true);
       setError(null);
       try {
+        if (cartItems.length > 0) {
+          const existingCategoryId = cartItems[0]?.mainCategoryId?._id;
+          if (existingCategoryId && existingCategoryId !== mainCategoryId) {
+            toast.error(
+              `Your cart contains items from "${cartItems[0]?.mainCategoryId?.name}". Please remove those items to update with items from a different category.`
+            );
+            return;
+          }
+        }
+
         let result;
-        const payload = { packageId: mainCategoryId, quantity, mainCategoryId };
+        const payload = { packageId: packageId, quantity, mainCategoryId };
         if (selectedServices.length > 0 || selectedAddOnServices.length > 0) {
           result = await updateCartPackageEdit({
             ...payload,
@@ -189,19 +206,19 @@ const useCart = () => {
             item.packageId === packageId ? { ...item, ...result, quantity } : item
           )
         );
+        toast.success("Package updated in cart successfully!");
       } catch (err) {
         setError(err?.data?.message || "Failed to update package in cart");
+        toast.error(err?.data?.message || "Failed to update package in cart");
       } finally {
         setLoading(false);
       }
     },
-    [updateCustomizePackageInCart, updateCartPackageEdit]
+    [updateCustomizePackageInCart, updateCartPackageEdit, cartItems]
   );
 
-  // service quantity update
   const updateQuantity = useCallback(
     async (itemId, quantity) => {
-      console.log(itemId, "itemIdfromuseCart", quantity, "quantity")
       setLoading(true);
       setError(null);
       try {
@@ -211,8 +228,10 @@ const useCart = () => {
             item._id === itemId ? { ...item, quantity, total: item.price * quantity } : item
           )
         );
+        toast.success("Quantity updated successfully!");
       } catch (err) {
         setError(err?.data?.message || "Failed to update quantity");
+        toast.error(err?.data?.message || "Failed to update quantity");
       } finally {
         setLoading(false);
       }
@@ -222,7 +241,6 @@ const useCart = () => {
 
   const updatePackageQuantity = useCallback(
     async (itemId, quantity) => {
-      console.log(itemId, "itemIdfromuseCart", quantity, "quantity")
       setLoading(true);
       setError(null);
       try {
@@ -232,14 +250,17 @@ const useCart = () => {
             item._id === itemId ? { ...item, quantity, total: item.price * quantity } : item
           )
         );
+        toast.success("Package quantity updated successfully!");
       } catch (err) {
         setError(err?.data?.message || "Failed to update quantity");
+        toast.error(err?.data?.message || "Failed to update quantity");
       } finally {
         setLoading(false);
       }
     },
     [updateCartPackageQuantity]
   );
+
   const isInCartorNot = useCallback(
     (serviceId) => cartItems.some((item) => item.serviceId === serviceId && !item.isPackageService),
     [cartItems]
@@ -261,7 +282,7 @@ const useCart = () => {
     fetchingCart,
     serviceAddError,
     packageAddError,
-    serviceApiSuccess
+    serviceApiSuccess,
   };
 };
 
