@@ -56,7 +56,6 @@ const WomenProductsPage = () => {
       skip: !isAuthenticated,
     });
 
-  console.log(packagesData?.data, "packagesDatafromWomen")
   const { data: servicesData, isLoading: servicesLoading, error: servicesError } =
     useGetAllServicesQuery(undefined, { skip: !isAuthenticated });
 
@@ -259,12 +258,13 @@ const WomenProductsPage = () => {
     setShowEditModal(false);
   };
 
-  const handleAddToCart = (item) => {
+  const handleAddToCart = (item,mainCategoryId) => {
+    console.log(item,"from newa add",mainCategoryId,"from function")
     const isCustomized = item.packageType === "Customize";
     if (item.hasOwnProperty("services")) {
-      addToCartPackage(item._id, 1, isCustomized, item.selectedServices);
+      addToCartPackage(item._id, 1, isCustomized, item.selectedServices,mainCategoryId);
     } else {
-      addToCartSingleServices(item._id, 1, item.location?.[0]?.sector || "67beed95c3e00990a579d596");
+      addToCartSingleServices(item._id, 1, item.location?.[0]?.sector || "67beed95c3e00990a579d596",MAIN_CATEGORY_ID);
     }
   };
 
@@ -356,6 +356,7 @@ const WomenProductsPage = () => {
                     onRemoveFromCart={handleRemoveItem}
                     isInCart={isInCartPackage(pkg._id)}
                     cartItems={cartItems}
+                    mainCategoryId={MAIN_CATEGORY_ID}
                   />
                 ))
               ) : (
@@ -366,7 +367,7 @@ const WomenProductsPage = () => {
             </div>
           </div>
 
-          <ServiceCard subCategories={transformedSubCategories} />
+          <ServiceCard subCategories={transformedSubCategories} mainCategoryId={MAIN_CATEGORY_ID}/>
         </div>
 
         <CartSidebar
@@ -375,6 +376,7 @@ const WomenProductsPage = () => {
           onRemoveItem={handleRemoveItem}
           loading={loading}
           error={error}
+          mainCategoryId={MAIN_CATEGORY_ID}
         />
       </div>
 

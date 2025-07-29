@@ -4,8 +4,10 @@ import { useNavigate } from "react-router-dom"; // Import useNavigate
 import CircularLoader from "./CircularLoader";
 import useCart from "../hooks/useCart";
 
-const CartSidebar = ({ cartItems, onUpdateQuantity, onRemoveItem, loading, error }) => {
+const CartSidebar = ({ cartItems, onUpdateQuantity, onRemoveItem, loading, error,mainCategoryId }) => {
   const total = cartItems.reduce((sum, item) => sum + (item.total || 0), 0);
+  console.log(mainCategoryId,"maincategoryidfrom women")
+  console.log(cartItems,"CartItems")
   const navigate = useNavigate(); // Initialize navigate
   const {
     cartError,

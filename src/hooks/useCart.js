@@ -13,6 +13,7 @@ import {
   useRemovePackageFromCartMutation,
   useUpdateCartPackageQuantityMutation,
 } from "../store/api/productsApi";
+import { toast } from "sonner";
 
 const useCart = () => {
   const dispatch = useDispatch();
@@ -43,13 +44,24 @@ const useCart = () => {
   }, [cartData, cartLoading, cartError]);
 
   const addToCartPackage = useCallback(
-    async (packageId, quantity = 1, isCustomized = false, selectedServices = []) => {
+    async (packageId, quantity = 1, isCustomized = false, selectedServices = [], mainCategoryId) => {
       setLoading(true);
       setError(null);
       try {
-        let result;
+        // Check if cart is not empty and mainCategoryId doesn't match
+        if (cartItems.length > 0) {
+          const existingCategoryId = cartItems[0]?.mainCategoryId?._id;
+          if (existingCategoryId && existingCategoryId !== mainCategoryId) {
+            toast.error(
+              `Your cart contains items from "${cartItems[0]?.mainCategoryId?.name}". Please remove those items to add items from a different category.`
+            );
+            return;
+          }
+        }
+
+        // Proceed with adding to cart
         const payload = { packageId: packageId, quantity };
-        result = await addToCartPackageCustomise({
+        const result = await addToCartPackageCustomise({
           ...payload,
           packageServices: selectedServices,
         }).unwrap();
@@ -58,20 +70,34 @@ const useCart = () => {
           ...prev,
           { ...result, quantity, isPackageService: true, _id: result._id || packageId },
         ]);
+        toast.success("Package added to cart successfully!");
       } catch (err) {
         setError(err?.data?.message || "Failed to add package to cart");
+        toast.error(err?.data?.message || "Failed to add package to cart");
       } finally {
         setLoading(false);
       }
     },
-    [addToCartPackageCustomise]
+    [addToCartPackageCustomise, cartItems]
   );
 
   const addToCartSingleServices = useCallback(
-    async (serviceId, quantity = 1, serviceTypeId) => {
+    async (serviceId, quantity = 1, serviceTypeId, mainCategoryId) => {
       setLoading(true);
       setError(null);
       try {
+        // Check if cart is not empty and mainCategoryId doesn't match
+        if (cartItems.length > 0) {
+          const existingCategoryId = cartItems[0]?.mainCategoryId?._id;
+          if (existingCategoryId && existingCategoryId !== mainCategoryId) {
+            toast.error(
+              `Your cart contains items from "${cartItems[0]?.mainCategoryId?.name}". Please remove those items to add items from a different category.`
+            );
+            return;
+          }
+        }
+
+        // Proceed with adding to cart
         const result = await addToCartSingleService({
           _id: serviceId,
           quantity,
@@ -80,20 +106,22 @@ const useCart = () => {
 
         setCartItems((prev) => [
           ...prev,
-          { ...result, quantity, isPackageService: false, _id: result._id || serviceId },
+          { ...result, quantity, isPackageService: false, _id: result._id || serviceId, mainCategoryId: { _id: mainCategoryId } },
         ]);
 
-        return { status: 200, data: result }; // ✅ Return a success object
+        toast.success("Service added to cart successfully!");
+        return { status: 200, data: result };
       } catch (err) {
-        setError(serviceAddError?.message || "Failed to add service to cart");
-        return { status: 500, error: err }; // ✅ Return failure
+        // setError(err?.data?.message || "Failed to add service to cart");
+        // toast.error(err?.data?.message || "Failed to add service to cart");
+        console.err(err)
+        return { status: 500, error: err };
       } finally {
         setLoading(false);
       }
     },
-    [addToCartSingleService]
+    [addToCartSingleService, cartItems]
   );
-
 
 
   const removeSingleService = useCallback(

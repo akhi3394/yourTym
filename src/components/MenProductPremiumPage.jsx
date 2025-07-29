@@ -242,9 +242,9 @@ const MenProductPremiumPage = () => {
   const handleAddToCart = (item) => {
     const isCustomized = item.packageType === "Customize";
     if (item.hasOwnProperty("services")) {
-      addToCartPackage(item._id, 1, isCustomized, item.selectedServices);
+      addToCartPackage(item._id, 1, isCustomized, item.selectedServices,MAIN_CATEGORY_ID);
     } else {
-      addToCartSingleServices(item._id, 1, item.location?.[0]?.sector || "67beed95c3e00990a579d596");
+      addToCartSingleServices(item._id, 1, item.location?.[0]?.sector || "67beed95c3e00990a579d596",MAIN_CATEGORY_ID);
     }
   };
 
@@ -349,7 +349,7 @@ const MenProductPremiumPage = () => {
             </div>
           </div>
 
-          <ServiceCard subCategories={transformedSubCategories} />
+          <ServiceCard subCategories={transformedSubCategories} mainCategoryId={MAIN_CATEGORY_ID}/>
 
         </div>
 

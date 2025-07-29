@@ -45,7 +45,7 @@ const Footer = ({ BannersData,bannerLoading }) => {
             <div className="mb-5"></div>
             <h3 className="font-semibold text-[#000000] text-[24px] mb-4">Customers</h3>
             <ul className="space-y-2 text-[#000000] text-[16px]">
-              <li><a href="#" className="hover:text-[#FF5534] transition-colors">YT Reviews</a></li>
+              <li><a href="#" className="hover:text-[#FF5534] transition-colors">YourTym Reviews</a></li>
               <li><a href="#" className="hover:text-[#FF5534] transition-colors">Categories near you</a></li>
               {/* <li><a href="#" className="hover:text-[#FF5534] transition-colors">Blog</a></li> */}
               <li>

@@ -4,7 +4,7 @@ import useCart from "../hooks/useCart";
 import CircularLoader from "./CircularLoader";
 import { toast } from "sonner";
 
-const ServiceCard = ({ subCategories }) => {
+const ServiceCard = ({ subCategories,mainCategoryId }) => {
   const [selectedSubCategory, setSelectedSubCategory] = useState(null);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [isLoadingAdd, setIsLoadingAdd] = useState(false);
@@ -40,7 +40,8 @@ const ServiceCard = ({ subCategories }) => {
       const response = await addToCartSingleServices(
         item._id,
         1,
-        item.location?.[0]?.sector || "67beed95c3e00990a579d596"
+        item.location?.[0]?.sector || "67beed95c3e00990a579d596",
+        mainCategoryId
       );
 
       console.log(response, "fromresponse");
@@ -49,7 +50,7 @@ const ServiceCard = ({ subCategories }) => {
         toast.info("Service Added to Cart");
         closePopup();
       } else {
-        toast.error("Failed to add service to cart");
+        console.log("error adding service")
       }
     } catch (error) {
       console.error("Add to cart error:", error);

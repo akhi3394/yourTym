@@ -81,6 +81,7 @@ export const productsApi = createApi({
             isPackageService: false,
             description: item.serviceId.description,
             images: item.serviceId.images,
+            mainCategoryId:item.serviceId.mainCategoryId
           })),
           ...packages.map((item) => ({
             _id: item._id,
@@ -92,6 +93,7 @@ export const productsApi = createApi({
             isPackageService: true,
             description: item.packageId.description,
             images: item.packageId.images,
+            mainCategoryId:item.packageId.mainCategoryId
           })),
         ];
 

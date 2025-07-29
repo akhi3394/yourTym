@@ -10,6 +10,7 @@ const PackageCard = React.memo(
     onUpdateQuantity = () => {},
     cartItems = [],
     isLoading = false,
+    mainCategoryId
   }) => {
     if (isLoading) {
       return (
@@ -74,8 +75,8 @@ const PackageCard = React.memo(
     // Find quantity from cart items
     const cartItem = cartItems.find((item) => item.packageId === _id);
     const quantity = cartItem?.quantity || 0;
-
-    const handleAddToCart = () => onAddToCart(pkg);
+    console.log(mainCategoryId,"from packgecard")
+    const handleAddToCart = () => onAddToCart(pkg,mainCategoryId);
     const handleEdit = () => onEditPackage(pkg);
     const handleIncrement = () => onUpdateQuantity(_id, quantity + 1);
     const handleDecrement = () => onUpdateQuantity(_id, quantity - 1);
