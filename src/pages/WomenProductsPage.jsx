@@ -30,8 +30,6 @@ const WomenProductsPage = () => {
     subCategoryId: '670f61d6199de0d397f32f6a'
   });
   const { data: allsubCategoryData } = useGetAllSubCategoriesQuery();
-  // Filter subcategories by mainCategoryId
-
 
   const {
     cartItems,
@@ -98,7 +96,6 @@ const WomenProductsPage = () => {
     return subCategories.map((subCategory) => subCategory.name).join(", ");
   }, [subCategories]);
 
-  // Group services by category
   const servicesByCategory = useMemo(() => {
     if (!servicesData?.data) return {};
     return servicesData.data.reduce((acc, item) => {
@@ -123,7 +120,6 @@ const WomenProductsPage = () => {
     }, {});
   }, [servicesData, MAIN_CATEGORY_ID]);
 
-  console.log(servicesByCategory, "servicesByCategory");
   const packages = useMemo(() => {
     if (!packagesData?.data) return [];
     return packagesData.data.map((pkg) => {
@@ -175,22 +171,16 @@ const WomenProductsPage = () => {
     });
   }, [packagesData]);
 
-
-
-
   const filteredSubCategories = allsubCategoryData?.data?.filter(
     (item) => item.mainCategoryId._id === MAIN_CATEGORY_ID
   ) || [];
 
-
   const transformSubCategories = (subCategoryData, womenCategory) => {
-    // Create a map of category names to their images from womenCategory.subCategories
     const categoryImageMap = womenCategory?.subCategories?.reduce((acc, subCategory) => {
       acc[subCategory.name] = subCategory.image;
       return acc;
     }, {}) || {};
 
-    // Group items by categoryId.name
     const groupedByCategory = subCategoryData.reduce((acc, item) => {
       const categoryName = item.categoryId.name;
       if (!acc[categoryName]) {
@@ -200,37 +190,32 @@ const WomenProductsPage = () => {
       return acc;
     }, {});
 
-    // Create the final array with separators
     const result = [];
     Object.keys(groupedByCategory).forEach((categoryName) => {
-      // Add separator object using image from womenCategory.subCategories
       result.push({
         type: "separator",
         name: categoryName,
-        image: categoryImageMap[categoryName] || "https://dummyimage.com/default.jpg", // Fallback image
+        image: categoryImageMap[categoryName] || "https://dummyimage.com/default.jpg",
       });
-      // Add all items for this category
       result.push(...groupedByCategory[categoryName]);
     });
 
     return result;
   };
 
-
   const transformedSubCategories = transformSubCategories(filteredSubCategories, womenCategory);
-
 
   const filteredPackages = useMemo(() => {
     return selectedCategory === "packages"
       ? packages
       : packages.filter((pkg) =>
-        pkg.services.some((s) =>
-          s.category.categoryId.name
-            .toLowerCase()
-            .replace(/\s+/g, "-")
-            .replace(/[^a-z0-9-]/g, "") === selectedCategory
-        )
-      );
+          pkg.services.some((s) =>
+            s.category.categoryId.name
+              .toLowerCase()
+              .replace(/\s+/g, "-")
+              .replace(/[^a-z0-9-]/g, "") === selectedCategory
+          )
+        );
   }, [packages, selectedCategory]);
 
   const handleSubCategoryClick = (subCategory) => {
@@ -249,22 +234,20 @@ const WomenProductsPage = () => {
   };
 
   const handleSavePackage = (updatedPackage) => {
-    console.log(updatedPackage, "fromnatu");
     const isCustomized = updatedPackage.packageType === "Customize";
 
     if (updatedPackage.serviceIds) {
-      addToCartPackage(updatedPackage.packageId,1, isCustomized, updatedPackage.serviceIds);
+      addToCartPackage(updatedPackage.packageId, 1, isCustomized, updatedPackage.serviceIds);
     }
     setShowEditModal(false);
   };
 
-  const handleAddToCart = (item,mainCategoryId) => {
-    console.log(item,"from newa add",mainCategoryId,"from function")
+  const handleAddToCart = (item, mainCategoryId) => {
     const isCustomized = item.packageType === "Customize";
     if (item.hasOwnProperty("services")) {
-      addToCartPackage(item._id, 1, isCustomized, item.selectedServices,mainCategoryId);
+      addToCartPackage(item._id, 1, isCustomized, item.selectedServices, mainCategoryId);
     } else {
-      addToCartSingleServices(item._id, 1, item.location?.[0]?.sector || "67beed95c3e00990a579d596",MAIN_CATEGORY_ID);
+      addToCartSingleServices(item._id, 1, item.location?.[0]?.sector || "67beed95c3e00990a579d596", MAIN_CATEGORY_ID);
     }
   };
 
@@ -287,9 +270,9 @@ const WomenProductsPage = () => {
       }
 
       if (cartItem.isPackageService) {
-        updatePackageQuantity(itemId, newQuantity); // for package items
+        updatePackageQuantity(itemId, newQuantity);
       } else {
-        updateQuantity(itemId, newQuantity); // for single service items
+        updateQuantity(itemId, newQuantity);
       }
     } catch (err) {
       toast.error(err?.data?.message || 'Failed to update quantity');
@@ -309,14 +292,13 @@ const WomenProductsPage = () => {
     }
   };
 
-
-
   const isInCart = (serviceId) => cartItems.some((item) => item.serviceId === serviceId);
   const isInCartPackage = (packageId) => cartItems.some((item) => item.packageId === packageId);
 
   return (
     <div className="min-h-screen mx-10">
       <div className="max-w-[1280px] mx-auto flex h-screen mt-[150px] gap-3">
+        {/* Category Sidebar */}
         <div className="w-[450px] h-[500px] bg-[#FFE8CF] rounded-[10px]">
           <div className="rounded-lg mb-6">
             <h2 className="text-xl font-semibold text-gray-900 mx-6 my-4">
@@ -332,6 +314,7 @@ const WomenProductsPage = () => {
           <ProductsYTPromise />
         </div>
 
+        {/* Main Content */}
         <div className="flex-1 bg-white overflow-y-auto custom-scrollbar p-6 rounded-[10px]">
           {/* Package Cards */}
           <div id="packages" className="mb-8">
@@ -339,8 +322,8 @@ const WomenProductsPage = () => {
               {selectedCategory === "packages"
                 ? "Create a custom package"
                 : `Packages for ${selectedCategory
-                  .replace(/-/g, " ")
-                  .replace(/\b\w/g, (l) => l.toUpperCase())}`}
+                    .replace(/-/g, " ")
+                    .replace(/\b\w/g, (l) => l.toUpperCase())}`}
             </h2>
             <div className="space-y-4">
               {packagesLoading ? (
@@ -367,17 +350,20 @@ const WomenProductsPage = () => {
             </div>
           </div>
 
-          <ServiceCard subCategories={transformedSubCategories} mainCategoryId={MAIN_CATEGORY_ID}/>
+          <ServiceCard subCategories={transformedSubCategories} mainCategoryId={MAIN_CATEGORY_ID} />
         </div>
 
-        <CartSidebar
-          cartItems={cartItems}
-          onUpdateQuantity={handleUpdateQuantity}
-          onRemoveItem={handleRemoveItem}
-          loading={loading}
-          error={error}
-          mainCategoryId={MAIN_CATEGORY_ID}
-        />
+        {/* Cart Sidebar (Always Visible) */}
+        <div className="w-[300px] h-[494px] bg-white border-l border-gray-200 rounded-[10px]">
+          <CartSidebar
+            cartItems={cartItems}
+            onUpdateQuantity={handleUpdateQuantity}
+            onRemoveItem={handleRemoveItem}
+            loading={loading}
+            error={error}
+            mainCategoryId={MAIN_CATEGORY_ID}
+          />
+        </div>
       </div>
 
       <EditPackageModal
