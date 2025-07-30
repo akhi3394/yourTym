@@ -20,6 +20,7 @@ const MenProductClassicPage = () => {
   const [editingPackage, setEditingPackage] = useState(null);
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState("packages");
+  const [isCartOpen, setIsCartOpen] = useState(false); // State for mobile cart toggle
   const { isAuthenticated, token } = useSelector((state) => state.auth);
   const navigate = useNavigate();
   const MAIN_CATEGORY_ID = "670f5fd1199de0d397f32f4a"; // Men's Classic ID
@@ -71,7 +72,7 @@ const MenProductClassicPage = () => {
         sectionId: subCategory.name
           .toLowerCase()
           .replace(/\s+/g, "-")
-          .replace(/[^a-z0-9-]/g, ""),
+          .replace(/[^\w-]+/g, ""),
       })) || [];
     return [
       {
@@ -83,10 +84,6 @@ const MenProductClassicPage = () => {
       ...apiSubCategories,
     ];
   }, [mensCategory]);
-
-  const subCategoriesString = useMemo(() => {
-    return subCategories.map((subCategory) => subCategory.name).join(", ");
-  }, [subCategories]);
 
   const mensServices = useMemo(() => {
     if (!servicesData?.data) return [];
@@ -150,15 +147,14 @@ const MenProductClassicPage = () => {
     return selectedCategory === "packages"
       ? packages
       : packages.filter((pkg) =>
-        pkg.services.some((s) =>
-          s.category.categoryId.name
-            .toLowerCase()
-            .replace(/\s+/g, "-")
-            .replace(/[^a-z0-9-]/g, "") === selectedCategory
-        )
-      );
+          pkg.services.some((s) =>
+            s.category.categoryId.name
+              .toLowerCase()
+              .replace(/\s+/g, "-")
+              .replace(/[^\w-]+/g, "") === selectedCategory
+          )
+        );
   }, [packages, selectedCategory]);
-
 
   const womenCategory = useMemo(() => {
     return (
@@ -168,20 +164,16 @@ const MenProductClassicPage = () => {
     );
   }, [categoriesData]);
 
-
   const filteredSubCategories = allsubCategoryData?.data?.filter(
     (item) => item.mainCategoryId._id === MAIN_CATEGORY_ID
   ) || [];
 
-
   const transformSubCategories = (subCategoryData, womenCategory) => {
-    // Create a map of category names to their images from womenCategory.subCategories
     const categoryImageMap = womenCategory?.subCategories?.reduce((acc, subCategory) => {
       acc[subCategory.name] = subCategory.image;
       return acc;
     }, {}) || {};
 
-    // Group items by categoryId.name
     const groupedByCategory = subCategoryData.reduce((acc, item) => {
       const categoryName = item.categoryId.name;
       if (!acc[categoryName]) {
@@ -191,25 +183,20 @@ const MenProductClassicPage = () => {
       return acc;
     }, {});
 
-    // Create the final array with separators
     const result = [];
     Object.keys(groupedByCategory).forEach((categoryName) => {
-      // Add separator object using image from womenCategory.subCategories
       result.push({
         type: "separator",
         name: categoryName,
-        image: categoryImageMap[categoryName] || "https://dummyimage.com/default.jpg", // Fallback image
+        image: categoryImageMap[categoryName] || "https://dummyimage.com/default.jpg",
       });
-      // Add all items for this category
       result.push(...groupedByCategory[categoryName]);
     });
 
     return result;
   };
 
-
   const transformedSubCategories = transformSubCategories(filteredSubCategories, womenCategory);
-
 
   const handleSubCategoryClick = (subCategory) => {
     const sectionId =
@@ -217,12 +204,12 @@ const MenProductClassicPage = () => {
       subCategory.name
         .toLowerCase()
         .replace(/\s+/g, "-")
-        .replace(/[^a-z0-9-]/g, "");
+        .replace(/[^\w-]+/g, "");
     setSelectedCategory(sectionId);
     const element = document.getElementById(sectionId);
     if (element) element.scrollIntoView({ behavior: "smooth" });
+    setIsCartOpen(false); // Close cart on mobile when selecting a category
   };
-
 
   const handleEditPackage = (pkg) => {
     setEditingPackage(pkg);
@@ -230,9 +217,7 @@ const MenProductClassicPage = () => {
   };
 
   const handleSavePackage = (updatedPackage) => {
-    console.log(updatedPackage, "fromnatu");
     const isCustomized = updatedPackage.packageType === "Customize";
-
     if (updatedPackage.serviceIds) {
       addToCartPackage(updatedPackage.packageId, 1, isCustomized, updatedPackage.serviceIds);
     }
@@ -242,38 +227,37 @@ const MenProductClassicPage = () => {
   const handleAddToCart = (item) => {
     const isCustomized = item.packageType === "Customize";
     if (item.hasOwnProperty("services")) {
-      addToCartPackage(item._id, 1, isCustomized, item.selectedServices,MAIN_CATEGORY_ID);
+      addToCartPackage(item._id, 1, isCustomized, item.selectedServices, MAIN_CATEGORY_ID);
     } else {
-      addToCartSingleServices(item._id, 1, item.location?.[0]?.sector || "67beed95c3e00990a579d596",MAIN_CATEGORY_ID);
+      addToCartSingleServices(item._id, 1, item.location?.[0]?.sector || "67beed95c3e00990a579d596", MAIN_CATEGORY_ID);
     }
+    setIsCartOpen(true); // Open cart on mobile after adding item
   };
 
   const handleUpdateQuantity = (itemId, newQuantity) => {
-
     try {
       const cartItem = cartItems.find(item => (item.serviceId || item.packageId) === itemId);
-
       if (!cartItem) {
         toast.error('Item not found in cart');
         return;
       }
-
-      // Optional: handle removal if quantity is zero
-      // if (newQuantity <= 0) {
-      //   cartItem.isPackageService ? removeCartPackage(itemId) : removeSingleService(itemId);
-      //   return;
-      // }
-
+      if (newQuantity <= 0) {
+        if (cartItem.isPackageService) {
+          removeCartPackage(itemId);
+        } else {
+          removeSingleService(itemId);
+        }
+        return;
+      }
       if (cartItem.isPackageService) {
-        updatePackageQuantity(itemId, newQuantity); // for package items
+        updatePackageQuantity(itemId, newQuantity);
       } else {
-        updateQuantity(itemId, newQuantity); // for single service items
+        updateQuantity(itemId, newQuantity);
       }
     } catch (err) {
       toast.error(err?.data?.message || 'Failed to update quantity');
     }
   };
-
 
   const handleRemoveItem = (itemId) => {
     const item = cartItems?.find((item) => (item.serviceId || item.packageId) === itemId);
@@ -288,17 +272,25 @@ const MenProductClassicPage = () => {
     }
   };
 
-
-
-
   const isInCart = (serviceId) => cartItems.some((item) => item.serviceId === serviceId);
   const isInCartPackage = (packageId) => cartItems.some((item) => item.packageId === packageId);
 
   return (
-    <div className="min-h-screen mx-10">
-      <div className="max-w-[1280px] mx-auto flex h-screen mt-[150px] gap-3">
-        <div className="w-[450px] h-[500px] bg-[#DBE9FF] rounded-[10px]">
-          <div className="rounded-lg mb-6">
+    <div className="min-h-screen mx-4 md:mx-6 lg:mx-10 xl:mx-auto xl:max-w-[1280px]">
+      {/* Mobile Cart Toggle Button */}
+      <button
+        className="fixed bottom-4 right-4 z-50 bg-[#FF6B6B] text-white p-3 rounded-full md:hidden"
+        onClick={() => setIsCartOpen(!isCartOpen)}
+      >
+        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+        </svg>
+      </button>
+
+      <div className="flex flex-col xl:flex-row xl:h-screen xl:mt-[150px] xl:gap-3">
+        {/* Category Sidebar */}
+        <div className="w-full xl:w-[450px] xl:h-[500px] bg-[#DBE9FF] rounded-[10px] mb-4 xl:mb-0">
+          <div className="rounded-lg">
             <h2 className="text-xl font-semibold text-gray-900 mx-6 my-4">
               Men's Classic Salon
             </h2>
@@ -312,14 +304,15 @@ const MenProductClassicPage = () => {
           <ProductsYTPromise />
         </div>
 
-        <div className="flex-1 bg-white overflow-y-auto custom-scrollbar p-6 rounded-[10px]">
+        {/* Main Content */}
+        <div className="flex-1 bg-white overflow-y-auto custom-scrollbar p-4 md:p-6 rounded-[10px]">
           <div id="packages" className="mb-8">
             <h2 className="text-xl font-semibold text-gray-900 mb-6">
               {selectedCategory === "packages"
                 ? "Create a custom package"
                 : `Packages for ${selectedCategory
-                  .replace(/-/g, " ")
-                  .replace(/\b\w/g, (l) => l.toUpperCase())}`}
+                    .replace(/-/g, " ")
+                    .replace(/\b\w/g, (l) => l.toUpperCase())}`}
             </h2>
             <div className="space-y-4">
               {packagesLoading ? (
@@ -335,7 +328,6 @@ const MenProductClassicPage = () => {
                     isInCart={isInCartPackage(pkg._id)}
                     onUpdateQuantity={handleUpdateQuantity}
                     cartItems={cartItems}
-
                   />
                 ))
               ) : (
@@ -348,17 +340,34 @@ const MenProductClassicPage = () => {
             </div>
           </div>
 
-          <ServiceCard subCategories={transformedSubCategories} mainCategoryId={MAIN_CATEGORY_ID}/>
-
+          <ServiceCard subCategories={transformedSubCategories} mainCategoryId={MAIN_CATEGORY_ID} />
         </div>
 
-        <CartSidebar
-          cartItems={cartItems}
-          onUpdateQuantity={handleUpdateQuantity}
-          onRemoveItem={handleRemoveItem}
-          loading={loading}
-          error={error}
-        />
+        {/* Cart Sidebar */}
+        <div
+          className={`fixed inset-y-0 right-0 w-80 bg-white shadow-lg transform transition-transform duration-300 ease-in-out z-50 xl:static xl:w-[300px] xl:h-[500px] xl:transform-none xl:shadow-none xl:rounded-[10px] ${
+            isCartOpen ? "translate-x-0" : "translate-x-full xl:translate-x-0"
+          }`}
+        >
+          <div className="flex justify-between items-center p-4 border-b xl:hidden">
+            <h2 className="text-lg font-semibold">Your Cart</h2>
+            <button
+              onClick={() => setIsCartOpen(false)}
+              className="text-gray-600 hover:text-gray-900"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+          <CartSidebar
+            cartItems={cartItems}
+            onUpdateQuantity={handleUpdateQuantity}
+            onRemoveItem={handleRemoveItem}
+            loading={loading}
+            error={error}
+          />
+        </div>
       </div>
 
       <EditPackageModal
@@ -367,7 +376,6 @@ const MenProductClassicPage = () => {
         packages={editingPackage}
         onSave={handleSavePackage}
         packagesData={packagesData?.data}
-
       />
     </div>
   );

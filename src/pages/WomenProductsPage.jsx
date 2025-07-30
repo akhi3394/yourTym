@@ -21,6 +21,7 @@ const WomenProductsPage = () => {
   const [editingPackage, setEditingPackage] = useState(null);
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState("packages");
+  const [isCartOpen, setIsCartOpen] = useState(false); // State for mobile cart toggle
   const { isAuthenticated, token } = useSelector((state) => state.auth);
   const navigate = useNavigate();
   const MAIN_CATEGORY_ID = "670f5fb4199de0d397f32f45";
@@ -79,7 +80,7 @@ const WomenProductsPage = () => {
         sectionId: subCategory.name
           .toLowerCase()
           .replace(/\s+/g, "-")
-          .replace(/[^a-z0-9-]/g, ""),
+          .replace(/[^\w-]+/g, ""),
       })) || [];
     return [
       {
@@ -91,10 +92,6 @@ const WomenProductsPage = () => {
       ...apiSubCategories,
     ];
   }, [womenCategory]);
-
-  const subCategoriesString = useMemo(() => {
-    return subCategories.map((subCategory) => subCategory.name).join(", ");
-  }, [subCategories]);
 
   const servicesByCategory = useMemo(() => {
     if (!servicesData?.data) return {};
@@ -213,7 +210,7 @@ const WomenProductsPage = () => {
             s.category.categoryId.name
               .toLowerCase()
               .replace(/\s+/g, "-")
-              .replace(/[^a-z0-9-]/g, "") === selectedCategory
+              .replace(/[^\w-]+/g, "") === selectedCategory
           )
         );
   }, [packages, selectedCategory]);
@@ -222,10 +219,11 @@ const WomenProductsPage = () => {
     const sectionId = subCategory.name
       .toLowerCase()
       .replace(/\s+/g, "-")
-      .replace(/[^a-z0-9-]/g, "");
+      .replace(/[^\w-]+/g, "");
     setSelectedCategory(sectionId);
     const element = document.getElementById(sectionId);
     if (element) element.scrollIntoView({ behavior: "smooth" });
+    setIsCartOpen(false); // Close cart on mobile when selecting a category
   };
 
   const handleEditPackage = (pkg) => {
@@ -235,7 +233,6 @@ const WomenProductsPage = () => {
 
   const handleSavePackage = (updatedPackage) => {
     const isCustomized = updatedPackage.packageType === "Customize";
-
     if (updatedPackage.serviceIds) {
       addToCartPackage(updatedPackage.packageId, 1, isCustomized, updatedPackage.serviceIds);
     }
@@ -249,6 +246,7 @@ const WomenProductsPage = () => {
     } else {
       addToCartSingleServices(item._id, 1, item.location?.[0]?.sector || "67beed95c3e00990a579d596", MAIN_CATEGORY_ID);
     }
+    setIsCartOpen(true); // Open cart on mobile after adding item
   };
 
   const handleUpdateQuantity = (itemId, newQuantity) => {
@@ -296,11 +294,21 @@ const WomenProductsPage = () => {
   const isInCartPackage = (packageId) => cartItems.some((item) => item.packageId === packageId);
 
   return (
-    <div className="min-h-screen mx-4" style={{ overflowX: 'auto' }}>
-      <div className="max-w-[1280px] mx-auto flex mt-[150px] gap-3" style={{ minWidth: '1050px', minHeight: 'calc(100vh - 150px)' }}>
+    <div className="min-h-screen mx-4 md:mx-6 lg:mx-10 xl:mx-auto xl:max-w-[1280px]">
+      {/* Mobile Cart Toggle Button */}
+      <button
+        className="fixed bottom-4 right-4 z-50 bg-[#FF6B6B] text-white p-3 rounded-full md:hidden"
+        onClick={() => setIsCartOpen(!isCartOpen)}
+      >
+        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+        </svg>
+      </button>
+
+      <div className="flex flex-col xl:flex-row xl:h-screen xl:mt-[150px] xl:gap-3">
         {/* Category Sidebar */}
-        <div className="w-[450px] h-[500px] bg-[#FFE8CF] rounded-[10px]">
-          <div className="rounded-lg mb-6">
+        <div className="w-full xl:w-[450px] xl:h-[500px] bg-[#FFE8CF] rounded-[10px] mb-4 xl:mb-0">
+          <div className="rounded-lg">
             <h2 className="text-xl font-semibold text-gray-900 mx-6 my-4">
               Salon for Women
             </h2>
@@ -315,7 +323,7 @@ const WomenProductsPage = () => {
         </div>
 
         {/* Main Content */}
-        <div className="flex-1 bg-white overflow-y-auto custom-scrollbar p-6 rounded-[10px]">
+        <div className="flex-1 bg-white overflow-y-auto custom-scrollbar p-4 md:p-6 rounded-[10px]">
           {/* Package Cards */}
           <div id="packages" className="mb-8">
             <h2 className="text-xl font-semibold text-gray-900 mb-6">
@@ -353,8 +361,23 @@ const WomenProductsPage = () => {
           <ServiceCard subCategories={transformedSubCategories} mainCategoryId={MAIN_CATEGORY_ID} />
         </div>
 
-        {/* Cart Sidebar (Always Visible) */}
-        <div className="w-[300px] h-[494px] bg-white border-l border-gray-200 rounded-[10px]">
+        {/* Cart Sidebar */}
+        <div
+          className={`fixed inset-y-0 right-0 w-80 bg-white shadow-lg transform transition-transform duration-300 ease-in-out z-50 xl:static xl:w-[300px] xl:h-[500px] xl:transform-none xl:shadow-none xl:rounded-[10px] ${
+            isCartOpen ? "translate-x-0" : "translate-x-full xl:translate-x-0"
+          }`}
+        >
+          <div className="flex justify-between items-center p-4 border-b xl:hidden">
+            <h2 className="text-lg font-semibold">Your Cart</h2>
+            <button
+              onClick={() => setIsCartOpen(false)}
+              className="text-gray-600 hover:text-gray-900"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
           <CartSidebar
             cartItems={cartItems}
             onUpdateQuantity={handleUpdateQuantity}
