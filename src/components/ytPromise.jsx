@@ -7,61 +7,58 @@ import Transparent from '../assets/images/ytpromise/transperent.png';
 import Package from '../assets/images/ytpromise/note.png';
 
 const YTPromise = () => {
-    const cards = [
-        {
-            icon: OnTime,
-            title: 'On time & Trained Expert',
-            desc: 'Our Experts are well trained & will reach on time on your service. (On time, every time).'
-        },
-        {
-            icon: SingleKit,
-            title: 'Single Kit & Branded Products',
-            desc: 'All our experts use only Branded & single time use Sachet Packets.'
-        },
-        {
-            icon: Safety,
-            title: 'Safety Assured',
-            desc: 'Your Safety is utmost important for us. Expert will sanitized tools & equipments before and after Service.'
-        },
-        {
-            icon: Hygiene,
-            title: 'Hygiene & mess dree service',
-            desc: 'Your House will be left with no mess at all after services.'
-        },
-        {
-            icon: Transparent,
-            title: 'Transparent Pricing',
-            desc: 'Our Experts are well trained & will reach on time on your service. (On time, every time).'
-        },
-        {
-            icon: Package,
-            title: 'Package Customizations',
-            desc: 'Freedom to customize your own Package.'
-        }
-    ];
+  const cards = [
+    {
+      icon: OnTime,
+      title: 'On time & Trained Expert',
+      desc: 'Our Experts are well trained & will reach on time on your service. (On time, every time).'
+    },
+    {
+      icon: SingleKit,
+      title: 'Single Kit & Branded Products',
+      desc: 'All our experts use only Branded & single time use Sachet Packets.'
+    },
+    {
+      icon: Safety,
+      title: 'Safety Assured',
+      desc: 'Your Safety is utmost important for us. Expert will sanitized tools & equipments before and after Service.'
+    },
+    {
+      icon: Hygiene,
+      title: 'Hygiene & mess dree service',
+      desc: 'Your House will be left with no mess at all after services.'
+    },
+    {
+      icon: Transparent,
+      title: 'Transparent Pricing',
+      desc: 'Our Experts are well trained & will reach on time on your service. (On time, every time).'
+    },
+    {
+      icon: Package,
+      title: 'Package Customizations',
+      desc: 'Freedom to customize your own Package.'
+    }
+  ];
 
-    return (
-        <section className="bg-[#FFFFFF] py-10 px-4">
-            <div className="max-w-[1280px] mx-auto w-full">
-                <h2 className="text-center text-[#444444] text-[24px] font-semibold mb-10">YourTym Promise</h2>
-
-                {/* Responsive Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4">
-                    {cards.map((item, index) => (
-                        <div
-                            key={index}
-                            className="bg-[#F5F6FB] rounded-[12px] px-4 py-6 flex flex-col items-center text-center h-[322px] shadow-sm"
-                        >
-                            <img src={item.icon} alt={item.title} className="w-[64px] h-[64px] mb-12" />
-                            <h3 className="text-[16px] text-black font-semibold mb-2 leading-[22px]">{item.title}</h3>
-                            <p className="text-[14px] text-[#333333] leading-[20px]">{item.desc}</p>
-                        </div>
-                    ))}
-                </div>
+  return (
+    <section className="bg-[#FFFFFF] py-6 sm:py-8 lg:py-10 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-[1280px] mx-auto w-full">
+        <h2 className="text-center text-[#444444] text-lg sm:text-xl md:text-2xl lg:text-[24px] font-semibold mb-6 sm:mb-8 lg:mb-10">YourTym Promise</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3 sm:gap-4">
+          {cards.map((item, index) => (
+            <div
+              key={index}
+              className="bg-[#F5F6FB] rounded-[12px] px-3 sm:px-4 py-4 sm:py-6 flex flex-col items-center text-center h-auto sm:h-[300px] lg:h-[322px] shadow-sm"
+            >
+              <img src={item.icon} alt={item.title} className="w-10 h-10 sm:w-12 sm:h-12 lg:w-[64px] lg:h-[64px] mb-6 sm:mb-8 lg:mb-12" />
+              <h3 className="text-sm sm:text-base lg:text-[16px] text-black font-semibold mb-2 leading-tight sm:leading-[22px]">{item.title}</h3>
+              <p className="text-xs sm:text-sm lg:text-[14px] text-[#333333] leading-tight sm:leading-[20px]">{item.desc}</p>
             </div>
-        </section>
-
-    );
+          ))}
+        </div>
+      </div>
+    </section>
+  );
 };
 
 export default YTPromise;
