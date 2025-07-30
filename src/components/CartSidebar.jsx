@@ -1,24 +1,21 @@
 import React from "react";
 import { Minus, Plus } from "lucide-react";
-import { useNavigate } from "react-router-dom"; // Import useNavigate
+import { useNavigate } from "react-router-dom";
 import CircularLoader from "./CircularLoader";
 import useCart from "../hooks/useCart";
 
-const CartSidebar = ({ cartItems, onUpdateQuantity, onRemoveItem, loading, error,mainCategoryId }) => {
+const CartSidebar = ({ mainCategoryId, onUpdateQuantity, onRemoveItem }) => {
+  const { cartItems, cartError, serviceAddError, cartLoading, fetchingCart } = useCart();
   const total = cartItems.reduce((sum, item) => sum + (item.total || 0), 0);
-  console.log(mainCategoryId,"maincategoryidfrom women")
-  console.log(cartItems,"CartItems")
-  const navigate = useNavigate(); // Initialize navigate
-  const {
-    cartError,
-    serviceAddError,
-    cartLoading,
-    fetchingCart
-  } = useCart();
+  const navigate = useNavigate();
 
   const handleViewCart = () => {
-    navigate('/checkout', { state: { cartItems } }); // Navigate to checkout with cartItems state
+    navigate("/checkout", { state: { cartItems } });
   };
+
+  console.log(mainCategoryId, "maincategoryidfrom women");
+  console.log(cartItems, "CartItemsfromsidebar");
+
   return (
     <div className="w-[300px] h-[494px] bg-white border-l border-gray-200 flex flex-col rounded-[10px]">
       <div className="p-4 border-b border-gray-200">
@@ -26,13 +23,13 @@ const CartSidebar = ({ cartItems, onUpdateQuantity, onRemoveItem, loading, error
       </div>
 
       <div className="h-[394px] overflow-y-auto custom-scrollbar p-4">
-        {(cartLoading || fetchingCart || loading) ? (
+        {(cartLoading || fetchingCart) ? (
           <div className="text-center text-gray-500 mt-8 flex justify-center">
             <CircularLoader size={20} />
           </div>
-        ) : (error || serviceAddError) ? (
+        ) : (cartError || serviceAddError) ? (
           <div className="text-center text-red-500 mt-8">
-            <p>{serviceAddError?.message ?? error ?? cartError?.message }</p> <br/>
+            <p>{serviceAddError?.message ?? cartError?.message}</p>
           </div>
         ) : cartItems.length === 0 ? (
           <div className="text-center text-gray-500 mt-8">
@@ -59,7 +56,6 @@ const CartSidebar = ({ cartItems, onUpdateQuantity, onRemoveItem, loading, error
                     <button
                       onClick={() => onUpdateQuantity(item.serviceId || item.packageId, item.quantity - 1)}
                       className="w-6 h-6 rounded-full bg-white flex items-center justify-center hover:bg-gray-50"
-                      // disabled={item.quantity <= 1}
                     >
                       <Minus className="w-3 h-3" />
                     </button>
@@ -90,7 +86,7 @@ const CartSidebar = ({ cartItems, onUpdateQuantity, onRemoveItem, loading, error
       {cartItems.length > 0 && (
         <div className="p-4 border-t border-gray-200 mt-auto">
           <button
-            onClick={handleViewCart} // Add onClick handler
+            onClick={handleViewCart}
             className="w-full text-[#ffffff] bg-[#FF5534] font-semibold py-3 rounded-lg transition-colors flex justify-between px-3"
           >
             <span>₹{total}</span> <span>View Cart</span>
