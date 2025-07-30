@@ -234,7 +234,7 @@ const WomenProductsPage = () => {
   const handleSavePackage = (updatedPackage) => {
     const isCustomized = updatedPackage.packageType === "Customize";
     if (updatedPackage.serviceIds) {
-      addToCartPackage(updatedPackage.packageId, 1, isCustomized, updatedPackage.serviceIds);
+      addToCartPackage(updatedPackage.packageId, 1, isCustomized, updatedPackage.serviceIds,MAIN_CATEGORY_ID);
     }
     setShowEditModal(false);
   };
