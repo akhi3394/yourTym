@@ -147,13 +147,13 @@ const MenProductClassicPage = () => {
     return selectedCategory === "packages"
       ? packages
       : packages.filter((pkg) =>
-          pkg.services.some((s) =>
-            s.category.categoryId.name
-              .toLowerCase()
-              .replace(/\s+/g, "-")
-              .replace(/[^\w-]+/g, "") === selectedCategory
-          )
-        );
+        pkg.services.some((s) =>
+          s.category.categoryId.name
+            .toLowerCase()
+            .replace(/\s+/g, "-")
+            .replace(/[^\w-]+/g, "") === selectedCategory
+        )
+      );
   }, [packages, selectedCategory]);
 
   const womenCategory = useMemo(() => {
@@ -219,7 +219,7 @@ const MenProductClassicPage = () => {
   const handleSavePackage = (updatedPackage) => {
     const isCustomized = updatedPackage.packageType === "Customize";
     if (updatedPackage.serviceIds) {
-      addToCartPackage(updatedPackage.packageId, 1, isCustomized, updatedPackage.serviceIds,MAIN_CATEGORY_ID);
+      addToCartPackage(updatedPackage.packageId, 1, isCustomized, updatedPackage.serviceIds, MAIN_CATEGORY_ID);
     }
     setShowEditModal(false);
   };
@@ -287,11 +287,11 @@ const MenProductClassicPage = () => {
         </svg>
       </button>
 
-      <div className="flex flex-col xl:flex-row xl:h-screen xl:mt-[150px] xl:gap-3">
+      <div className="flex flex-col xl:flex-row xl:h-screen mt-[30px] xl:mt-[150px] xl:gap-3">
         {/* Category Sidebar */}
-        <div className="w-full xl:w-[450px] xl:h-[500px] bg-[#DBE9FF] rounded-[10px] mb-4 xl:mb-0">
+        <div className="w-full xl:w-[450px] xl:h-[500px] bg-[#DBE9FF] mt-10 xl:mt-0 rounded-[10px] mb-4 xl:mb-0">
           <div className="rounded-lg">
-            <h2 className="text-xl font-semibold text-gray-900 mx-6 my-4">
+            <h2 className="text-xl font-semibold text-gray-900 mx-6 my-4 mt-12 xl:mt-5">
               Men's Classic Salon
             </h2>
             <CategoryGrid
@@ -301,7 +301,10 @@ const MenProductClassicPage = () => {
               isLoading={categoriesLoading}
             />
           </div>
-          <ProductsYTPromise />
+          <div className="">
+            <ProductsYTPromise />
+
+          </div>
         </div>
 
         {/* Main Content */}
@@ -311,8 +314,8 @@ const MenProductClassicPage = () => {
               {selectedCategory === "packages"
                 ? "Create a custom package"
                 : `Packages for ${selectedCategory
-                    .replace(/-/g, " ")
-                    .replace(/\b\w/g, (l) => l.toUpperCase())}`}
+                  .replace(/-/g, " ")
+                  .replace(/\b\w/g, (l) => l.toUpperCase())}`}
             </h2>
             <div className="space-y-4">
               {packagesLoading ? (
@@ -345,9 +348,8 @@ const MenProductClassicPage = () => {
 
         {/* Cart Sidebar */}
         <div
-          className={`fixed inset-y-0 right-0 w-80 bg-white shadow-lg transform transition-transform duration-300 ease-in-out z-50 xl:static xl:w-[300px] xl:h-[500px] xl:transform-none xl:shadow-none xl:rounded-[10px] ${
-            isCartOpen ? "translate-x-0" : "translate-x-full xl:translate-x-0"
-          }`}
+          className={`fixed inset-y-0 right-0 w-80 bg-white shadow-lg transform transition-transform duration-300 ease-in-out  xl:static xl:w-[300px] xl:h-[500px] xl:transform-none xl:shadow-none xl:rounded-[10px] ${isCartOpen ? "translate-x-0 z-50" : "translate-x-full xl:translate-x-0 z-40"
+            }`}
         >
           <div className="flex justify-between items-center p-4 border-b xl:hidden">
             <h2 className="text-lg font-semibold">Your Cart</h2>
