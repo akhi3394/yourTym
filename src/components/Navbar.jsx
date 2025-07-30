@@ -173,8 +173,11 @@ const Navbar = ({ BannersData, bannerLoading }) => {
 
             {/* Mobile Menu Button */}
             <div className="md:hidden flex items-center">
-              <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
-                {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+              <button
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+              >
+                {isMobileMenuOpen ? <X size={24} className="text-[#333333]" /> : <Menu size={24} className="text-[#333333]" />}
               </button>
             </div>
 
@@ -294,116 +297,153 @@ const Navbar = ({ BannersData, bannerLoading }) => {
 
           {/* Mobile Menu */}
           {isMobileMenuOpen && (
-            <div className="md:hidden bg-white border-t border-gray-200">
-              <div className="flex flex-col items-center py-4">
-                <div className="w-full px-4 mb-4">
-                  <div
-                    className="flex items-center w-full h-[40px] border border-[#E5E5E5] rounded-[8px] px-3 bg-white cursor-pointer"
-                    onClick={handleLocationClick}
-                  >
-                    <img
-                      src={LocationIcon}
-                      alt="LocationIcon"
-                      className="w-[16px] h-[16px] mr-2 flex-shrink-0"
-                    />
-                    <p
-                      className="text-[#333333] text-[14px] font-normal truncate max-w-[200px]"
-                      title={locationText}
+            <div className="md:hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex">
+              <div
+                className="w-[75%] max-w-[300px] h-full bg-white shadow-xl transform transition-transform duration-300 ease-in-out translate-x-0"
+              >
+                <div className="flex flex-col h-full pt-6 px-4">
+                  <div className="flex justify-between items-center mb-6">
+                    <div className="cursor-pointer" onClick={handleLogoClick}>
+                      <img
+                        src={BannersData?.data[0]?.image ?? ""}
+                        alt="logo"
+                        className="h-[50px] w-[95px] bg-cover"
+                      />
+                    </div>
+                    <button
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="p-2 rounded-full hover:bg-gray-100 transition-colors"
                     >
-                      {locationText}
-                    </p>
+                      <X size={24} className="text-[#333333]" />
+                    </button>
                   </div>
-                </div>
-                <SearchBar setShowLogin={setShowLoginModal} />
-                {!isAuthenticated ? (
-                  <>
-                    <button
-                      onClick={handleMenClick}
-                      className="text-[#333333] text-[16px] font-medium hover:text-[#FF5534] transition-colors py-2"
+
+                  <div className="flex flex-col space-y-4">
+                    <div
+                      className="flex items-center w-full h-[48px] border border-[#E5E5E5] rounded-[8px] px-3 bg-white cursor-pointer hover:bg-gray-50 transition-colors"
+                      onClick={handleLocationClick}
                     >
-                      Men
-                    </button>
-                    <button
-                      onClick={handleWomenClick}
-                      className="text-[#333333] text-[16px] font-medium hover:text-[#FF5534] transition-colors py-2"
-                    >
-                      Women
-                    </button>
-                    <button
-                      onClick={() => setShowLoginModal(true)}
-                      className="bg-[#FF5534] text-white px-6 py-2 rounded-[8px] h-[40px] text-[14px] font-medium hover:bg-[#E54728] transition-colors mt-2"
-                    >
-                      Login/Signup
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    {isMenRoute ? (
-                      <div className="flex flex-col items-center space-y-2">
-                        <button
-                          onClick={() => handleTabChange('classic')}
-                          className={`py-2 text-[16px] font-medium ${activeTab === 'classic'
-                              ? 'text-[#FF5534]'
-                              : 'text-[#333333] hover:text-[#FF5534]'
-                            }`}
-                        >
-                          Classic
-                        </button>
-                        <button
-                          onClick={() => handleTabChange('premium')}
-                          className={`py-2 text-[16px] font-medium ${activeTab === 'premium'
-                              ? 'text-[#FF5534]'
-                              : 'text-[#333333] hover:text-[#FF5534]'
-                            }`}
-                        >
-                          Premium
-                        </button>
-                      </div>
-                    ) : (
+                      <img
+                        src={LocationIcon}
+                        alt="LocationIcon"
+                        className="w-[20px] h-[20px] mr-3 flex-shrink-0"
+                      />
+                      <p
+                        className="text-[#333333] text-[16px] font-medium truncate max-w-[200px]"
+                        title={locationText}
+                      >
+                        {locationText}
+                      </p>
+                    </div>
+
+                    {!isAuthenticated ? (
                       <>
                         <button
                           onClick={handleMenClick}
-                          className="text-[#333333] text-[16px] font-medium hover:text-[#FF5534] transition-colors py-2"
+                          className="flex items-center w-full h-[48px] px-4 rounded-[8px] text-[#333333] text-[16px] font-medium hover:bg-[#FF5534] hover:text-white transition-colors"
                         >
+                          <User size={20} className="mr-3" />
                           Men
                         </button>
                         <button
                           onClick={handleWomenClick}
-                          className="text-[#333333] text-[16px] font-medium hover:text-[#FF5534] transition-colors py-2"
+                          className="flex items-center w-full h-[48px] px-4 rounded-[8px] text-[#333333] text-[16px] font-medium hover:bg-[#FF5534] hover:text-white transition-colors"
                         >
+                          <User size={20} className="mr-3" />
                           Women
                         </button>
+                        <button
+                          onClick={() => setShowLoginModal(true)}
+                          className="flex items-center justify-center w-full h-[48px] bg-[#FF5534] text-white rounded-[8px] text-[16px] font-medium hover:bg-[#E54728] transition-colors"
+                        >
+                          <User size={20} className="mr-3" />
+                          Login/Signup
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        {isMenRoute ? (
+                          <div className="flex flex-col space-y-4">
+                            <button
+                              onClick={() => handleTabChange('classic')}
+                              className={`flex items-center w-full h-[48px] px-4 rounded-[8px] text-[16px] font-medium ${
+                                activeTab === 'classic'
+                                  ? 'bg-[#FF5534] text-white'
+                                  : 'text-[#333333] hover:bg-[#FF5534] hover:text-white'
+                              } transition-colors`}
+                            >
+                              <Bookmark size={20} className="mr-3" />
+                              Classic
+                            </button>
+                            <button
+                              onClick={() => handleTabChange('premium')}
+                              className={`flex items-center w-full h-[48px] px-4 rounded-[8px] text-[16px] font-medium ${
+                                activeTab === 'premium'
+                                  ? 'bg-[#FF5534] text-white'
+                                  : 'text-[#333333] hover:bg-[#FF5534] hover:text-white'
+                              } transition-colors`}
+                            >
+                              <Bookmark size={20} className="mr-3" />
+                              Premium
+                            </button>
+                          </div>
+                        ) : (
+                          <>
+                            <button
+                              onClick={handleMenClick}
+                              className="flex items-center w-full h-[48px] px-4 rounded-[8px] text-[#333333] text-[16px] font-medium hover:bg-[#FF5534] hover:text-white transition-colors"
+                            >
+                              <User size={20} className="mr-3" />
+                              Men
+                            </button>
+                            <button
+                              onClick={handleWomenClick}
+                              className="flex items-center w-full h-[48px] px-4 rounded-[8px] text-[#333333] text-[16px] font-medium hover:bg-[#FF5534] hover:text-white transition-colors"
+                            >
+                              <User size={20} className="mr-3" />
+                              Women
+                            </button>
+                          </>
+                        )}
+                        <div className="flex flex-col space-y-4 mt-4">
+                          <button
+                            onClick={handleWalletClick}
+                            className="flex items-center w-full h-[48px] px-4 rounded-[8px] text-[#333333] text-[16px] font-medium hover:bg-[#FF5534] hover:text-white transition-colors"
+                          >
+                            <img src={Wallet} alt="Wallet" className="w-[20px] h-[20px] mr-3" />
+                            Wallet
+                          </button>
+                          <button
+                            onClick={handleBenifitsClick}
+                            className="flex items-center w-full h-[48px] px-4 rounded-[8px] text-[#333333] text-[16px] font-medium hover:bg-[#FF5534] hover:text-white transition-colors"
+                          >
+                            <img src={Gift} alt="Benefits" className="w-[20px] h-[20px] mr-3" />
+                            Benefits
+                          </button>
+                          <button
+                            onClick={handleCheckoutClick}
+                            className="flex items-center w-full h-[48px] px-4 rounded-[8px] text-[#333333] text-[16px] font-medium hover:bg-[#FF5534] hover:text-white transition-colors"
+                          >
+                            <img src={Cart} alt="Cart" className="w-[20px] h-[20px] mr-3" />
+                            Cart
+                          </button>
+                          <button
+                            onClick={handleProfileClick}
+                            className="flex items-center w-full h-[48px] px-4 rounded-[8px] text-[#333333] text-[16px] font-medium hover:bg-[#FF5534] hover:text-white transition-colors"
+                          >
+                            <img src={Profile} alt="Profile" className="w-[20px] h-[20px] mr-3" />
+                            Profile
+                          </button>
+                        </div>
                       </>
                     )}
-                    <div className="flex items-center gap-4 mt-4">
-                      <img
-                        src={Wallet}
-                        alt="Wallet"
-                        className="w-[24px] h-[24px] cursor-pointer"
-                        onClick={handleWalletClick}
-                      />
-                      <img
-                        src={Gift}
-                        alt="Benefits"
-                        className="w-[24px] h-[24px] cursor-pointer"
-                        onClick={handleBenifitsClick}
-                      />
-                      <img
-                        src={Cart}
-                        alt="Cart"
-                        className="w-[24px] h-[24px] cursor-pointer"
-                        onClick={handleCheckoutClick}
-                      />
-                      <img
-                        src={Profile}
-                        alt="Profile"
-                        className="w-[24px] h-[24px] cursor-pointer"
-                        onClick={handleProfileClick}
-                      />
-                    </div>
-                  </>
-                )}
+                  </div>
+                </div>
               </div>
+              <div
+                className="flex-1"
+                onClick={() => setIsMobileMenuOpen(false)}
+              />
             </div>
           )}
         </div>
