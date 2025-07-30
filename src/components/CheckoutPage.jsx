@@ -58,8 +58,6 @@ const CheckoutPage = () => {
     fetchingCart
   } = useCart();
 
-  console.log(cartData, "cartdtaafrom cartttt")
-
   useEffect(() => {
     if (cartData) {
       let total = cartData?.paidAmount || 0;
@@ -89,9 +87,6 @@ const CheckoutPage = () => {
   const serviceTotal = cartData?.totalDiscountPrice;
   const additionalFee = cartData?.data?.additionalFee || 0;
   const finalTotal = payableAmount;
-
-  console.log(payableAmount, "hhhh")
-  console.log(cartData, "ggg")
 
   const handleAddressSave = (address) => {
     setSelectedAddress(address);
@@ -154,12 +149,10 @@ const CheckoutPage = () => {
   const handleUpdateQuantity = (itemId, newQuantity) => {
     try {
       const cartItem = cartItems.find(item => (item.serviceId || item.packageId) === itemId);
-
       if (!cartItem) {
         toast.error('Item not found in cart');
         return;
       }
-
       if (newQuantity <= 0) {
         if (cartItem.isPackageService) {
           removeCartPackage(itemId);
@@ -168,11 +161,10 @@ const CheckoutPage = () => {
         }
         return;
       }
-
       if (cartItem.isPackageService) {
-        updatePackageQuantity(itemId, newQuantity); // for package items
+        updatePackageQuantity(itemId, newQuantity);
       } else {
-        updateQuantity(itemId, newQuantity); // for single service items
+        updateQuantity(itemId, newQuantity);
       }
     } catch (err) {
       toast.error(err?.data?.message || 'Failed to update quantity');
@@ -198,17 +190,17 @@ const CheckoutPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex justify-center p-4 mt-[120px]">
-      <div className="w-full max-w-7xl flex flex-row gap-6">
+    <div className="min-h-screen bg-gray-50 flex justify-center p-4 md:p-6 lg:p-8 xl:p-4 mt-[80px] md:mt-[100px] xl:mt-[120px]">
+      <div className="w-full max-w-7xl flex flex-col xl:flex-row gap-4 xl:gap-6">
         {/* Left Column: Header and Services */}
-        <div className="w-1/2 space-y-6">
+        <div className="w-full xl:w-1/2 space-y-4 xl:space-y-6">
           {/* Header */}
           <div>
-            <h1 className="text-2xl font-semibold text-gray-900 mb-2">Checkout</h1>
+            <h1 className="text-xl md:text-2xl font-semibold text-gray-900 mb-2">Checkout</h1>
           </div>
 
           {/* Services */}
-          <div className="bg-white rounded-lg p-6 shadow-sm border max-h-[400px] overflow-y-scroll">
+          <div className="bg-white rounded-lg p-4 md:p-6 shadow-sm border max-h-[500px] md:max-h-[400px] overflow-y-auto">
             {(cartLoading || loading || cartLoadingCheckout || fetchingCheckout || fetchingCart) ? (
               <div className="flex justify-center items-center h-32">
                 <CircularLoader />
@@ -223,32 +215,32 @@ const CheckoutPage = () => {
               </div>
             ) : (
               cartItems.map((item) => (
-                <div key={item._id} className="border-b border-gray-100 pb-4">
+                <div key={item._id} className="border-b border-gray-100 pb-4 mb-4">
                   <div className="flex justify-between items-start mb-3">
-                    <h4 className="font-medium text-sm text-gray-900 flex-1 pr-2">
+                    <h4 className="font-medium text-sm md:text-base text-gray-900 flex-1 pr-2">
                       {item.title} x{item.quantity}
                     </h4>
                     <button
                       onClick={() => handleRemoveItem(item.serviceId || item.packageId)}
-                      className="text-gray-400 hover:text-red-500 text-xs"
+                      className="text-gray-400 hover:text-red-500 text-xs md:text-sm"
                     >
                       ✕
                     </button>
                   </div>
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3 bg-blue-100 rounded-full px-3 py-1">
+                    <div className="flex items-center gap-2 md:gap-3 bg-blue-100 rounded-full px-2 md:px-3 py-1">
                       <button
                         onClick={() => handleUpdateQuantity(item.serviceId || item.packageId, item.quantity - 1)}
-                        className="w-6 h-6 rounded-full bg-white flex items-center justify-center hover:bg-gray-50"
+                        className="w-5 h-5 md:w-6 md:h-6 rounded-full bg-white flex items-center justify-center hover:bg-gray-50"
                       >
                         <Minus className="w-3 h-3" />
                       </button>
-                      <span className="text-sm font-medium w-8 text-center">
+                      <span className="text-sm font-medium w-6 md:w-8 text-center">
                         {item.quantity}
                       </span>
                       <button
                         onClick={() => handleUpdateQuantity(item.serviceId || item.packageId, item.quantity + 1)}
-                        className="w-6 h-6 rounded-full bg-white flex items-center justify-center hover:bg-gray-50"
+                        className="w-5 h-5 md:w-6 md:h-6 rounded-full bg-white flex items-center justify-center hover:bg-gray-50"
                       >
                         <Plus className="w-3 h-3" />
                       </button>
@@ -258,7 +250,7 @@ const CheckoutPage = () => {
                 </div>
               ))
             )}
-            <div className="mt-6 pt-4 border-t">
+            <div className="mt-4 pt-4 border-t">
               <p className="text-sm text-gray-600 mb-4">Frequently added together</p>
               {isFrequentlyLoading ? (
                 <div className="flex justify-center items-center h-32">
@@ -271,15 +263,15 @@ const CheckoutPage = () => {
               ) : (
                 <div className="flex overflow-x-auto space-x-4 pb-4">
                   {frequentlyAddedServices.map((service) => (
-                    <div key={service._id} className="border rounded-lg p-4 min-w-[200px] flex-shrink-0">
-                      <div className="w-16 h-16 bg-gray-100 rounded-lg mb-3">
-                        <img src={service?.images[0]?.img || 'https://via.placeholder.com/150'} alt={service.title} className="w-16 h-16" />
+                    <div key={service._id} className="border rounded-lg p-3 md:p-4 min-w-[160px] md:min-w-[200px] flex-shrink-0">
+                      <div className="w-12 h-12 md:w-16 md:h-16 bg-gray-100 rounded-lg mb-3">
+                        <img src={service?.images[0]?.img || 'https://via.placeholder.com/150'} alt={service.title} className="w-full h-full object-cover rounded-lg" />
                       </div>
-                      <p className="text-sm font-medium">{service.title}</p>
-                      <p className="text-sm text-gray-600">₹{service.location[0]?.originalPrice || 0}</p>
+                      <p className="text-xs md:text-sm font-medium">{service.title}</p>
+                      <p className="text-xs md:text-sm text-gray-600">₹{service.location[0]?.originalPrice || 0}</p>
                       <button
                         onClick={() => handleAddToCart(service)}
-                        className={`mt-2 text-sm font-medium rounded px-3 py-1 ${isInCartorNot(service._id)
+                        className={`mt-2 text-xs md:text-sm font-medium rounded px-2 md:px-3 py-1 ${isInCartorNot(service._id)
                           ? 'bg-gray-400 text-white cursor-not-allowed'
                           : 'text-[#FF5534] border border-[#FF5534] hover:bg-red-50'
                           }`}
@@ -293,9 +285,9 @@ const CheckoutPage = () => {
               )}
             </div>
           </div>
-          <div className="mt-6 pt-4">
-            <h4 className="font-medium text-gray-900 mb-2">Cancellation policy</h4>
-            <p className="text-xs text-gray-600">
+          <div className="mt-4 pt-4">
+            <h4 className="font-medium text-base md:text-lg text-gray-900 mb-2">Cancellation policy</h4>
+            <p className="text-xs md:text-sm text-gray-600">
               Free cancellation 6 hours more than 3 hrs before the service or if a professional isn't assigned,
               it can still be charged otherwise.
             </p>
@@ -303,48 +295,48 @@ const CheckoutPage = () => {
         </div>
 
         {/* Right Column: Contact and Other Sections */}
-        <div className="w-1/2 space-y-6">
+        <div className="w-full xl:w-1/2 space-y-4 xl:space-y-6">
           {/* Background wrapper for Contact, Address, Time Slot, Payment Method */}
-          <div className="bg-[#75A5F112] border border-[#B4B4B4] p-4 mt-[58px] rounded-[10px] space-y-6">
+          <div className="bg-[#75A5F112] border border-[#B4B4B4] p-3 md:p-4 rounded-[10px] space-y-4 xl:space-y-6 mt-0 xl:mt-[58px]">
             {/* Contact */}
-            <div className="bg-white rounded-lg p-6 shadow-sm border">
+            <div className="bg-white rounded-lg p-4 md:p-6 shadow-sm border">
               <div className="flex items-center justify-between">
                 <div className="flex items-center">
-                  <Phone size={20} className="text-gray-400 mr-3" />
+                  <Phone size={20} className="text-gray-400 mr-2 md:mr-3" />
                   <div>
-                    <p className="text-sm text-gray-600">Send booking details to</p>
-                    <p className="font-medium">+91 {mobile}</p>
+                    <p className="text-xs md:text-sm text-gray-600">Send booking details to</p>
+                    <p className="font-medium text-sm md:text-base">+91 {mobile}</p>
                   </div>
                 </div>
-                <div className="w-[36px] h-[15px] bg-green-500 rounded-full flex items-center justify-center">
-                  <img src={Tick} alt="checked" />
+                <div className="w-[30px] h-[30px]  rounded-full flex items-center justify-center">
+                  <img src={Tick} alt="checked" className="" />
                 </div>
               </div>
             </div>
 
             {/* Address */}
-            <div className="bg-white rounded-xl border border-[#D9D9D9] p-5">
+            <div className="bg-white rounded-xl border border-[#D9D9D9] p-4 md:p-5">
               <div className="flex justify-between">
-                <div className="flex gap-3">
-                  <MapPin size={22} className="text-black" />
-                  <p className="text-base font-semibold text-black mb-6">Address</p>
+                <div className="flex gap-2 md:gap-3">
+                  <MapPin size={18} className="text-black" />
+                  <p className="text-sm md:text-base font-semibold text-black mb-4 md:mb-6">Address</p>
                 </div>
                 {selectedAddress || cartData?.data?.appartment ? (
-                  <div className="w-[36px] h-[35px] bg-green-500 rounded-md flex items-center justify-center">
-                    <img src={Tick} alt="checked" />
+                  <div className="w-8 h-8 md:w-[36px] md:h-[35px] bg-green-500 rounded-md flex items-center justify-center">
+                    <img src={Tick} alt="checked" className="w-4 h-4 md:w-5 md:h-5" />
                   </div>
                 ) : (
-                  <div className="w-[36px] h-[35px] bg-[#D9D9D9] rounded-md flex items-center justify-center" />
+                  <div className="w-8 h-8 md:w-[36px] md:h-[35px] bg-[#D9D9D9] rounded-md flex items-center justify-center" />
                 )}
               </div>
               {selectedAddress || cartData?.data?.appartment ? (
                 <>
-                  <p className="text-[14px] font-medium text-[#444444] mb-2 mx-3">
+                  <p className="text-xs md:text-sm font-medium text-[#444444] mb-2 mx-2 md:mx-3">
                     {cartData?.data?.houseFlat || selectedAddress?.houseFlat}, {cartData?.data?.landMark || selectedAddress?.landMark || ''}, {cartData?.data?.appartment || selectedAddress?.appartment}
                   </p>
                   <button
                     onClick={() => setShowAddressModal(true)}
-                    className="w-full border border-[#FF5534] text-[#FF5534] text-sm font-semibold rounded-lg py-2 hover:bg-[#d7f1fb] transition"
+                    className="w-full border border-[#FF5534] text-[#FF5534] text-xs md:text-sm font-semibold rounded-lg py-1.5 md:py-2 hover:bg-[#d7f1fb] transition"
                   >
                     Edit an Address
                   </button>
@@ -352,7 +344,7 @@ const CheckoutPage = () => {
               ) : (
                 <button
                   onClick={() => setShowAddressModal(true)}
-                  className="w-full bg-[#FF5534] text-white text-sm font-semibold rounded-lg py-2 hover:bg-[#e64a2e] transition"
+                  className="w-full bg-[#FF5534] text-white text-xs md:text-sm font-semibold rounded-lg py-1.5 md:py-2 hover:bg-[#e64a2e] transition"
                 >
                   Select an Address
                 </button>
@@ -360,28 +352,28 @@ const CheckoutPage = () => {
             </div>
 
             {/* Time Slot */}
-            <div className="bg-white rounded-xl border border-[#D9D9D9] p-5">
+            <div className="bg-white rounded-xl border border-[#D9D9D9] p-4 md:p-5">
               <div className="flex justify-between">
-                <div className="flex gap-3">
-                  <Clock size={22} className="text-black" />
-                  <p className="text-base font-semibold text-black mb-6">Time Slot</p>
+                <div className="flex gap-2 md:gap-3">
+                  <Clock size={18} className="text-black" />
+                  <p className="text-sm md:text-base font-semibold text-black mb-4 md:mb-6">Time Slot</p>
                 </div>
                 {selectedSlot || (cartData?.data?.Date && cartData?.data?.startTime) ? (
-                  <div className="w-[36px] h-[35px] bg-green-500 rounded-md flex items-center justify-center">
-                    <img src={Tick} alt="checked" />
+                  <div className="w-8 h-8 md:w-[36px] md:h-[35px] bg-green-500 rounded-md flex items-center justify-center">
+                    <img src={Tick} alt="checked" className="w-4 h-4 md:w-5 md:h-5" />
                   </div>
                 ) : (
-                  <div className="w-[36px] h-[35px] bg-[#D9D9D9] rounded-md flex items-center justify-center" />
+                  <div className="w-8 h-8 md:w-[36px] md:h-[35px] bg-[#D9D9D9] rounded-md flex items-center justify-center" />
                 )}
               </div>
               {selectedSlot || (cartData?.data?.Date && cartData?.data?.startTime) ? (
                 <>
-                  <p className="text-[14px] font-medium text-[#444444] mb-2 mx-6">
+                  <p className="text-xs md:text-sm font-medium text-[#444444] mb-2 mx-4 md:mx-6">
                     {cartData?.data?.startTime || selectedSlot?.time} - {cartData?.data?.endTime || selectedSlot?.endTime || ''}
                   </p>
                   <button
                     onClick={() => setShowSlotModal(true)}
-                    className="w-full border border-[#FF5534] text-[#FF5534] text-sm font-semibold rounded-lg py-2 hover:bg-[#d7f1fb] transition"
+                    className="w-full border border-[#FF5534] text-[#FF5534] text-xs md:text-sm font-semibold rounded-lg py-1.5 md:py-2 hover:bg-[#d7f1fb] transition"
                   >
                     Edit Slot
                   </button>
@@ -389,7 +381,7 @@ const CheckoutPage = () => {
               ) : (
                 <button
                   onClick={() => selectedAddress || cartData?.data?.appartment ? setShowSlotModal(true) : toast.error('Please select an address first')}
-                  className="w-full bg-[#FF5534] text-white text-sm font-semibold rounded-lg py-2 hover:bg-[#e64a2e] transition"
+                  className="w-full bg-[#FF5534] text-white text-xs md:text-sm font-semibold rounded-lg py-1.5 md:py-2 hover:bg-[#e64a2e] transition"
                   disabled={!selectedAddress && !cartData?.data?.appartment}
                 >
                   Select a Slot
@@ -398,16 +390,16 @@ const CheckoutPage = () => {
             </div>
 
             {/* Payment Method */}
-            <div className="bg-white rounded-xl border border-[#D9D9D9] p-5">
+            <div className="bg-white rounded-xl border border-[#D9D9D9] p-4 md:p-5">
               <div className="flex justify-between">
-                <div className="flex gap-3">
-                  <CreditCard size={22} className="text-black" />
-                  <p className="text-base font-semibold text-black mb-6">Payment Method</p>
+                <div className="flex gap-2 md:gap-3">
+                  <CreditCard size={18} className="text-black" />
+                  <p className="text-sm md:text-base font-semibold text-black mb-4 md:mb-6">Payment Method</p>
                 </div>
               </div>
               <button
                 onClick={handlePayment}
-                className="w-full bg-[#FF5534] text-white text-sm font-semibold rounded-lg py-2 hover:bg-[#e64a2e] transition flex items-center justify-center"
+                className="w-full bg-[#FF5534] text-white text-xs md:text-sm font-semibold rounded-lg py-1.5 md:py-2 hover:bg-[#e64a2e] transition flex items-center justify-center"
                 disabled={isPaymentLoading || isCheckoutLoading || cartItems.length === 0}
               >
                 {isPaymentLoading || isCheckoutLoading ? <CircularLoader size={20} /> : 'Select payment method'}
@@ -416,50 +408,50 @@ const CheckoutPage = () => {
           </div>
 
           {/* Coupons */}
-          <div className="bg-white rounded-lg p-6 shadow-sm border cursor-pointer" onClick={() => setShowCouponsModal(true)}>
+          <div className="bg-white rounded-lg p-4 md:p-6 shadow-sm border cursor-pointer" onClick={() => setShowCouponsModal(true)}>
             <div className="flex items-center justify-between">
               <div className="flex items-center">
-                <Tag size={20} className="text-[#FF5534] mr-3" />
+                <Tag size={18} className="text-[#FF5534] mr-2 md:mr-3" />
                 <div>
-                  <p className="font-medium text-gray-900">Coupons & Offers</p>
+                  <p className="font-medium text-sm md:text-base text-gray-900">Coupons & Offers</p>
                   {selectedCoupon ? (
-                    <p className="text-sm text-green-600">Coupon "{selectedCoupon.couponCode}" applied</p>
+                    <p className="text-xs md:text-sm text-green-600">Coupon "{selectedCoupon.couponCode}" applied</p>
                   ) : (
-                    <p className="text-sm text-gray-600">Select a coupon to apply</p>
+                    <p className="text-xs md:text-sm text-gray-600">Select a coupon to apply</p>
                   )}
                 </div>
               </div>
-              <p className="text-[#FF5534] font-medium">{couponsData?.service?.length || 0} offers →</p>
+              <p className="text-[#FF5534] font-medium text-xs md:text-sm">{couponsData?.service?.length || 0} offers →</p>
             </div>
           </div>
 
           {/* Payment Summary */}
-          <div className="bg-white rounded-lg shadow-sm p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Payment summary</h3>
+          <div className="bg-white rounded-lg shadow-sm p-4 md:p-6">
+            <h3 className="text-base md:text-lg font-semibold text-gray-900 mb-4">Payment summary</h3>
             {cartItems.length === 0 ? (
               <div className="text-center text-gray-500 mt-8">
                 <p>No items in cart</p>
               </div>
             ) : (
               <>
-                <div className="space-y-3 mb-4">
+                <div className="space-y-2 md:space-y-3 mb-4">
                   {cartItems.map((item) => (
                     <div key={item._id} className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600">{item.title}</span>
-                      <span className="text-sm text-gray-900">₹{item.total}</span>
+                      <span className="text-xs md:text-sm text-gray-600">{item.title}</span>
+                      <span className="text-xs md:text-sm text-gray-900">₹{item.total}</span>
                     </div>
                   ))}
                 </div>
                 <div className="border-t border-gray-100 pt-4 mb-4">
                   <div className="flex justify-between items-center font-semibold">
-                    <span className="text-gray-900">Service Total</span>
-                    <span className="text-gray-900">₹{serviceTotal}</span>
+                    <span className="text-gray-900 text-sm md:text-base">Service Total</span>
+                    <span className="text-gray-900 text-sm md:text-base">₹{serviceTotal}</span>
                   </div>
                 </div>
-                <div className="space-y-2 text-sm mb-4">
+                <div className="space-y-2 text-xs md:text-sm mb-4">
                   <div className="flex justify-between items-center">
                     <div className="flex items-center space-x-2">
-                      <span><img src={Coupon} alt="coupon" /></span>
+                      <span><img src={Coupon} alt="coupon" className="w-4 h-4 md:w-5 md:h-5" /></span>
                       <span className="text-gray-600">Coupon Discount</span>
                     </div>
                     <div className="flex items-center space-x-2">
@@ -469,35 +461,35 @@ const CheckoutPage = () => {
                           onClick={handleRemoveCoupon}
                           className="text-red-500 hover:text-red-700"
                         >
-                          <X className="w-4 h-4" />
+                          <X className="w-3 h-3 md:w-4 md:h-4" />
                         </button>
                       )}
                     </div>
                   </div>
                   <div className="flex justify-between items-center">
                     <div className="flex items-center space-x-2">
-                      <span><img src={SURG} alt="surg" /></span>
+                      <span><img src={SURG} alt="surg" className="w-4 h-4 md:w-5 md:h-5" /></span>
                       <span className="text-gray-600">Platform Fee</span>
                     </div>
                     <span className="text-gray-900">₹{platformFee}</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <div className="flex items-center space-x-2">
-                      <span><img src={Safety} alt="safety" /></span>
+                      <span><img src={Safety} alt="safety" className="w-4 h-4 md:w-5 md:h-5" /></span>
                       <span className="text-gray-600">Tax Amount</span>
                     </div>
                     <span className="text-gray-900">₹{taxAmount}</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <div className="flex items-center space-x-2">
-                      <span><img src={Safety} alt="safety" /></span>
+                      <span><img src={Safety} alt="safety" className="w-4 h-4 md:w-5 md:h-5" /></span>
                       <span className="text-gray-600">Safety and Hygiene Fee</span>
                     </div>
                     <span className="text-gray-900">₹{safetyHygieneFee}</span>
                   </div>
                 </div>
                 <div className="border-t border-gray-100 pt-4">
-                  <div className="flex justify-between items-center font-bold text-lg">
+                  <div className="flex justify-between items-center font-bold text-base md:text-lg">
                     <span className="text-gray-900">Payable Amount</span>
                     <span className="text-gray-900">₹{payableAmount}</span>
                   </div>
