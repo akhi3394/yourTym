@@ -3,27 +3,28 @@ import MenPopup from './MenPopup';
 import Women from '../assets/images/afterLogin/Womens.png';
 import Men from '../assets/images/afterLogin/Mens.png';
 import OfferCard from './OfferCard';
-import YTTM from '../assets/images/landingPage/YTYMSafe.png'
+import YTTM from '../assets/images/landingPage/YTYMSafe.png';
 import { useNavigate } from 'react-router-dom';
 
 const AfterLoginContent = () => {
   const [showMenPopup, setShowMenPopup] = useState(false);
-  const navigate=useNavigate()
+  const navigate = useNavigate();
+
   const handleServiceClick = (title) => {
     if (title === "Men's") {
       setShowMenPopup(true);
-    }else{
-      navigate('/women')
+    } else {
+      navigate('/women');
     }
   };
 
   return (
     <>
-      <div className="w-full max-w-[1280px] mx-auto px-4 py-6 mt-[120px]">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
+      <div className="w-full max-w-[1280px] mx-auto px-4 py-6 mt-[80px] md:mt-[120px]">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 md:gap-4 mb-5">
           {[
             { title: "Women's", img: Women },
-            { title: "Men's", img: Men }
+            { title: "Men's", img: Men },
           ].map((item, index) => (
             <div
               key={index}
@@ -33,10 +34,11 @@ const AfterLoginContent = () => {
               <img
                 src={item.img}
                 alt={item.title}
-                className="w-full h-[550px] object-fill"
+                className="w-full h-[300px] md:h-[550px] object-cover"
               />
-              {/* <div className="absolute bottom-0 left-0 w-full bg-gradient-to-t from-black/60 to-transparent text-white text-center py-4">
-                <p className="text-lg font-semibold">{item.title}</p>
+              {/* Uncomment if text overlay is needed */}
+              {/* <div className="absolute bottom-0 left-0 w-full bg-gradient-to-t from-black/60 to-transparent text-white text-center py-3 md:py-4">
+                <p className="text-base md:text-lg font-semibold">{item.title}</p>
               </div> */}
             </div>
           ))}
@@ -47,7 +49,11 @@ const AfterLoginContent = () => {
       </div>
 
       <div className="mb-5">
-        <img src={YTTM} alt="" className='max-w-7xl object-fill px-4 mx-auto'/>
+        <img
+          src={YTTM}
+          alt="YTTM Safe"
+          className="w-full max-w-[90vw] md:max-w-7xl object-cover px-4 mx-auto"
+        />
       </div>
 
       <MenPopup
