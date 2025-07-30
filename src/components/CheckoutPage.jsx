@@ -322,8 +322,8 @@ const CheckoutPage = () => {
                   <p className="text-sm md:text-base font-semibold text-black mb-4 md:mb-6">Address</p>
                 </div>
                 {selectedAddress || cartData?.data?.appartment ? (
-                  <div className="w-8 h-8 md:w-[36px] md:h-[35px] bg-green-500 rounded-md flex items-center justify-center">
-                    <img src={Tick} alt="checked" className="w-4 h-4 md:w-5 md:h-5" />
+                  <div className="w-[30px] h-[30px] rounded-md flex items-center justify-center">
+                    <img src={Tick} alt="checked" className="" />
                   </div>
                 ) : (
                   <div className="w-8 h-8 md:w-[36px] md:h-[35px] bg-[#D9D9D9] rounded-md flex items-center justify-center" />
@@ -359,8 +359,8 @@ const CheckoutPage = () => {
                   <p className="text-sm md:text-base font-semibold text-black mb-4 md:mb-6">Time Slot</p>
                 </div>
                 {selectedSlot || (cartData?.data?.Date && cartData?.data?.startTime) ? (
-                  <div className="w-8 h-8 md:w-[36px] md:h-[35px] bg-green-500 rounded-md flex items-center justify-center">
-                    <img src={Tick} alt="checked" className="w-4 h-4 md:w-5 md:h-5" />
+                  <div className="w-[30px] h-[30px]  rounded-md flex items-center justify-center">
+                    <img src={Tick} alt="checked" className="" />
                   </div>
                 ) : (
                   <div className="w-8 h-8 md:w-[36px] md:h-[35px] bg-[#D9D9D9] rounded-md flex items-center justify-center" />

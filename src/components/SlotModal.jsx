@@ -109,95 +109,88 @@ const SlotModal = ({ isOpen, onClose, onSelect, selectedSlot }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-lg max-w-xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-2 xs:p-4 z-50">
+      <div className="bg-white rounded-lg w-full max-w-[90vw] xs:max-w-[480px] sm:max-w-[640px] lg:max-w-xl max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
+        <div className="flex items-center justify-between p-4 xs:p-6 border-b border-gray-200">
           <div>
-            <h2 className="text-xl font-semibold text-gray-900">Select service date and time</h2>
-            <p className="text-sm text-gray-600 mt-1">Your service will take approx. 2 hrs and 35 mins</p>
+            <h2 className="text-lg xs:text-xl font-semibold text-gray-900">Select service date and time</h2>
+            <p className="text-xs xs:text-sm text-gray-600 mt-1">Your service will take approx. 2 hrs and 35 mins</p>
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors"
+            className="w-6 xs:w-8 h-6 xs:h-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors"
           >
-            <X size={20} className="text-gray-600" />
+            <X size={16} className="xs:size-5 text-gray-600" />
           </button>
         </div>
 
         {/* Scrollable Content */}
-        <div className="p-6 overflow-y-auto flex-1">
-          <>
-            {/* Date Selection with Horizontal Scroll */}
-            <div className="mb-6">
-              <div className="flex items-center mb-4">
-                <Calendar size={20} className="text-[#FF5534] mr-2" />
-                <h3 className="font-medium text-gray-900">Select service date</h3>
-              </div>
-              <div className="flex gap-3 overflow-x-auto pb-2">
-                {dates.map((date) => (
-                  <button
-                    key={date.fullDate}
-                    onClick={() => setSelectedDate(date.fullDate)}
-                    className={`flex flex-col items-center py-3 px-6 rounded-lg border-2 transition-colors ${
-                      selectedDate === date.fullDate
-                        ? 'border-[#FF5534] bg-red-50'
-                        : 'border-gray-200 hover:border-[#FF5534]'
-                    } flex-shrink-0`}
-                    style={{ minWidth: '100px' }} // Pixel-perfect width
+        <div className="p-4 xs:p-6 overflow-y-auto flex-1">
+          {/* Date Selection with Horizontal Scroll */}
+          <div className="mb-4 xs:mb-6">
+            <div className="flex items-center mb-3 xs:mb-4">
+              <Calendar size={16} className="xs:size-5 text-[#FF5534] mr-2" />
+              <h3 className="font-medium text-gray-900 text-sm xs:text-base">Select service date</h3>
+            </div>
+            <div className="flex gap-2 xs:gap-3 overflow-x-auto pb-2">
+              {dates.map((date) => (
+                <button
+                  key={date.fullDate}
+                  onClick={() => setSelectedDate(date.fullDate)}
+                  className={`flex flex-col items-center py-2 xs:py-3 px-4 xs:px-6 rounded-lg border-2 transition-colors ${
+                    selectedDate === date.fullDate
+                      ? 'border-[#FF5534] bg-red-50'
+                      : 'border-gray-200 hover:border-[#FF5534]'
+                  } flex-shrink-0 min-w-[80px] xs:min-w-[100px]`}
+                >
+                  <span className="text-xs xs:text-sm text-gray-600">{date.day}</span>
+                  <span
+                    className={`text-base xs:text-xl font-semibold ${
+                      selectedDate === date.fullDate ? 'text-[#FF5534]' : 'text-gray-900'
+                    }`}
                   >
-                    <span className="text-sm text-gray-600">{date.day}</span>
-                    <span
-                      className={`text-xl font-semibold ${
-                        selectedDate === date.fullDate ? 'text-[#FF5534]' : 'text-gray-900'
-                      }`}
-                    >
-                      {date.date}
-                    </span>
+                    {date.date}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Time Selection */}
+          <div className="mb-4 xs:mb-6">
+            <div className="flex items-center mb-3 xs:mb-4">
+              <Clock size={16} className="xs:size-5 text-[#FF5534] mr-2" />
+              <h3 className="font-medium text-gray-900 text-sm xs:text-base">Select service time slot</h3>
+            </div>
+            <div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-3 gap-2 xs:gap-3">
+              {timeSlots.length > 0 ? (
+                timeSlots.map((slot, index) => (
+                  <button
+                    key={index}
+                    onClick={() => !slot.isCompleted && setSelectedTime(slot.time)}
+                    disabled={slot.isCompleted}
+                    className={`py-2 px-3 xs:px-4 rounded-lg border text-xs xs:text-sm font-medium transition-colors w-full ${
+                      selectedTime === slot.time && !slot.isCompleted
+                        ? 'border-[#FF5534] bg-red-50 text-[#FF5534]'
+                        : 'border-gray-200 text-gray-700 hover:border-[#FF5534]'
+                    } ${slot.isCompleted ? 'opacity-50 bg-gray-100 cursor-not-allowed' : ''} h-[36px] xs:h-[40px]`}
+                  >
+                    {formatToAMPM(slot.time)}
                   </button>
-                ))}
-              </div>
+                ))
+              ) : (
+                <div className="col-span-2 xs:col-span-3 text-center text-gray-500 text-xs xs:text-sm">No slots available for the selected date.</div>
+              )}
             </div>
-
-            {/* Time Selection */}
-            <div className="mb-6">
-              <div className="flex items-center mb-4">
-                <Clock size={20} className="text-[#FF5534] mr-2" />
-                <h3 className="font-medium text-gray-900">Select service time slot</h3>
-              </div>
-              <div className="grid grid-cols-3 gap-3">
-                {timeSlots.length > 0 ? (
-                  timeSlots.map((slot, index) => (
-                    <button
-                      key={
-
-index}
-                      onClick={() => !slot.isCompleted && setSelectedTime(slot.time)}
-                      disabled={slot.isCompleted}
-                      className={`py-2 px-4 rounded-lg border text-sm font-medium transition-colors w-[170px] ${
-                        selectedTime === slot.time && !slot.isCompleted
-                          ? 'border-[#FF5534] bg-red-50 text-[#FF5534]'
-                          : 'border-gray-200 text-gray-700 hover:border-[#FF5534]'
-                      } ${slot.isCompleted ? 'opacity-50 bg-gray-100 cursor-not-allowed' : ''}`}
-                      style={{ height: '40px' }} // Pixel-perfect height
-                    >
-                      {formatToAMPM(slot.time)}
-                    </button>
-                  ))
-                ) : (
-                  <div className="col-span-3 text-center text-gray-500">No slots available for the selected date.</div>
-                )}
-              </div>
-            </div>
-          </>
+          </div>
         </div>
 
         {/* Sticky Footer with Proceed Button */}
-        <div className="p-6 bg-white border-t border-gray-200">
+        <div className="p-4 xs:p-6 bg-white border-t border-gray-200">
           <button
             onClick={handleProceed}
-            className="w-full bg-[#FF5534] text-white py-3 rounded-lg font-medium hover:bg-red-600 transition-colors"
-            style={{ height: '48px' }} // Pixel-perfect height
+            className="w-full bg-[#FF5534] text-white py-2 xs:py-3 rounded-lg font-medium hover:bg-red-600 transition-colors h-[40px] xs:h-[48px]"
             disabled={!timeSlots.some(slot => !slot.isCompleted)}
           >
             Proceed to Checkout
