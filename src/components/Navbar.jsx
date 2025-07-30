@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { MapPin, Search, Calendar, Bookmark, ShoppingBag, User } from 'lucide-react';
+import { MapPin, Search, Calendar, Bookmark, ShoppingBag, User, Menu, X } from 'lucide-react';
 import { useAppSelector } from '../hooks/useAppSelector';
 import { useNavigate, useLocation } from 'react-router-dom';
 import LoginModal from './LoginModal';
@@ -22,6 +22,7 @@ const Navbar = ({ BannersData, bannerLoading }) => {
   const [showWomenPopup, setShowWomenPopup] = useState(false);
   const [showLocationModal, setShowLocationModal] = useState(false);
   const [locationText, setLocationText] = useState(cityName || "Select Location");
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -42,6 +43,7 @@ const Navbar = ({ BannersData, bannerLoading }) => {
     } else {
       setShowWomenPopup(true);
     }
+    setIsMobileMenuOpen(false);
   };
 
   const handleMenClick = () => {
@@ -55,10 +57,12 @@ const Navbar = ({ BannersData, bannerLoading }) => {
     } else {
       navigate('/men');
     }
+    setIsMobileMenuOpen(false);
   };
 
   const handleLogoClick = () => {
     navigate('/');
+    setIsMobileMenuOpen(false);
   };
 
   const handleProfileClick = () => {
@@ -67,6 +71,7 @@ const Navbar = ({ BannersData, bannerLoading }) => {
     } else {
       navigate("/profile");
     }
+    setIsMobileMenuOpen(false);
   };
 
   const handleCheckoutClick = () => {
@@ -75,6 +80,7 @@ const Navbar = ({ BannersData, bannerLoading }) => {
     } else {
       navigate("/checkout");
     }
+    setIsMobileMenuOpen(false);
   };
 
   const handleWalletClick = () => {
@@ -83,6 +89,7 @@ const Navbar = ({ BannersData, bannerLoading }) => {
     } else {
       navigate("/wallet");
     }
+    setIsMobileMenuOpen(false);
   };
 
   const handleBenifitsClick = () => {
@@ -91,6 +98,7 @@ const Navbar = ({ BannersData, bannerLoading }) => {
     } else {
       navigate("/benifits");
     }
+    setIsMobileMenuOpen(false);
   };
 
   const handleLocationClick = () => {
@@ -99,10 +107,12 @@ const Navbar = ({ BannersData, bannerLoading }) => {
     } else {
       setShowLoginModal(true);
     }
+    setIsMobileMenuOpen(false);
   };
 
   const handleTabChange = (tab) => {
     navigate(`/men/${tab}`);
+    setIsMobileMenuOpen(false);
   };
 
   const getLocation = () => {
@@ -144,7 +154,7 @@ const Navbar = ({ BannersData, bannerLoading }) => {
   return (
     <>
       <nav className={`fixed top-0 left-0 right-0 ${isMenRoute && activeTab === 'premium' ? 'bg-[#FFA500]' : 'bg-white'} shadow-sm z-50 border-b border-gray-200`}>
-        <div className="w-full h-[120px] flex items-center justify-center px-4 sm:px-6 lg:px-8">
+        <div className="w-full h-[80px] md:h-[120px] flex items-center justify-center px-4 sm:px-6 lg:px-8">
           <div className="w-full max-w-[1280px] flex items-center justify-between">
             {/* Logo */}
             <div className="flex items-center flex-shrink-0">
@@ -155,17 +165,24 @@ const Navbar = ({ BannersData, bannerLoading }) => {
                   <img
                     src={BannersData?.data[0]?.image ?? ""}
                     alt="logo"
-                    className="h-[80px] w-[152px] bg-cover"
+                    className="h-[60px] w-[114px] md:h-[80px] md:w-[152px] bg-cover"
                   />
                 )}
               </div>
             </div>
 
-            {/* Location and Search */}
-            <div className="flex items-center gap-4 flex-1 max-w-[600px]">
+            {/* Mobile Menu Button */}
+            <div className="md:hidden flex items-center">
+              <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+                {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+              </button>
+            </div>
+
+            {/* Desktop Location, Search, and Navigation */}
+            <div className="hidden md:flex items-center gap-4 flex-1 max-w-[600px]">
               <div className="relative inline-block">
                 <div
-                  className="flex items-center min-w-[296px] h-[40px] border border-[#E5E5E5] rounded-[8px] px-3 bg-white cursor-pointer"
+                  className="flex items-center min-w-[200px] h-[40px] border border-[#E5E5E5] rounded-[8px] px-3 bg-white cursor-pointer"
                   onClick={handleLocationClick}
                 >
                   <img
@@ -174,7 +191,7 @@ const Navbar = ({ BannersData, bannerLoading }) => {
                     className="w-[16px] h-[16px] mr-2 flex-shrink-0"
                   />
                   <p
-                    className="text-[#333333] text-[14px] font-normal truncate max-w-[200px]"
+                    className="text-[#333333] text-[14px] font-normal truncate max-w-[150px]"
                     title={locationText}
                   >
                     {locationText}
@@ -184,8 +201,8 @@ const Navbar = ({ BannersData, bannerLoading }) => {
               <SearchBar setShowLogin={setShowLoginModal} />
             </div>
 
-            {/* Navigation Items */}
-            <div className="flex items-center gap-6 flex-shrink-0">
+            {/* Desktop Navigation Items */}
+            <div className="hidden md:flex items-center gap-6 flex-shrink-0">
               {!isAuthenticated ? (
                 <>
                   <button
@@ -274,6 +291,121 @@ const Navbar = ({ BannersData, bannerLoading }) => {
               )}
             </div>
           </div>
+
+          {/* Mobile Menu */}
+          {isMobileMenuOpen && (
+            <div className="md:hidden bg-white border-t border-gray-200">
+              <div className="flex flex-col items-center py-4">
+                <div className="w-full px-4 mb-4">
+                  <div
+                    className="flex items-center w-full h-[40px] border border-[#E5E5E5] rounded-[8px] px-3 bg-white cursor-pointer"
+                    onClick={handleLocationClick}
+                  >
+                    <img
+                      src={LocationIcon}
+                      alt="LocationIcon"
+                      className="w-[16px] h-[16px] mr-2 flex-shrink-0"
+                    />
+                    <p
+                      className="text-[#333333] text-[14px] font-normal truncate max-w-[200px]"
+                      title={locationText}
+                    >
+                      {locationText}
+                    </p>
+                  </div>
+                </div>
+                <SearchBar setShowLogin={setShowLoginModal} />
+                {!isAuthenticated ? (
+                  <>
+                    <button
+                      onClick={handleMenClick}
+                      className="text-[#333333] text-[16px] font-medium hover:text-[#FF5534] transition-colors py-2"
+                    >
+                      Men
+                    </button>
+                    <button
+                      onClick={handleWomenClick}
+                      className="text-[#333333] text-[16px] font-medium hover:text-[#FF5534] transition-colors py-2"
+                    >
+                      Women
+                    </button>
+                    <button
+                      onClick={() => setShowLoginModal(true)}
+                      className="bg-[#FF5534] text-white px-6 py-2 rounded-[8px] h-[40px] text-[14px] font-medium hover:bg-[#E54728] transition-colors mt-2"
+                    >
+                      Login/Signup
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    {isMenRoute ? (
+                      <div className="flex flex-col items-center space-y-2">
+                        <button
+                          onClick={() => handleTabChange('classic')}
+                          className={`py-2 text-[16px] font-medium ${activeTab === 'classic'
+                              ? 'text-[#FF5534]'
+                              : 'text-[#333333] hover:text-[#FF5534]'
+                            }`}
+                        >
+                          Classic
+                        </button>
+                        <button
+                          onClick={() => handleTabChange('premium')}
+                          className={`py-2 text-[16px] font-medium ${activeTab === 'premium'
+                              ? 'text-[#FF5534]'
+                              : 'text-[#333333] hover:text-[#FF5534]'
+                            }`}
+                        >
+                          Premium
+                        </button>
+                      </div>
+                    ) : (
+                      <>
+                        <button
+                          onClick={handleMenClick}
+                          className="text-[#333333] text-[16px] font-medium hover:text-[#FF5534] transition-colors py-2"
+                        >
+                          Men
+                        </button>
+                        <button
+                          onClick={handleWomenClick}
+                          className="text-[#333333] text-[16px] font-medium hover:text-[#FF5534] transition-colors py-2"
+                        >
+                          Women
+                        </button>
+                      </>
+                    )}
+                    <div className="flex items-center gap-4 mt-4">
+                      <img
+                        src={Wallet}
+                        alt="Wallet"
+                        className="w-[24px] h-[24px] cursor-pointer"
+                        onClick={handleWalletClick}
+                      />
+                      <img
+                        src={Gift}
+                        alt="Benefits"
+                        className="w-[24px] h-[24px] cursor-pointer"
+                        onClick={handleBenifitsClick}
+                      />
+                      <img
+                        src={Cart}
+                        alt="Cart"
+                        className="w-[24px] h-[24px] cursor-pointer"
+                        onClick={handleCheckoutClick}
+                      />
+                      <img
+                        src={Profile}
+                        alt="Profile"
+                        className="w-[24px] h-[24px] cursor-pointer"
+                        onClick={handleProfileClick}
+                      />
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       </nav>
 

@@ -94,7 +94,6 @@ const SignupModal = ({ isOpen, onClose, onSwitchToLogin }) => {
       dispatch(setMobile(response.data.phone));
       toast.success("Phone number verified successfully");
 
-      // Proceed with registration if all fields are filled
       if (formData.firstName && formData.lastName && formData.gender && formData.email) {
         await handleCreateAccount(response.data.token);
       } else {
@@ -115,7 +114,7 @@ const SignupModal = ({ isOpen, onClose, onSwitchToLogin }) => {
         email: formData.email,
         gender: formData.gender,
         phone: formData.phoneNumber.replace(/\D/g, ''),
-        token: verifiedToken, // Pass the verified token if needed by API
+        token: verifiedToken,
       }).unwrap();
 
       dispatch(login({
@@ -180,18 +179,18 @@ const SignupModal = ({ isOpen, onClose, onSwitchToLogin }) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-8 relative w-full max-w-[1024px] max-h-[600px] mx-4 flex justify-center ">
+      <div className="bg-white rounded-lg p-6 sm:p-8 relative w-full max-w-[500px] sm:max-w-[600px] max-h-[90vh] mx-4 overflow-y-auto">
         <button
           onClick={onClose}
-          className="absolute top-[-60px] right-[-60px] bg-white w-[69px] h-[69px] rounded-full shadow-md flex items-center justify-center hover:bg-gray-200 transition-all"
+          className="absolute top-[-50px] right-[-50px] sm:-top-[60px] sm:-right-[60px] bg-white w-[50px] h-[50px] sm:w-[69px] sm:h-[69px] rounded-full shadow-md flex items-center justify-center hover:bg-gray-200 transition-all"
         >
-          <X className="w-6 h-6" />
+          <X className="w-5 h-5 sm:w-6 sm:h-6" />
         </button>
 
-        <div className="w-[600px] overflow-x-hidden overflow-y-auto smooth-scroll">
-          <h2 className="text-2xl font-bold text-center text-[#000000] mb-6">Let's Create Your Profile</h2>
+        <div className="w-full">
+          <h2 className="text-xl sm:text-2xl font-bold text-center text-[#000000] mb-6">Let's Create Your Profile</h2>
 
-          <div className="space-y-4 p-2">
+          <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
               <input
@@ -199,14 +198,14 @@ const SignupModal = ({ isOpen, onClose, onSwitchToLogin }) => {
                 placeholder="First Name"
                 value={formData.firstName}
                 onChange={(e) => handleInputChange('firstName', e.target.value)}
-                className="w-full h-[55px] px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF5534] focus:border-transparent mb-2"
+                className="w-full h-[50px] sm:h-[55px] px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF5534] focus:border-transparent mb-2"
               />
               <input
                 type="text"
                 placeholder="Last Name"
                 value={formData.lastName}
                 onChange={(e) => handleInputChange('lastName', e.target.value)}
-                className="w-full h-[55px] px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF5534] focus:border-transparent"
+                className="w-full h-[50px] sm:h-[55px] px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF5534] focus:border-transparent"
               />
             </div>
 
@@ -217,22 +216,22 @@ const SignupModal = ({ isOpen, onClose, onSwitchToLogin }) => {
                 placeholder="Email"
                 value={formData.email}
                 onChange={(e) => handleInputChange('email', e.target.value)}
-                className="w-full h-[55px] px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF5534] focus:border-transparent"
+                className="w-full h-[50px] sm:h-[55px] px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF5534] focus:border-transparent"
               />
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Gender</label>
-              <div className="flex space-x-4 justify-start">
+              <div className="flex flex-col sm:flex-row sm:space-x-4 justify-start">
                 <button
                   onClick={() => handleInputChange('gender', 'Male')}
-                  className={`px-4 h-[40px] rounded-lg border transition-colors flex items-center ${
+                  className={`px-4 h-[40px] rounded-lg border transition-colors flex items-center mb-2 sm:mb-0 ${
                     formData.gender === 'Male'
                       ? ' text-[#FF5534] border-[#FF5534]'
                       : 'bg-white text-gray-600 border-gray-300 hover:border-[#FF5534]'
                   }`}
                 >
-                  <span className="text-[30px]">♂ </span>Male
+                  <span className="text-[24px] sm:text-[30px]">♂ </span>Male
                 </button>
                 <button
                   onClick={() => handleInputChange('gender', 'Female')}
@@ -242,7 +241,7 @@ const SignupModal = ({ isOpen, onClose, onSwitchToLogin }) => {
                       : 'bg-white text-gray-600 border-gray-300 hover:border-[#FF5534]'
                   }`}
                 >
-                  <span className="text-[30px]">♀</span> Female
+                  <span className="text-[24px] sm:text-[30px]">♀</span> Female
                 </button>
               </div>
             </div>
@@ -250,7 +249,7 @@ const SignupModal = ({ isOpen, onClose, onSwitchToLogin }) => {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Number</label>
               {!showOTPInput ? (
-                <div className="flex max-w-[570px] mx-auto w-full h-[55px] border border-[#B4B4B4] rounded-lg overflow-hidden">
+                <div className="flex max-w-[400px] mx-auto w-full h-[50px] sm:h-[55px] border border-[#B4B4B4] rounded-lg overflow-hidden">
                   <span className="flex items-center px-3 border-r border-[#B4B4B4] text-[#1D1D1D] bg-transparent">
                     +91
                   </span>
@@ -263,7 +262,7 @@ const SignupModal = ({ isOpen, onClose, onSwitchToLogin }) => {
                   />
                 </div>
               ) : (
-                <div className="flex justify-center space-x-4 mb-6">
+                <div className="flex justify-center space-x-2 sm:space-x-4 mb-6">
                   {otp.map((digit, index) => (
                     <input
                       key={index}
@@ -272,7 +271,7 @@ const SignupModal = ({ isOpen, onClose, onSwitchToLogin }) => {
                       maxLength={1}
                       value={digit}
                       onChange={(e) => handleOTPChange(index, e.target.value)}
-                      className="w-[55px] h-[55px] border border-[#B4B4B4] rounded-lg text-center text-lg font-semibold focus:outline-none focus:ring-1 focus:ring-[#FF5534] focus:border-transparent"
+                      className="w-[45px] h-[45px] sm:w-[55px] sm:h-[55px] border border-[#B4B4B4] rounded-lg text-center text-lg font-semibold focus:outline-none focus:ring-1 focus:ring-[#FF5534] focus:border-transparent"
                     />
                   ))}
                 </div>
@@ -293,7 +292,7 @@ const SignupModal = ({ isOpen, onClose, onSwitchToLogin }) => {
                 <button
                   onClick={handleGetOTP}
                   disabled={!formData.phoneNumber.trim() || isSendingOTP}
-                  className={`w-[308px] h-[44px] py-3 rounded-lg font-medium transition-all ${
+                  className={`w-[250px] sm:w-[308px] h-[44px] py-3 rounded-lg font-medium transition-all ${
                     formData.phoneNumber.trim() && !showOTPInput && !isSendingOTP
                       ? 'bg-[#FF553459] text-white hover:bg-[#E54728]'
                       : 'bg-gray-300 text-gray-500 cursor-not-allowed opacity-50'
@@ -305,7 +304,7 @@ const SignupModal = ({ isOpen, onClose, onSwitchToLogin }) => {
                 <button
                   onClick={handleVerifyOTP}
                   disabled={!isOTPComplete || isVerifying || isRegistering}
-                  className={`w-[308px] h-[44px] py-3 rounded-lg font-medium transition-all ${
+                  className={`w-[250px] sm:w-[308px] h-[44px] py-3 rounded-lg font-medium transition-all ${
                     isOTPComplete && isFormValid && !isVerifying && !isRegistering
                       ? 'bg-[#FF553459] text-white hover:bg-[#E54728]'
                       : 'bg-gray-300 text-gray-500 cursor-not-allowed opacity-50'
@@ -325,29 +324,11 @@ const SignupModal = ({ isOpen, onClose, onSwitchToLogin }) => {
             <div className="flex justify-center">
               <button
                 onClick={onSwitchToLogin}
-                className="text-[#FF5534] text-center py-2 hover:underline"
+                className="text-[#FF5534] text-center py-2 hover:underline text-sm sm:text-base"
               >
                 Already have an account?
               </button>
             </div>
-
-            {/* <div className="text-center">
-              <p className="text-[16px] text-[#444444] font-extrabold mb-4">Login with Social Media</p>
-              <div className="flex justify-center space-x-4">
-                <img
-                  src={Facebook}
-                  alt="Facebook"
-                  className="w-[39px] h-[39px] cursor-pointer"
-                  onClick={() => handleSocialLogin('facebook')}
-                />
-                <img
-                  src={Google}
-                  alt="Google"
-                  className="w-[39px] h-[39px] cursor-pointer"
-                  onClick={() => handleSocialLogin('google')}
-                />
-              </div>
-            </div> */}
           </div>
         </div>
       </div>
