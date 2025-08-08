@@ -71,7 +71,7 @@ const GettingStartedScreen = () => (
       className="text-md font-bold text-gray-900  rounded-t mb-4 px-2 py-2"
       style={{ backgroundColor: "#DBDBDB" }}
     >
-      Getting Started with YTYM
+      Getting Started with YourTym
     </h2>
     <div className="flex flex-col min-h-screen p-6">
       <div className="space-y-4 flex-grow">
@@ -80,7 +80,7 @@ const GettingStartedScreen = () => (
             className="text-black px-4 py-2 rounded-full hover:opacity-90"
             style={{ backgroundColor: "#FF583769" }}
           >
-            What is YYTM?
+            What is YourTym?
           </button>
           <button className="bg-gray-200 px-4 py-2 rounded-full hover:bg-gray-300">
             How to place a booking?
@@ -101,7 +101,7 @@ const GettingStartedScreen = () => (
 
         <div className="flex space-x-4">
           <button className="bg-gray-200 px-4 py-2 rounded-full hover:bg-gray-300">
-            Dose YTYM charges any cancellation fee?
+            Dose YourTym charges any cancellation fee?
           </button>
         </div>
 
@@ -129,7 +129,7 @@ const PaymentScreen = () => (
       className="text-md font-bold text-gray-900  rounded-t mb-4 px-2 py-2"
       style={{ backgroundColor: "#DBDBDB" }}
     >
-      Payment & YTYM Credits
+      Payment & YourTym Credits
     </h2>
     <div className="flex flex-col min-h-screen p-6">
       <div className="space-y-4 flex-grow">
@@ -190,7 +190,7 @@ const MembershipScreen = () => (
       className="text-md font-bold text-gray-900  rounded-t mb-4 px-2 py-2"
       style={{ backgroundColor: "#DBDBDB" }}
     >
-      YTYM Plus Membership
+      YourTym Plus Membership
     </h2>
     <div className="flex flex-col min-h-screen p-6">
       <div className="space-y-4 flex-grow">
@@ -251,7 +251,7 @@ const SafetyScreen = () => (
       className="text-md font-bold text-gray-900  rounded-t mb-4 px-2 py-2"
       style={{ backgroundColor: "#DBDBDB" }}
     >
-      YTYM Safety
+      YourTym Safety
     </h2>
     <div className="flex flex-col min-h-screen p-6">
       <div className="space-y-4 flex-grow">
@@ -403,20 +403,20 @@ function BookingHelp() {
     { id: "account", title: "Account", img: "/Account.svg" },
     {
       id: "getting-started",
-      title: "Getting started with YTYM",
+      title: "Getting started with YourTym",
       img: "/ytym.svg",
     },
     {
       id: "payment",
-      title: "Payment & YTYM Credits",
+      title: "Payment & YourTym Credits",
       img: "/payment.svg",
     },
     {
       id: "membership",
-      title: "YTYM Plus Membership",
+      title: "YourTym Plus Membership",
       img: "/ytymplus.svg",
     },
-    { id: "safety", title: "YTYM Safety", img: "/safety.svg" },
+    { id: "safety", title: "YourTym Safety", img: "/safety.svg" },
     { id: "warranty", title: "Warranty", img: "/warrenty.svg" },
   ];
 
@@ -617,7 +617,7 @@ function BookingHelp() {
               </div>
             </div>
             <div className="text-sm text-gray-600 mb-4">
-              Report a bug or suggest ways to make YTYM better
+              Report a bug or suggest ways to make YourTym better
             </div>
             <button className="w-full py-2 px-4 border border-gray-300 rounded-[15px] text-sm font-medium text-gray-700 hover:bg-[#FF5534] hover:text-white transition-colors">
               Give feedback
