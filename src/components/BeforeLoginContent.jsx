@@ -22,6 +22,7 @@ import YTTM from '../assets/images/landingPage/YTYMSafe.png'
 import ServiceGrid from './ServiceGrid';
 import WomenPageBeforeLogin from '../pages/WomenPageBeforeLogin';
 import MenPageBeforeLogin from '../pages/MenPageBeforeLogin';
+import SafetyStandards from './SafetyStandards';
 const BeforeLoginContent = () => {
   const services = [
     { image: SalonForWomen, size: 'salonWomen' },
@@ -71,7 +72,8 @@ const BeforeLoginContent = () => {
 
 
     <div className="mb-5 ">
-      <img src={YTTM} alt="" className='w-full xl:max-w-7xl object-fill px-4 mx-auto'/>
+      {/* <img src={YTTM} alt="" className='w-full xl:max-w-7xl object-fill px-4 mx-auto'/> */}
+      <SafetyStandards/>
     </div>
 
       </div>

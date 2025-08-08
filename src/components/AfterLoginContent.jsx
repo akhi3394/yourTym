@@ -5,6 +5,7 @@ import Men from '../assets/images/afterLogin/Mens.png';
 import OfferCard from './OfferCard';
 import YTTM from '../assets/images/landingPage/YTYMSafe.png';
 import { useNavigate } from 'react-router-dom';
+import SafetyStandards from './SafetyStandards';
 
 const AfterLoginContent = () => {
   const [showMenPopup, setShowMenPopup] = useState(false);
@@ -49,11 +50,12 @@ const AfterLoginContent = () => {
       </div>
 
       <div className="mb-5">
-        <img
+        {/* <img
           src={YTTM}
           alt="YTTM Safe"
           className="w-full max-w-[90vw] md:max-w-7xl object-cover px-4 mx-auto"
-        />
+        /> */}
+        <SafetyStandards/>
       </div>
 
       <MenPopup
