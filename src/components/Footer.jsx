@@ -64,14 +64,14 @@ const Footer = ({ BannersData,bannerLoading }) => {
             <div className="mb-5"></div>
             <h3 className="font-semibold text-[#000000] text-[24px] mb-4">Partners</h3>
             <ul className="space-y-2 text-[#000000] text-[16px]">
-              <li><a href="https://play.google.com/store/apps/details?id=com.yourtym_user" target="_blank" rel="noopener noreferrer" className="hover:text-[#FF5534] transition-colors">Register as a professional</a></li>
+              <li><a href="https://play.google.com/store/apps/details?id=com.yourtymepartner" target="_blank" rel="noopener noreferrer" className="hover:text-[#FF5534] transition-colors">Register as a professional</a></li>
             </ul>
           </div>
 
           {/* Follow us on */}
           <div className="mt-[53px]">
             <div className="mb-5"></div>
-            <h3 className="font-semibold text-[#000000] text-[24px] mb-4">Follow us on</h3>
+            <h3 className="font-semibold text-[#000000] text-[24px] mb-4">Download now</h3>
             {/* <div className="flex space-x-4 mb-4">
               <a href="#"><img src={Facebook} alt="Facebook" className="w-[24px] h-[24px]" /></a>
               <a href="#"><img src={Instagram} alt="Instagram" className="w-[24px] h-[24px]" /></a>
