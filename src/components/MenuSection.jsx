@@ -96,7 +96,7 @@ const MenuSection = () => {
             <MenuItem icon={<Wallet className="w-5 h-5" />} title="My Wallet" onClick={() => navigate("/wallet")} />
             <MenuItem icon={<Gift className="w-5 h-5" />} title="My Benefits" onClick={() => navigate("/benifits")} />
             <MenuItem icon={<Share className="w-5 h-5" />} title="Refer and Earn" onClick={() => setIsReferModalOpen(true)} />
-            <MenuItem icon={<CreditCard className="w-5 h-5" />} title="My Payment Methods" onClick={() => setIsPaymentModalOpen(true)} />
+            {/* <MenuItem icon={<CreditCard className="w-5 h-5" />} title="My Payment Methods" onClick={() => setIsPaymentModalOpen(true)} /> */}
           </div>
         </div>
 

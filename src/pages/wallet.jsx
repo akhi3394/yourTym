@@ -14,7 +14,7 @@ function Wallet() {
           
           {/* Right Column - Order Details & Payment */}
           <div className=" w-full">
-            <OrderSection />
+            {/* <OrderSection /> */}
           </div>
         </div>
       </div>

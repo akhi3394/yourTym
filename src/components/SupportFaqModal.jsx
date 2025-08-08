@@ -1,10 +1,16 @@
 import React, { useState } from 'react';
 import { X } from 'lucide-react';
+import { FaPhone, FaEnvelope, FaWhatsapp } from 'react-icons/fa';
 import { useGetFaqsQuery } from '../store/api/staticApi';
 
 const SupportFaqModal = ({ isOpen, onClose }) => {
   const [activeIndex, setActiveIndex] = useState(null);
+  const [isContactPopupOpen, setIsContactPopupOpen] = useState(false);
   const { data, error, isLoading } = useGetFaqsQuery();
+
+  const toggleContactPopup = () => {
+    setIsContactPopupOpen(!isContactPopupOpen);
+  };
 
   if (!isOpen) return null;
 
@@ -91,13 +97,56 @@ const SupportFaqModal = ({ isOpen, onClose }) => {
         </div>
 
         <div className="mt-6 flex flex-col space-y-3">
-          <button className="bg-[#FF4F29] text-white font-semibold py-2 rounded-md text-center">
+          {/* <button className="bg-[#FF4F29] text-white font-semibold py-2 rounded-md text-center">
             Chat with us
-          </button>
-          <button className="bg-[#FF4F29] text-white font-semibold py-2 rounded-md text-center">
+          </button> */}
+          <button
+            onClick={toggleContactPopup}
+            className="bg-[#FF4F29] text-white font-semibold py-2 rounded-md text-center"
+          >
             Contact us
           </button>
         </div>
+
+        {/* Contact Us Popup */}
+        {isContactPopupOpen && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white p-6 rounded-lg shadow-lg max-w-sm w-full">
+              <h3 className="text-[24px] font-semibold text-[#000000] mb-4">Contact Us</h3>
+              <ul className="space-y-4">
+                <li className="flex items-center">
+                  <FaPhone className="w-[24px] h-[24px] mr-2 text-[#000000]" />
+                  <a href="tel:8299847641" target='_blank' className="text-[#000000] hover:text-[#FF5534] transition-colors">
+                    Call: 8299847641
+                  </a>
+                </li>
+                <li className="flex items-center">
+                  <FaEnvelope className="w-[24px] h-[24px] mr-2 text-[#000000]" />
+                  <a href="mailto:Brijesh@yourtym.com" className="text-[#000000] hover:text-[#FF5534] transition-colors">
+                    Email: Brijesh@yourtym.com
+                  </a>
+                </li>
+                <li className="flex items-center">
+                  <FaWhatsapp className="w-[24px] h-[24px] mr-2 text-[#000000]" />
+                  <a
+                    href="https://wa.me/8299847641"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[#000000] hover:text-[#FF5534] transition-colors"
+                  >
+                    WhatsApp: 8299847641
+                  </a>
+                </li>
+              </ul>
+              <button
+                onClick={toggleContactPopup}
+                className="mt-6 bg-[#FF5534] text-white px-4 py-2 rounded hover:bg-[#e04a2f] transition-colors"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

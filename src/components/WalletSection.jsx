@@ -74,7 +74,7 @@ export default function WalletSection() {
             </div>
 
             {/* Filter Section */}
-            <div className="">
+            {/* <div className="">
                 <div className="flex items-center justify-end space-x-2 rounded-[10px] ">
                     <select className="text-sm border border-gray-300 rounded px-3 py-1 bg-white h-[39px]">
                         <option>Month</option>
@@ -83,10 +83,10 @@ export default function WalletSection() {
                         <option>Filters</option>
                     </select>
                 </div>
-            </div>
+            </div> */}
 
             {/* Transaction List */}
-            <div className="bg-white rounded-lg shadow-sm">
+            {/* <div className="bg-white rounded-lg shadow-sm">
                 {transactions.map((transaction, index) => (
                     <div key={transaction.id} className={`p-4 flex items-center justify-between ${index !== transactions.length - 1 ? 'border-b border-gray-100' : ''}`}>
                         <div className="flex items-center space-x-3">
@@ -108,7 +108,7 @@ export default function WalletSection() {
                         </div>
                     </div>
                 ))}
-            </div>
+            </div> */}
 
             {/* Referral Banner */}
             <div className="">
