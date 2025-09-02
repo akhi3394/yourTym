@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import CategoryGrid from "../components/CategoryGrid";
@@ -15,6 +15,7 @@ import {
   useGetPackagesByMainCategoryQuery,
 } from "../store/api/productsApi";
 import useCart from "../hooks/useCart";
+import { useSearchParams } from "react-router-dom";
 
 const MenProductClassicPage = () => {
   const [editingPackage, setEditingPackage] = useState(null);
@@ -25,6 +26,26 @@ const MenProductClassicPage = () => {
   const navigate = useNavigate();
   const MAIN_CATEGORY_ID = "670f5fd1199de0d397f32f4a"; // Men's Classic ID
   const { data: allsubCategoryData } = useGetAllSubCategoriesQuery();
+
+
+
+  const [searchParams] = useSearchParams();
+
+  const category = searchParams.get("category");
+
+  useEffect(() => {
+    if (category) {
+      const targetId = category
+        .toLowerCase()
+        .replace(/\s+/g, "-")
+        .replace(/[^\w-]+/g, "");
+
+      setSelectedCategory(targetId);
+      const element = document.getElementById(targetId);
+      if (element) element.scrollIntoView({ behavior: "smooth" });
+      setIsCartOpen(false);
+    }
+  }, [category]);
 
   const {
     cartItems,

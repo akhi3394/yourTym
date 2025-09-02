@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import CategoryGrid from "../components/CategoryGrid";
@@ -16,6 +16,7 @@ import {
   useGetSubCategoryQuery,
 } from "../store/api/productsApi";
 import useCart from "../hooks/useCart";
+import { useSearchParams } from "react-router-dom";
 
 const WomenProductsPage = () => {
   const [editingPackage, setEditingPackage] = useState(null);
@@ -31,6 +32,29 @@ const WomenProductsPage = () => {
     subCategoryId: '670f61d6199de0d397f32f6a'
   });
   const { data: allsubCategoryData } = useGetAllSubCategoriesQuery();
+
+
+
+  const [searchParams] = useSearchParams();
+
+  const category = searchParams.get("category");
+
+
+  useEffect(() => {
+    if (category) {
+      const targetId = category
+        .toLowerCase()
+        .replace(/\s+/g, "-")
+        .replace(/[^\w-]+/g, "");
+
+      setSelectedCategory(targetId);
+      const element = document.getElementById(targetId);
+      if (element) element.scrollIntoView({ behavior: "smooth" });
+      setIsCartOpen(false);
+    }
+  }, [category]);
+
+
 
   const {
     cartItems,
@@ -206,13 +230,13 @@ const WomenProductsPage = () => {
     return selectedCategory === "packages"
       ? packages
       : packages.filter((pkg) =>
-          pkg.services.some((s) =>
-            s.category.categoryId.name
-              .toLowerCase()
-              .replace(/\s+/g, "-")
-              .replace(/[^\w-]+/g, "") === selectedCategory
-          )
-        );
+        pkg.services.some((s) =>
+          s.category.categoryId.name
+            .toLowerCase()
+            .replace(/\s+/g, "-")
+            .replace(/[^\w-]+/g, "") === selectedCategory
+        )
+      );
   }, [packages, selectedCategory]);
 
   const handleSubCategoryClick = (subCategory) => {
@@ -234,7 +258,7 @@ const WomenProductsPage = () => {
   const handleSavePackage = (updatedPackage) => {
     const isCustomized = updatedPackage.packageType === "Customize";
     if (updatedPackage.serviceIds) {
-      addToCartPackage(updatedPackage.packageId, 1, isCustomized, updatedPackage.serviceIds,MAIN_CATEGORY_ID);
+      addToCartPackage(updatedPackage.packageId, 1, isCustomized, updatedPackage.serviceIds, MAIN_CATEGORY_ID);
     }
     setShowEditModal(false);
   };
@@ -330,8 +354,8 @@ const WomenProductsPage = () => {
               {selectedCategory === "packages"
                 ? "Create a custom package"
                 : `Packages for ${selectedCategory
-                    .replace(/-/g, " ")
-                    .replace(/\b\w/g, (l) => l.toUpperCase())}`}
+                  .replace(/-/g, " ")
+                  .replace(/\b\w/g, (l) => l.toUpperCase())}`}
             </h2>
             <div className="space-y-4">
               {packagesLoading ? (
@@ -363,9 +387,8 @@ const WomenProductsPage = () => {
 
         {/* Cart Sidebar */}
         <div
-          className={`fixed inset-y-0 right-0 w-80 bg-white shadow-lg transform transition-transform duration-300 ease-in-out  xl:static xl:w-[300px] xl:h-[500px] xl:transform-none xl:shadow-none xl:rounded-[10px] ${
-            isCartOpen ? "translate-x-0 z-50" : "translate-x-full xl:translate-x-0 z-40"
-          }`}
+          className={`fixed inset-y-0 right-0 w-80 bg-white shadow-lg transform transition-transform duration-300 ease-in-out  xl:static xl:w-[300px] xl:h-[500px] xl:transform-none xl:shadow-none xl:rounded-[10px] ${isCartOpen ? "translate-x-0 z-50" : "translate-x-full xl:translate-x-0 z-40"
+            }`}
         >
           <div className="flex justify-between items-center p-4 border-b xl:hidden">
             <h2 className="text-lg font-semibold">Your Cart</h2>

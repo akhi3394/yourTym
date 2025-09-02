@@ -4,6 +4,7 @@ import { useAppSelector } from '../hooks/useAppSelector';
 import SearchIcon from '../assets/svgs/searchIcon.svg';
 import CircularLoader from './CircularLoader';
 import recentSearch from '/recent-search.svg'
+import { useNavigate } from 'react-router-dom';
 
 const SearchBar = ({ setShowLogin }) => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -11,6 +12,8 @@ const SearchBar = ({ setShowLogin }) => {
   const [isInputFocused, setIsInputFocused] = useState(false);
   const { isAuthenticated, token } = useAppSelector((state) => state.auth);
   const searchRef = useRef(null);
+  const navigate = useNavigate()
+
 
   // Debounce function
   const debounce = (func, delay) => {
@@ -101,20 +104,44 @@ const SearchBar = ({ setShowLogin }) => {
               )}
               {categoryData?.data?.length > 0 && !isLoading && !isFetching && (
                 <ul className="divide-y divide-[#E5E5E5]">
-                  {categoryData.data.map((item) => (
-                    <li
-                      key={item._id}
-                      className="p-4 hover:bg-[#F5F5F5] cursor-pointer flex justify-between items-center"
-                      onClick={() => setSearchTerm(item.title)}
-                    >
-                      <span className="text-[#333333] text-[14px]">
-                        {item.title}
-                      </span>
-                      <span className="text-[#FF5534] text-[14px] font-medium">
-                        ₹{item.location[0]?.discountPrice || item.location[0]?.originalPrice}
-                      </span>
-                    </li>
-                  ))}
+                  {categoryData.data.map((item) => {
+                    const mainCategoryName = item?.mainCategoryId?.name || "";
+                    const serviceName = item?.title || "";
+                    const categoryName = item?.categoryId?.name || "";
+
+                    // Convert "Salon for Women" → "women"
+                    let path = "";
+                    if (mainCategoryName.toLowerCase().includes("women")) {
+                      path = "/women/products";
+                    } else if (mainCategoryName.toLowerCase().includes("men (luxe)")) {
+                      path = "/men/premium";
+                    } else if (mainCategoryName.toLowerCase().includes("men")) {
+                      path = "/men/classic";
+                    } else {
+                      path = "/products";
+                    }
+
+                    return (
+                      <li
+                        key={item._id}
+                        className="p-4 hover:bg-[#F5F5F5] cursor-pointer flex justify-between items-center"
+                        onClick={() => {
+                          // ✅ Close search box
+                          setIsInputFocused(false);
+                          setSearchTerm('');
+                          setDebouncedSearchTerm("");
+
+                          // ✅ Navigate
+                          navigate(`${path}?category=${encodeURIComponent(categoryName)}&service=${encodeURIComponent(serviceName)}`);
+                        }}
+                      >
+                        <span className="text-[#333333] text-[14px]">{serviceName}</span>
+                        <span className="text-[#FF5534] text-[14px] font-medium">
+                          ₹{item.location[0]?.discountPrice || item.location[0]?.originalPrice}
+                        </span>
+                      </li>
+                    );
+                  })}
                 </ul>
               )}
               {debouncedSearchTerm && !isLoading && !isFetching && categoryData?.data?.length === 0 && (
