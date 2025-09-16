@@ -86,6 +86,7 @@ const useCart = () => {
     async (serviceId, quantity = 1, serviceTypeId, mainCategoryId) => {
       setLoading(true);
       setError(null);
+      console.log(serviceId, mainCategoryId, "ahdhka")
       try {
         // Check if cart is not empty and mainCategoryId doesn't match
         if (cartItems.length > 0) {

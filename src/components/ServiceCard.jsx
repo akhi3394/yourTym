@@ -4,7 +4,7 @@ import useCart from "../hooks/useCart";
 import CircularLoader from "./CircularLoader";
 import { toast } from "sonner";
 
-const ServiceCard = ({ subCategories,mainCategoryId }) => {
+const ServiceCard = ({ subCategories, mainCategoryId }) => {
   const [selectedSubCategory, setSelectedSubCategory] = useState(null);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [isLoadingAdd, setIsLoadingAdd] = useState(false);
@@ -67,14 +67,21 @@ const ServiceCard = ({ subCategories,mainCategoryId }) => {
     { skip: !selectedSubCategory }
   );
 
-  const filteredServices = servicesData?.data?.filter(
-    (service) => service.subCategoryId?._id === selectedSubCategory?.subCategoryId
-  ) || [];
+  const filteredServices = selectedSubCategory
+    ? servicesData?.data?.filter(
+      (service) => service.subCategoryId?._id === selectedSubCategory?.subCategoryId
+    ) || []
+    : [];
+
+
+  const generateSectionId = (name) =>
+    name.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
+
 
   return (
     <div className="w-full max-w-3xl mt-5">
       {subCategories?.map((item, index) => (
-        <><div key={item?._id || `separator-${index}`} id={item.name.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "")} className="mb-6">
+        <><div key={item?._id || `separator-${index}`} id={generateSectionId(item.name)} className="mb-6">
           {item?.type === "separator" ? (
             <div className="category-header">
               <h2 className="text-2xl font-bold text-gray-900 mb-3">{item?.name}</h2>

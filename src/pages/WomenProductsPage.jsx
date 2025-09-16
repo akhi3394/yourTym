@@ -22,7 +22,7 @@ const WomenProductsPage = () => {
   const [editingPackage, setEditingPackage] = useState(null);
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState("packages");
-  const [isCartOpen, setIsCartOpen] = useState(false); // State for mobile cart toggle
+  const [isCartOpen, setIsCartOpen] = useState(false);
   const { isAuthenticated, token } = useSelector((state) => state.auth);
   const navigate = useNavigate();
   const MAIN_CATEGORY_ID = "670f5fb4199de0d397f32f45";
@@ -40,16 +40,31 @@ const WomenProductsPage = () => {
   const category = searchParams.get("category");
 
 
+  const generateSectionId = (name) =>
+    name.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
+
+
+
+  useEffect(() => {
+    if (!category) {
+      setSelectedCategory("packages");
+    }
+  }, []);
+
+
   useEffect(() => {
     if (category) {
-      const targetId = category
-        .toLowerCase()
-        .replace(/\s+/g, "-")
-        .replace(/[^\w-]+/g, "");
+      const targetId = generateSectionId(category);
 
       setSelectedCategory(targetId);
-      const element = document.getElementById(targetId);
-      if (element) element.scrollIntoView({ behavior: "smooth" });
+
+      setTimeout(() => { // Let DOM elements load before scrolling
+        const element = document.getElementById(targetId);
+        if (element) {
+          element.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      }, 300);
+
       setIsCartOpen(false);
     }
   }, [category]);
@@ -240,13 +255,15 @@ const WomenProductsPage = () => {
   }, [packages, selectedCategory]);
 
   const handleSubCategoryClick = (subCategory) => {
-    const sectionId = subCategory.name
-      .toLowerCase()
-      .replace(/\s+/g, "-")
-      .replace(/[^\w-]+/g, "");
+    const sectionId = generateSectionId(subCategory.name);
     setSelectedCategory(sectionId);
-    const element = document.getElementById(sectionId);
-    if (element) element.scrollIntoView({ behavior: "smooth" });
+    setTimeout(() => {
+      const element = document.getElementById(sectionId);
+      if (element) {
+        element.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    }, 300);
+
     setIsCartOpen(false); // Close cart on mobile when selecting a category
   };
 

@@ -53,7 +53,7 @@ const MenuSection = () => {
   const referralcode = profileData?.data?.refferalCode;
   const handleShare = async () => {
     const shareData = {
-      title: 'Share YYGM',
+      title: 'Share YourTym',
       text: 'Check out this awesome app!',
       url: 'https://your-tym.vercel.app/',
     };
@@ -112,7 +112,7 @@ const MenuSection = () => {
             <MenuItem icon={<Headphones className="w-5 h-5" />} title="Support" onClick={() => setIsSupportModalOpen(true)} />
             <MenuItem icon={<MessageCircle className="w-5 h-5" />} title="Give us a Feedback" onClick={() => setIsFeedbackOpen(true)} />
             <MenuItem icon={<Star className="w-5 h-5" />} title="My Rating" onClick={() => setIsRatingOpen(true)} />
-            <MenuItem icon={<Share className="w-5 h-5" />} title="Share YYGM" onClick={handleShare} />
+            <MenuItem icon={<Share className="w-5 h-5" />} title="Share YourTym" onClick={handleShare} />
           </div>
         </div>
       </div>

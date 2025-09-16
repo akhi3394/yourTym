@@ -6,6 +6,16 @@ import CircularLoader from './CircularLoader';
 import recentSearch from '/recent-search.svg'
 import { useNavigate } from 'react-router-dom';
 
+
+// Debounce function
+const debounce = (func, delay) => {
+  let timeoutId;
+  return (...args) => {
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => func(...args), delay);
+  };
+};
+
 const SearchBar = ({ setShowLogin }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
@@ -15,14 +25,7 @@ const SearchBar = ({ setShowLogin }) => {
   const navigate = useNavigate()
 
 
-  // Debounce function
-  const debounce = (func, delay) => {
-    let timeoutId;
-    return (...args) => {
-      clearTimeout(timeoutId);
-      timeoutId = setTimeout(() => func(...args), delay);
-    };
-  };
+
 
   // Handle search input change with debouncing
   const handleSearchChange = (e) => {
@@ -126,14 +129,13 @@ const SearchBar = ({ setShowLogin }) => {
                         key={item._id}
                         className="p-4 hover:bg-[#F5F5F5] cursor-pointer flex justify-between items-center"
                         onClick={() => {
-                          // ✅ Close search box
                           setIsInputFocused(false);
                           setSearchTerm('');
                           setDebouncedSearchTerm("");
 
-                          // ✅ Navigate
                           navigate(`${path}?category=${encodeURIComponent(categoryName)}&service=${encodeURIComponent(serviceName)}`);
                         }}
+
                       >
                         <span className="text-[#333333] text-[14px]">{serviceName}</span>
                         <span className="text-[#FF5534] text-[14px] font-medium">
@@ -154,7 +156,7 @@ const SearchBar = ({ setShowLogin }) => {
           {isInputFocused && !debouncedSearchTerm && mostSearchedData?.data?.length > 0 && (
             <div className="max-h-[200px] overflow-y-auto mt-2 pt-2 ">
               <div className="p-2 text-[#333333] font-medium text-center border-dashed  border-b-2">Search History</div>
-              <ul className=" ">
+              <ul className="">
                 {[...mostSearchedData.data]
                   .sort((a, b) => b.searchCount - a.searchCount)
                   .slice(0, 10)
